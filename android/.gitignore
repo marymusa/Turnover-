@@ -1,4 +1,6 @@
-gradle-wrapper.jar
+# El jar del wrapper se versiona a propósito: el SDK de Flutter inyecta uno de
+# Gradle 2.10 (2015) cuando falta, y la build falla con "Could not determine
+# wrapper version".
 /.gradle
 /captures/
 /gradlew
