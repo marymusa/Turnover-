@@ -70,6 +70,22 @@ class MatchClock {
 
   Duration get warning => _warning;
 
+  /// Lo que le queda al reloj que corre, entre cero y uno, para quien quiera
+  /// pintar una barra. Nulo si este jugador no tiene ningún reloj corriendo,
+  /// porque entonces no hay barra que pintar. En overtime es cero: la barra se
+  /// vacía y no se pinta hacia el otro lado.
+  double? remainingFractionOf(Player player) {
+    if (_active != player) return null;
+    return switch (runningClock) {
+      ClockKind.turn => _fraction(_turnClock[player]!, _turn),
+      ClockKind.reserve => _fraction(_reserveClock[player]!, _reserve),
+      null => null,
+    };
+  }
+
+  static double _fraction(Duration left, Duration total) =>
+      (left.inMicroseconds / total.inMicroseconds).clamp(0.0, 1.0);
+
   /// Nulo si no corre ninguno, sea porque el partido no ha empezado o porque
   /// está pausado. En overtime sigue corriendo la reserva.
   ClockKind? get runningClock {

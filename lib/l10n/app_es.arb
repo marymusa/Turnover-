@@ -1,5 +1,10 @@
 {
   "@@locale": "es",
   "appTitle": "Turnover!",
-  "appTagline": "Cronómetro y reloj para Blood Bowl"
+  "appTagline": "Cronómetro y reloj para Blood Bowl",
+  "startHint": "Recibe quien toque aquí",
+  "passTurn": "Pasar turno",
+  "pause": "Pausar",
+  "resume": "Reanudar",
+  "reset": "Reiniciar partido"
 }

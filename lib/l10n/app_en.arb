@@ -7,5 +7,25 @@
   "appTagline": "Clock and timer for Blood Bowl",
   "@appTagline": {
     "description": "Subtítulo de la aplicación, fijado en el ADR-0004"
+  },
+  "startHint": "Whoever taps here receives",
+  "@startHint": {
+    "description": "Invitación de cada mitad antes de empezar el partido"
+  },
+  "passTurn": "Pass turn",
+  "@passTurn": {
+    "description": "Etiqueta de accesibilidad del control central"
+  },
+  "pause": "Pause",
+  "@pause": {
+    "description": "Etiqueta de accesibilidad del control de pausa"
+  },
+  "resume": "Resume",
+  "@resume": {
+    "description": "Etiqueta de accesibilidad del control de pausa, ya pausado"
+  },
+  "reset": "Reset match",
+  "@reset": {
+    "description": "Etiqueta de accesibilidad del control de reinicio"
   }
 }

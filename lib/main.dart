@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'domain/match_clock.dart';
 import 'l10n/app_localizations.dart';
+import 'ui/clock_screen.dart';
+
+/// Los tiempos por defecto del glosario. Configurarlos es cosa de #8.
+const _defaultTurn = Duration(minutes: 4);
+const _defaultReserve = Duration(minutes: 15);
+const _defaultWarning = Duration(seconds: 30);
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,28 +26,11 @@ class TurnoverApp extends StatelessWidget {
       onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      home: const _Placeholder(),
-    );
-  }
-}
-
-/// Pantalla provisional hasta que exista el cronómetro. Solo demuestra que la
-/// localización resuelve.
-class _Placeholder extends StatelessWidget {
-  const _Placeholder();
-
-  @override
-  Widget build(BuildContext context) {
-    final strings = AppLocalizations.of(context)!;
-    final textTheme = Theme.of(context).textTheme;
-    return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(strings.appTitle, style: textTheme.headlineMedium),
-            Text(strings.appTagline, style: textTheme.bodyMedium),
-          ],
+      home: ClockScreen(
+        clock: MatchClock(
+          turn: _defaultTurn,
+          reserve: _defaultReserve,
+          warning: _defaultWarning,
         ),
       ),
     );

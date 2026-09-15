@@ -505,6 +505,52 @@ void main() {
       expect(clock.runningClock, isNull);
     });
   });
+
+  group('lo que queda', () {
+    test('es todo antes de gastar nada, y nada cuando no hay reloj corriendo', () {
+      final clock = newClock();
+
+      expect(clock.remainingFractionOf(Player.one), isNull);
+
+      clock.start(Player.one);
+      expect(clock.remainingFractionOf(Player.one), 1);
+      expect(clock.remainingFractionOf(Player.two), isNull);
+    });
+
+    test('baja con el turno mientras el turno corre', () {
+      final clock = newClock();
+      clock.start(Player.one);
+      clock.advance(const Duration(minutes: 1));
+
+      expect(clock.remainingFractionOf(Player.one), 0.75);
+    });
+
+    test('pasa a medirse sobre la reserva al agotarse el turno', () {
+      final clock = newClock();
+      clock.start(Player.one);
+      clock.advance(const Duration(minutes: 4));
+      clock.advance(const Duration(minutes: 3));
+
+      expect(clock.remainingFractionOf(Player.one), 0.8);
+    });
+
+    // La barra no se pinta hacia el otro lado: en overtime se queda vacía.
+    test('en overtime es cero, no un negativo', () {
+      final clock = newClock();
+      clock.start(Player.one);
+      clock.advance(const Duration(minutes: 20));
+
+      expect(clock.remainingFractionOf(Player.one), 0);
+    });
+
+    test('no hay barra con el partido pausado', () {
+      final clock = newClock();
+      clock.start(Player.one);
+      clock.pause();
+
+      expect(clock.remainingFractionOf(Player.one), isNull);
+    });
+  });
 }
 
 MatchClock newClock() => MatchClock(
