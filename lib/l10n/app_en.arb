@@ -1,0 +1,11 @@
+{
+  "@@locale": "en",
+  "appTitle": "Turnover!",
+  "@appTitle": {
+    "description": "Nombre visible de la aplicación, igual en los dos idiomas"
+  },
+  "appTagline": "Clock and timer for Blood Bowl",
+  "@appTagline": {
+    "description": "Subtítulo de la aplicación, fijado en el ADR-0004"
+  }
+}
