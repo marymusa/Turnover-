@@ -38,6 +38,10 @@ class ClockScreen extends StatefulWidget {
 
 class _ClockScreenState extends State<ClockScreen>
     with SingleTickerProviderStateMixin, WidgetsBindingObserver {
+  /// El reloj del que se lee todo, el que se pinta y el que avanza. Sale del
+  /// ticker y no de `widget`, para que no puedan ser dos distintos.
+  MatchClock get _clock => _ticker.clock;
+
   late final MatchTicker _ticker = MatchTicker(widget.clock);
   late final Ticker _frames = createTicker(_onFrame);
   late final AwakeGuard _awake = AwakeGuard(widget.clock, widget.screen);
@@ -94,7 +98,7 @@ class _ClockScreenState extends State<ClockScreen>
   /// inicial, y después pasa turno. Pausado no hace nada, que es lo que
   /// bloquea pasar turno desde las mitades.
   void _tapHalf(Player player) {
-    final clock = widget.clock;
+    final clock = _clock;
     switch (clock.state) {
       case MatchState.notStarted:
         clock.start(player);
@@ -107,7 +111,7 @@ class _ClockScreenState extends State<ClockScreen>
   }
 
   void _togglePause() {
-    final clock = widget.clock;
+    final clock = _clock;
     if (clock.state == MatchState.paused) {
       clock.resume();
     } else {
@@ -117,13 +121,13 @@ class _ClockScreenState extends State<ClockScreen>
   }
 
   void _passTurn() {
-    widget.clock.passTurn();
+    _clock.passTurn();
     _ticker.refresh();
   }
 
   @override
   Widget build(BuildContext context) {
-    final clock = widget.clock;
+    final clock = _clock;
     return Scaffold(
       backgroundColor: ClockTheme.background,
       body: SafeArea(
