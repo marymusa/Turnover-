@@ -17,23 +17,29 @@ enum AlertSound {
   final String asset;
 }
 
-/// Un aviso completo: la bocina que suena y las pulsaciones que la acompañan.
+/// Las tres intensidades de vibración, a la par de las tres bocinas. El
+/// dominio nombra la intensidad y nada más: cuánto dura y con cuánta fuerza
+/// sale lo decide el aparato, que es quien conoce el motor.
+enum VibrationLevel { soft, strong, strongest }
+
+/// Un aviso completo: la bocina que suena y la vibración que la acompaña.
 class Alert {
-  const Alert(this.sound, this.pulses);
+  const Alert(this.sound, this.vibration);
 
   final AlertSound sound;
 
-  /// Una, dos o tres según la gravedad. Cuánto dura cada una y qué las separa
-  /// lo decide el aparato, no este módulo.
-  final int pulses;
+  final VibrationLevel vibration;
 }
 
 /// La jerarquía de intensidad del glosario: suave a los treinta segundos de
 /// turno y de reserva, más fuerte al agotarse el turno, y la más fuerte de las
 /// tres al agotarse la reserva.
 Alert alertFor(Horn horn) => switch (horn) {
-  Horn.turnWarning => const Alert(AlertSound.soft, 1),
-  Horn.reserveWarning => const Alert(AlertSound.soft, 1),
-  Horn.turnExpired => const Alert(AlertSound.strong, 2),
-  Horn.reserveExpired => const Alert(AlertSound.strongest, 3),
+  Horn.turnWarning => const Alert(AlertSound.soft, VibrationLevel.soft),
+  Horn.reserveWarning => const Alert(AlertSound.soft, VibrationLevel.soft),
+  Horn.turnExpired => const Alert(AlertSound.strong, VibrationLevel.strong),
+  Horn.reserveExpired => const Alert(
+    AlertSound.strongest,
+    VibrationLevel.strongest,
+  ),
 };

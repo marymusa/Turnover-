@@ -12,7 +12,7 @@ void main() {
       await player.handle([const MatchEvent(Horn.turnExpired, Player.one)]);
 
       expect(device.played, [AlertSound.strong]);
-      expect(device.vibrated, [alertFor(Horn.turnExpired).pulses]);
+      expect(device.vibrated, [alertFor(Horn.turnExpired).vibration]);
     });
 
     test('cada evento del avance dispara lo suyo', () async {
@@ -50,7 +50,7 @@ void main() {
       await player.handle([const MatchEvent(Horn.reserveExpired, Player.one)]);
 
       expect(device.played, [AlertSound.strongest]);
-      expect(device.vibrated, [3]);
+      expect(device.vibrated, [VibrationLevel.strongest]);
     });
 
     test('un fallo del aparato no tumba el aviso entero', () async {
@@ -99,7 +99,7 @@ class FakeDevice implements AlertDevice {
   final bool fails;
   final bool vibrationFails;
   final played = <AlertSound>[];
-  final vibrated = <int>[];
+  final vibrated = <VibrationLevel>[];
 
   @override
   Future<void> play(AlertSound sound) async {
@@ -108,8 +108,8 @@ class FakeDevice implements AlertDevice {
   }
 
   @override
-  Future<void> vibrate(int pulses) async {
+  Future<void> vibrate(VibrationLevel level) async {
     if (fails || vibrationFails) throw Exception('sin vibrador');
-    vibrated.add(pulses);
+    vibrated.add(level);
   }
 }

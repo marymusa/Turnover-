@@ -404,7 +404,7 @@ class _SilentDevice implements AlertDevice {
   Future<void> play(AlertSound sound) async {}
 
   @override
-  Future<void> vibrate(int pulses) async {}
+  Future<void> vibrate(VibrationLevel level) async {}
 }
 
 class _IgnoredScreen implements Screen {

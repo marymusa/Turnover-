@@ -1,4 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Cada bocina lleva su vibración. Es un permiso normal: no se le pide
+         nada al jugador y no da acceso a ningún dato. -->
+    <uses-permission android:name="android.permission.VIBRATE"/>
     <!-- Sin copia de seguridad en la nube (ADR-0003): lo que se guarda son los
          tres tiempos y el nombre del jugador uno, que se vuelven a escribir en
          cuatro segundos. Una copia de seguridad es una superficie más que

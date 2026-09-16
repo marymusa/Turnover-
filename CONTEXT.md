@@ -35,7 +35,13 @@ los del oponente.
 
 **bocina**: cada uno de los tres avisos sonoros, de menor a mayor intensidad: queda
 el aviso previo de turno, se agota el turno, se agota la reserva. Cada bocina lleva su
-vibración (una, dos y tres pulsaciones).
+vibración, en la misma intensidad que ella.
+
+**intensidad**: lo que gradúa un aviso, de suave a fuerte a más fuerte. La comparten
+la bocina y la vibración, que salen siempre a la par: no hay aviso que suene fuerte y
+vibre flojo. En el código, `AlertSound` y `VibrationLevel`. Nunca un número de
+pulsaciones: lo que sube con la gravedad es la fuerza del golpe, no cuántos son
+(ADR-0005).
 
 ## Reglas del dominio
 

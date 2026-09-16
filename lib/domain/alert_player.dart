@@ -11,8 +11,9 @@ import 'match_clock.dart';
 abstract interface class AlertDevice {
   Future<void> play(AlertSound sound);
 
-  /// [pulses] son las pulsaciones seguidas que se piden, de una a tres.
-  Future<void> vibrate(int pulses);
+  /// [level] es la intensidad que se pide. Traducirla a fuerza y duración es
+  /// cosa del aparato.
+  Future<void> vibrate(VibrationLevel level);
 }
 
 class AlertPlayer {
@@ -30,7 +31,7 @@ class AlertPlayer {
       // tiene que notarlos juntos.
       await Future.wait([
         _quietly(() => _device.play(alert.sound)),
-        _quietly(() => _device.vibrate(alert.pulses)),
+        _quietly(() => _device.vibrate(alert.vibration)),
       ]);
     }
   }

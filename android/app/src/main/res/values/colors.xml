@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- El mismo fondo que ClockTheme.background, para que el arranque no
+         pegue un fogonazo blanco antes del primer fotograma de Flutter. -->
+    <color name="launch_background">#0B0F19</color>
+</resources>

@@ -23,12 +23,24 @@ void main() {
     });
   });
 
-  group('las pulsaciones', () {
-    test('van de una a tres según la gravedad', () {
-      expect(alertFor(Horn.turnWarning).pulses, 1);
-      expect(alertFor(Horn.reserveWarning).pulses, 1);
-      expect(alertFor(Horn.turnExpired).pulses, 2);
-      expect(alertFor(Horn.reserveExpired).pulses, 3);
+  group('la vibración', () {
+    test('sube de intensidad con la gravedad', () {
+      expect(alertFor(Horn.turnWarning).vibration, VibrationLevel.soft);
+      expect(alertFor(Horn.reserveWarning).vibration, VibrationLevel.soft);
+      expect(alertFor(Horn.turnExpired).vibration, VibrationLevel.strong);
+      expect(
+        alertFor(Horn.reserveExpired).vibration,
+        VibrationLevel.strongest,
+      );
+    });
+
+    // La vibración acompaña a la bocina en la misma intensidad: no hay aviso
+    // que suene fuerte y vibre flojo.
+    test('va a la par de la bocina', () {
+      for (final horn in Horn.values) {
+        final alert = alertFor(horn);
+        expect(alert.vibration.name, alert.sound.name);
+      }
     });
   });
 
