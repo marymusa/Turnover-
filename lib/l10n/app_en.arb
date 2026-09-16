@@ -4,11 +4,11 @@
   "@appTitle": {
     "description": "Nombre visible de la aplicación, igual en los dos idiomas"
   },
-  "appTagline": "Clock and timer for Blood Bowl",
+  "appTagline": "Timer for Blood Bowl matches",
   "@appTagline": {
     "description": "Subtítulo de la aplicación, fijado en el ADR-0004"
   },
-  "startHint": "Whoever taps here receives",
+  "startHint": "Whoever taps here receives the ball",
   "@startHint": {
     "description": "Invitación de cada mitad antes de empezar el partido"
   },
@@ -28,7 +28,7 @@
   "@pausedHint": {
     "description": "Velo que cubre la pantalla con el partido pausado"
   },
-  "reset": "Reset match",
+  "reset": "Reset timer",
   "@reset": {
     "description": "Etiqueta de accesibilidad del control de reinicio"
   }

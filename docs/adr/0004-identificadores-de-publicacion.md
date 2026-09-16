@@ -12,7 +12,11 @@ las tiendas. Conviene fijarlo antes de escribir código, aunque publicar quede l
 
 Identificador: `com.ares.bloodbowl.turnover`, el mismo en App Store y en Play Store.
 
-Nombre: `Turnover!`. Subtítulo: `Cronómetro y reloj para Blood Bowl`.
+Nombre: `Turnover!`. Subtítulo: `Cronómetro para partidos de Blood Bowl`.
+
+El subtítulo decía antes `Cronómetro y reloj para Blood Bowl`. "Reloj" no añadía
+nada que "cronómetro" no dijera ya, y lo que de verdad sitúa la aplicación es que
+mide partidos, no cualquier rato.
 
 La aplicación se publica en castellano e inglés. El idioma sale de la configuración
 del sistema y el inglés hace de alternativa cuando el sistema está en cualquier otro

@@ -35,11 +35,11 @@ void main() {
     test('cada idioma trae su propia cadena', () {
       expect(
         lookupAppLocalizations(const Locale('es')).appTagline,
-        'Cronómetro y reloj para Blood Bowl',
+        'Cronómetro para partidos de Blood Bowl',
       );
       expect(
         lookupAppLocalizations(const Locale('en')).appTagline,
-        'Clock and timer for Blood Bowl',
+        'Timer for Blood Bowl matches',
       );
     });
 
