@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
 import '../domain/alert_player.dart';
+import '../domain/awake_guard.dart';
 import '../domain/match_clock.dart';
 import '../domain/match_ticker.dart';
 import 'clock_theme.dart';
@@ -13,7 +14,12 @@ import 'seam_controls.dart';
 /// La cara del cronómetro. Lo único que hace es pintar lo que dice
 /// [MatchClock] y devolverle los toques: aquí no vive ninguna regla.
 class ClockScreen extends StatefulWidget {
-  const ClockScreen({required this.clock, required this.alerts, super.key});
+  const ClockScreen({
+    required this.clock,
+    required this.alerts,
+    required this.screen,
+    super.key,
+  });
 
   final MatchClock clock;
 
@@ -21,24 +27,36 @@ class ClockScreen extends StatefulWidget {
   /// lo conoce: los eventos pasan por aquí.
   final AlertPlayer alerts;
 
+  /// La pantalla del aparato, que se mantiene encendida mientras un reloj
+  /// corre. Quien decide cuándo es [AwakeGuard], no este widget.
+  final Screen screen;
+
   @override
   State<ClockScreen> createState() => _ClockScreenState();
 }
 
 class _ClockScreenState extends State<ClockScreen>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   late final MatchTicker _ticker = MatchTicker(widget.clock);
   late final Ticker _frames = createTicker(_onFrame);
+  late final AwakeGuard _awake = AwakeGuard(widget.clock, widget.screen);
 
   /// El aviso se dispara y no se espera: lo que tarde el aparato en sonar no
   /// puede retrasar el toque de reloj siguiente.
+  ///
+  /// La pantalla se ajusta al reloj aquí, en un solo sitio, y no en cada
+  /// manejador de toque: así ningún control que se añada después puede
+  /// olvidarse de hacerlo. [AwakeGuard] solo cruza a la plataforma cuando
+  /// cambia, de modo que llamarlo en cada fotograma no cuesta nada.
   void _onFrame(Duration now) {
     unawaited(widget.alerts.handle(_ticker.tick(now)));
+    unawaited(_awake.sync());
   }
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     // Arrancar aquí y no en la inicialización del campo: `late` es perezoso y
     // un Ticker que nadie lee no llega a existir, así que el reloj no correría.
     _frames.start();
@@ -46,9 +64,29 @@ class _ClockScreenState extends State<ClockScreen>
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _frames.dispose();
     _ticker.dispose();
+    // Lo pedido a la pantalla no puede sobrevivir a quien lo pidió.
+    unawaited(_awake.release());
     super.dispose();
+  }
+
+  /// Traduce el ciclo de vida de la plataforma a las dos únicas cosas que le
+  /// importan al dominio: se deja el primer plano o se vuelve a él. Cualquier
+  /// estado que no sea [AppLifecycleState.resumed] es estar fuera.
+  ///
+  /// El [MatchTicker.refresh] rehace el origen del ticker: sin él, lo que
+  /// durase el rato fuera se le cobraría al jugador activo en el primer toque
+  /// de vuelta.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    unawaited(
+      state == AppLifecycleState.resumed
+          ? _awake.onReturnedToForeground()
+          : _awake.onLeftForeground(),
+    );
+    _ticker.refresh();
   }
 
   /// El toque de una mitad: antes de empezar elige quién recibe la patada

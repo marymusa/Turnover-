@@ -5,6 +5,7 @@ import 'domain/alert_player.dart';
 import 'domain/match_clock.dart';
 import 'l10n/app_localizations.dart';
 import 'platform/platform_alert_device.dart';
+import 'platform/platform_screen.dart';
 import 'ui/clock_screen.dart';
 
 /// Los tiempos por defecto del glosario. Configurarlos es cosa de #8.
@@ -36,6 +37,7 @@ class TurnoverApp extends StatelessWidget {
       supportedLocales: AppLocalizations.supportedLocales,
       home: ClockScreen(
         alerts: alerts,
+        screen: const PlatformScreen(),
         clock: MatchClock(
           turn: _defaultTurn,
           reserve: _defaultReserve,
