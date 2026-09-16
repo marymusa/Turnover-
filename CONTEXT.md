@@ -79,4 +79,6 @@ contador se desincronizaría y habría que corregirlo a mano: más fricción que
 Sin historial de partidos. Para dejar constancia de una partida se hace una captura
 de pantalla, y por eso la aplicación no bloquea las capturas.
 
-Sin modo espectador ni modo árbitro. Sin red, sin cuentas, sin copia de seguridad.
+Sin modo espectador ni modo árbitro. Sin red y sin cuentas. Tampoco se pide copia de
+seguridad en la nube, aunque en iOS los ajustes viajen igualmente en la de iCloud, que
+es algo que no se puede desactivar sin rehacer el almacenamiento (ADR-0003).
