@@ -8,6 +8,7 @@ import '../domain/awake_guard.dart';
 import '../domain/match_clock.dart';
 import '../domain/match_ticker.dart';
 import 'clock_theme.dart';
+import 'paused_veil.dart';
 import 'player_half.dart';
 import 'seam_controls.dart';
 
@@ -146,6 +147,11 @@ class _ClockScreenState extends State<ClockScreen>
                   ),
                 ],
               ),
+              // El velo tapa las dos mitades, para que el toque no les llegue,
+              // pero queda por debajo de la costura: el botón de pausa y el de
+              // reinicio se siguen pudiendo pulsar con el partido pausado.
+              if (clock.state == MatchState.paused)
+                Positioned.fill(child: PausedVeil(onResume: _togglePause)),
               // La costura solo existe con el partido empezado.
               if (clock.state != MatchState.notStarted)
                 Positioned.fill(

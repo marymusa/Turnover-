@@ -24,6 +24,10 @@
   "@resume": {
     "description": "Etiqueta de accesibilidad del control de pausa, ya pausado"
   },
+  "pausedHint": "Paused. Tap anywhere to resume",
+  "@pausedHint": {
+    "description": "Velo que cubre la pantalla con el partido pausado"
+  },
   "reset": "Reset match",
   "@reset": {
     "description": "Etiqueta de accesibilidad del control de reinicio"

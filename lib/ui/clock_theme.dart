@@ -33,6 +33,15 @@ abstract final class ClockTheme {
   /// lado de la mesa.
   static const inactiveOpacity = 0.3;
 
+  /// El velo de pausa deja ver los relojes por debajo: se pausa para hablar de
+  /// la jugada, y el tiempo se sigue leyendo mientras se habla.
+  static const veilOpacity = 0.82;
+  static const veilTextSize = 19.0;
+
+  /// Lo que el aviso del velo se aparta del centro, para no caer encima de la
+  /// costura, que se sigue pudiendo pulsar por debajo.
+  static const veilTextOffset = 86.0;
+
   static const barHeight = 6.0;
   static const barWidthFactor = 0.74;
 }

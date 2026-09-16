@@ -6,5 +6,6 @@
   "passTurn": "Pasar turno",
   "pause": "Pausar",
   "resume": "Reanudar",
+  "pausedHint": "Pausado. Se reanuda tocando la pantalla",
   "reset": "Reiniciar partido"
 }
