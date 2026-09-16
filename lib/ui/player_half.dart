@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../domain/clock_format.dart';
 import '../l10n/app_localizations.dart';
@@ -25,9 +26,11 @@ class PlayerHalf extends StatelessWidget {
   /// defecto, porque está localizado.
   final String name;
 
-  /// Abre el cambio de nombre. Funciona en cualquier momento, también con el
-  /// partido empezado: el nombre es una etiqueta y no toca ningún reloj.
-  final VoidCallback onRename;
+  /// Abre el cambio de nombre, con una pulsación larga sobre la mitad entera.
+  /// Nulo con el partido empezado: los nombres se pactan con el partido
+  /// parado, y después la mitad es pasar turno y nada más, para que un dedo
+  /// lento no abra un diálogo en mitad del juego.
+  final VoidCallback? onRename;
 
   final Duration turn;
   final Duration reserve;
@@ -44,6 +47,14 @@ class PlayerHalf extends StatelessWidget {
   /// El turno a cero es lo que hace de la reserva el número principal.
   bool get _isTurnSpent => turn <= Duration.zero;
 
+  /// El aviso al dedo va antes del diálogo, que tarda en aparecer: confirma
+  /// que la pulsación ha entrado sin esperar a la animación. Sale por el canal
+  /// normal del sistema, así que respeta su configuración (ADR-0005).
+  void _renameWithFeedback() {
+    HapticFeedback.selectionClick();
+    onRename!();
+  }
+
   @override
   Widget build(BuildContext context) {
     final half = AnimatedOpacity(
@@ -58,7 +69,7 @@ class PlayerHalf extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            _Name(name, onTap: onRename),
+            _Name(name),
             if (!isStarted) _Hint(AppLocalizations.of(context)!.startHint),
             _ClockText(
               formatClock(turn),
@@ -86,6 +97,7 @@ class PlayerHalf extends StatelessWidget {
 
     return GestureDetector(
       onTap: onTap,
+      onLongPress: onRename == null ? null : _renameWithFeedback,
       // El fondo del contenedor ya es opaco, pero el gesto tiene que cubrir
       // la mitad entera y no solo lo que ocupan los números.
       behavior: HitTestBehavior.opaque,
@@ -94,30 +106,26 @@ class PlayerHalf extends StatelessWidget {
   }
 }
 
-/// El nombre, encima de los relojes y tocable por su cuenta. El gesto va aquí
-/// dentro y no en la mitad, de modo que tocar el nombre no pase turno.
+/// El nombre, encima de los relojes. No lleva gesto propio: el de la mitad lo
+/// cubre entero, de modo que tocar aquí pasa turno como en cualquier otro
+/// punto y la pulsación larga renombra.
 class _Name extends StatelessWidget {
-  const _Name(this.text, {required this.onTap});
+  const _Name(this.text);
 
   final String text;
-  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-        child: Text(
-          text,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            fontSize: ClockTheme.nameSize,
-            fontWeight: FontWeight.w600,
-            color: ClockTheme.text.withValues(alpha: 0.75),
-          ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+      child: Text(
+        text,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          fontSize: ClockTheme.nameSize,
+          fontWeight: FontWeight.w600,
+          color: ClockTheme.text.withValues(alpha: 0.75),
         ),
       ),
     );

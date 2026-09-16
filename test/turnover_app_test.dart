@@ -7,6 +7,7 @@ import 'package:turnover/domain/match_clock.dart';
 import 'package:turnover/domain/match_settings.dart';
 import 'package:turnover/main.dart';
 import 'package:turnover/ui/clock_screen.dart';
+import 'package:turnover/ui/player_half.dart';
 
 import 'memory_settings_store.dart';
 
@@ -63,7 +64,7 @@ void main() {
       expect(find.text('Opponent'), findsOneWidget);
     });
 
-    testWidgets('tocar un nombre lo cambia', (tester) async {
+    testWidgets('una pulsación larga en la mitad lo cambia', (tester) async {
       await tester.pumpWidget(_app(store: MemorySettingsStore()));
       await _settle(tester);
 
@@ -73,31 +74,57 @@ void main() {
       expect(find.text('Player 1'), findsNothing);
     });
 
-    // Los nombres son una etiqueta: cambiarlos no toca ningún reloj, así que
-    // no hay ningún momento del partido en el que dejen de poder cambiarse.
-    testWidgets('se puede renombrar con el partido empezado', (tester) async {
+    testWidgets('renombra al jugador de la mitad que se pulsa', (tester) async {
       await tester.pumpWidget(_app(store: MemorySettingsStore()));
       await _settle(tester);
-      _clockOnScreen(tester).start(Player.one);
-      await tester.pump();
 
       await _rename(tester, from: 'Opponent', to: 'Nurgle');
 
       expect(find.text('Nurgle'), findsOneWidget);
+      expect(find.text('Player 1'), findsOneWidget);
+    });
+
+    // Los tiempos y los nombres se pactan con el partido parado: despues, la
+    // mitad es pasar turno y nada mas, para que un dedo lento no abra un
+    // dialogo en mitad del juego.
+    testWidgets('no se renombra con el partido empezado', (tester) async {
+      await tester.pumpWidget(_app(store: MemorySettingsStore()));
+      await _settle(tester);
+      // Se empieza tocando, que es el camino real: es el toque el que hace
+      // que la pantalla se vuelva a pintar sin el gesto de renombrar.
+      await tester.tap(_halfShowing('Player 1'));
+      await _settle(tester);
+
+      await tester.longPress(_halfShowing('Opponent'));
+      await _settle(tester);
+
+      expect(find.text('Change name'), findsNothing);
       expect(_clockOnScreen(tester).state, MatchState.running);
     });
 
-    // Tocar el nombre no puede pasar turno ni elegir quién recibe.
-    testWidgets('tocar el nombre no arranca el partido', (tester) async {
+    // La pulsacion larga no puede elegir quien recibe de paso.
+    testWidgets('la pulsación larga no arranca el partido', (tester) async {
+      await tester.pumpWidget(_app(store: MemorySettingsStore()));
+      await _settle(tester);
+
+      await tester.longPress(_halfShowing('Player 1'));
+      await _settle(tester);
+
+      expect(_clockOnScreen(tester).state, MatchState.notStarted);
+      await tester.tap(find.text('Cancel'));
+      await _settle(tester);
+    });
+
+    // Tocar sigue siendo solo elegir quien recibe, tambien sobre el nombre.
+    testWidgets('tocar el nombre arranca el partido', (tester) async {
       await tester.pumpWidget(_app(store: MemorySettingsStore()));
       await _settle(tester);
 
       await tester.tap(find.text('Player 1'));
       await _settle(tester);
 
-      expect(_clockOnScreen(tester).state, MatchState.notStarted);
-      await tester.tap(find.text('Cancel'));
-      await _settle(tester);
+      expect(find.text('Change name'), findsNothing);
+      expect(_clockOnScreen(tester).activePlayer, Player.one);
     });
 
     testWidgets('el del jugador uno sobrevive a cerrar la aplicación', (
@@ -321,7 +348,7 @@ Future<void> _rename(
   required String to,
   bool confirm = true,
 }) async {
-  await tester.tap(find.text(from));
+  await tester.longPress(_halfShowing(from));
   await _settle(tester);
   await tester.enterText(find.byType(TextField), to);
   await tester.tap(find.text(confirm ? 'Save' : 'Cancel'));
@@ -329,6 +356,11 @@ Future<void> _rename(
 }
 
 final _resetControl = find.bySemanticsLabel('Reset timer');
+
+/// La mitad que pinta ese nombre. La pulsacion larga va sobre la mitad entera,
+/// asi que hay que apuntar a ella y no al texto.
+Finder _halfShowing(String name) =>
+    find.ancestor(of: find.text(name), matching: find.byType(PlayerHalf));
 
 /// Arranca el partido y gasta un rato, que es el estado desde el que reiniciar
 /// significa algo: con los relojes intactos no se distingue de no hacer nada.

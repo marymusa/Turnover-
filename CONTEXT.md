@@ -53,15 +53,17 @@ vibración (una, dos y tres pulsaciones).
   corre el reloj.
 - La pantalla se mantiene encendida mientras un reloj corre, y se libera al pausar.
 - Los tres tiempos (turno, reserva y aviso previo) se configuran en una pantalla propia,
-  a la que solo se llega antes de empezar: los tiempos se pactan con el partido parado.
-  Lo que sí se cambia con el partido en curso son los nombres, que son una etiqueta y no
-  tocan ningún reloj (ADR-0006).
+  a la que solo se llega antes de empezar: los tiempos se pactan con el partido parado
+  (ADR-0006). Los nombres se pactan igual, y por la misma razón: con el partido en marcha
+  la pantalla no ofrece nada que no sea jugar.
 - Un cambio de tiempos redimensiona, no reinicia: lo ya gastado se conserva, de modo que
   ampliar la reserva de quince a veinte minutos con seis gastados deja catorce. Es la
   regla del reloj y vale siempre, aunque a los ajustes solo se llegue antes de empezar.
-- Los nombres son una etiqueta: se cambian tocándolos, en cualquier momento y sin
-  ceremonia, y no tocan ningún reloj. Por defecto "Jugador 1" y "Oponente", localizados.
-  Borrar el nombre entero devuelve al valor por defecto.
+- Los nombres son una etiqueta y no tocan ningún reloj, pero solo se cambian antes de
+  empezar, con una pulsación larga sobre la mitad del jugador. La mitad ya sirve para
+  pasar turno, que es un toque, y los dos gestos no pueden convivir con el partido en
+  marcha: un dedo lento abriría un diálogo en mitad del juego. Por defecto "Jugador 1" y
+  "Oponente", localizados. Borrar el nombre entero devuelve al valor por defecto.
 - Lo que se guarda en el dispositivo son los tres tiempos y el nombre del jugador uno,
   y nada más: ni relojes, ni partido en curso, ni historial (ADR-0003). Al reiniciar el
   cronómetro, el del jugador dos vuelve a su valor por defecto.

@@ -141,8 +141,9 @@ class _ClockScreenState extends State<ClockScreen>
     _ticker.refresh();
   }
 
-  /// Cambiar el nombre no toca ningún reloj, así que no refresca el ticker ni
-  /// mira en qué estado está el partido.
+  /// Cambiar el nombre no toca ningún reloj, así que no refresca el ticker.
+  /// Quien decide cuándo se puede es la mitad, que solo ofrece el gesto con el
+  /// partido sin empezar.
   Future<void> _rename(Player player) async {
     final name = await askForName(
       context,
@@ -172,6 +173,8 @@ class _ClockScreenState extends State<ClockScreen>
       body: SafeArea(
         child: ListenableBuilder(
           listenable: Listenable.merge([_ticker, widget.names]),
+          // Todo lo que dependa del estado del partido se lee aquí dentro: lo
+          // que se calcule fuera se queda con el valor del primer pintado.
           builder: (context, _) => Stack(
             children: [
               Column(
@@ -182,7 +185,7 @@ class _ClockScreenState extends State<ClockScreen>
                     player: Player.two,
                     isUpsideDown: true,
                     onTap: _tapHalf,
-                    onRename: _rename,
+                    onRename: clock.state == MatchState.notStarted ? _rename : null,
                   ),
                   _Half(
                     clock: clock,
@@ -190,7 +193,7 @@ class _ClockScreenState extends State<ClockScreen>
                     player: Player.one,
                     isUpsideDown: false,
                     onTap: _tapHalf,
-                    onRename: _rename,
+                    onRename: clock.state == MatchState.notStarted ? _rename : null,
                   ),
                 ],
               ),
@@ -254,7 +257,9 @@ class _Half extends StatelessWidget {
   final Player player;
   final bool isUpsideDown;
   final void Function(Player) onTap;
-  final void Function(Player) onRename;
+
+  /// Nulo con el partido empezado: renombrar se pacta antes de empezar.
+  final void Function(Player)? onRename;
 
   @override
   Widget build(BuildContext context) {
@@ -263,7 +268,7 @@ class _Half extends StatelessWidget {
     return Expanded(
       child: PlayerHalf(
         name: name,
-        onRename: () => onRename(player),
+        onRename: onRename == null ? null : () => onRename!(player),
         turn: clock.turnOf(player),
         reserve: clock.reserveOf(player),
         remainingFraction: clock.remainingFractionOf(player),
