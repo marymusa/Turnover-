@@ -180,6 +180,61 @@ void main() {
     });
   });
 
+  group('el botón de volver', () {
+    // Sin interceptar, volver saca la única ruta de la pila y Android termina
+    // la actividad: el proceso muere y el partido, que solo vive en memoria,
+    // se pierde entero (ADR-0003). Se parecía a un reinicio y no lo era.
+
+    testWidgets('antes de empezar sale sin preguntar', (tester) async {
+      await tester.pumpWidget(_app(store: MemorySettingsStore()));
+      await _settle(tester);
+
+      await _pressBack(tester);
+
+      expect(find.text('Leave the match?'), findsNothing);
+    });
+
+    testWidgets('con el partido empezado pide confirmación', (tester) async {
+      await tester.pumpWidget(_app(store: MemorySettingsStore()));
+      await _settle(tester);
+      await _startAndSpend(tester);
+
+      await _pressBack(tester);
+
+      expect(find.text('Leave the match?'), findsOneWidget);
+      expect(
+        find.textContaining('The match in progress will be lost'),
+        findsOneWidget,
+      );
+    });
+
+    // Lo que hace que valga la pena preguntar: el reloj se detiene mientras se
+    // decide, para que pensárselo no le cueste tiempo al jugador activo.
+    testWidgets('preguntar pausa el partido', (tester) async {
+      await tester.pumpWidget(_app(store: MemorySettingsStore()));
+      await _settle(tester);
+      await _startAndSpend(tester);
+
+      await _pressBack(tester);
+
+      expect(_clockOnScreen(tester).state, MatchState.paused);
+    });
+
+    testWidgets('cancelar deja el partido donde estaba', (tester) async {
+      await tester.pumpWidget(_app(store: MemorySettingsStore()));
+      await _settle(tester);
+      await _startAndSpend(tester);
+      final spent = _clockOnScreen(tester).turnOf(Player.one);
+
+      await _pressBack(tester);
+      await tester.tap(find.text('Cancel'));
+      await _settle(tester);
+
+      expect(find.text('Leave the match?'), findsNothing);
+      expect(_clockOnScreen(tester).turnOf(Player.one), spent);
+    });
+  });
+
   group('los ajustes', () {
     // El acceso se abría con el context de TurnoverApp, que está por encima
     // del MaterialApp y no tiene Navigator debajo: pulsar el botón reventaba y
@@ -282,7 +337,10 @@ void main() {
       // Y el toque siguiente vuelve a elegir quién recibe: la invitación de
       // cada mitad ha vuelto, que es la señal de que el partido no ha
       // empezado.
-      expect(find.text('Whoever taps here receives the ball'), findsNWidgets(2));
+      expect(
+        find.text('Whoever taps here receives the ball'),
+        findsNWidgets(2),
+      );
       await tester.tap(find.text('Whoever taps here receives the ball').last);
       await _settle(tester);
       expect(_clockOnScreen(tester).activePlayer, Player.one);
@@ -369,6 +427,14 @@ Future<void> _rename(
   await _settle(tester);
   await tester.enterText(find.byType(TextField), to);
   await tester.tap(find.text(confirm ? 'Save' : 'Cancel'));
+  await _settle(tester);
+}
+
+/// El botón de volver de Android, por el mismo camino que lo recibe la
+/// aplicación de verdad: el mensaje de la plataforma, no una llamada al
+/// Navigator.
+Future<void> _pressBack(WidgetTester tester) async {
+  await tester.binding.handlePopRoute();
   await _settle(tester);
 }
 

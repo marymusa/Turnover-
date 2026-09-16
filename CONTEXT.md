@@ -57,6 +57,10 @@ pulsaciones: lo que sube con la gravedad es la fuerza del golpe, no cuántos son
 - La aplicación solo cuenta el tiempo en primer plano. Si se cierra o pasa a
   segundo plano, el tiempo se pausa. El compromiso es no tocar el móvil mientras
   corre el reloj.
+- Volver atrás con el partido empezado no es pausar: cierra la aplicación, y el partido
+  no se guarda en ninguna parte (ADR-0003), así que se pierde entero. Por eso se pausa y
+  se pregunta antes, describiendo lo que se pierde. Sin empezar no hay nada que perder y
+  se sale sin más.
 - La pantalla se mantiene encendida mientras un reloj corre, y se libera al pausar.
 - Los tres tiempos (turno, reserva y aviso previo) se configuran en una pantalla propia,
   a la que solo se llega antes de empezar: los tiempos se pactan con el partido parado

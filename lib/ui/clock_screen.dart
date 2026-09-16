@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart';
 
 import '../domain/alert_player.dart';
 import '../domain/awake_guard.dart';
@@ -10,6 +11,7 @@ import '../domain/match_ticker.dart';
 import '../domain/player_names.dart';
 import '../l10n/app_localizations.dart';
 import 'clock_theme.dart';
+import 'leave_dialog.dart';
 import 'paused_veil.dart';
 import 'player_half.dart';
 import 'rename_dialog.dart';
@@ -165,67 +167,94 @@ class _ClockScreenState extends State<ClockScreen>
     _ticker.refresh();
   }
 
+  /// Volver con el partido empezado no pausa: cierra la aplicación, y con ella
+  /// se va el partido, que no se guarda en ninguna parte (ADR-0003). Como el
+  /// gesto no dice nada de eso, se pregunta antes.
+  ///
+  /// Se pausa mientras se decide, porque el reloj del jugador activo seguiría
+  /// corriendo durante el diálogo y pensárselo le costaría tiempo. Si se queda,
+  /// sigue pausado: reanudar es suyo, y el velo ya dice cómo.
+  Future<void> _leave(bool didPop) async {
+    if (didPop) return;
+    _clock.pause();
+    _ticker.refresh();
+    if (await askToLeave(context)) await SystemNavigator.pop();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final clock = _clock;
-    return Scaffold(
-      backgroundColor: ClockTheme.background,
-      body: SafeArea(
-        child: ListenableBuilder(
-          listenable: Listenable.merge([_ticker, widget.names]),
-          // Todo lo que dependa del estado del partido se lee aquí dentro: lo
-          // que se calcule fuera se queda con el valor del primer pintado.
-          builder: (context, _) => Stack(
-            children: [
-              Column(
+    return ListenableBuilder(
+      listenable: Listenable.merge([_ticker, widget.names]),
+      // Todo lo que dependa del estado del partido se lee aquí dentro: lo
+      // que se calcule fuera se queda con el valor del primer pintado. El
+      // PopScope entra también, que por quedarse fuera nacía con el partido
+      // sin empezar y dejaba salir sin preguntar.
+      builder: (context, _) {
+        final clock = _clock;
+        return PopScope(
+          // Antes de empezar no hay nada que perder: volver sale sin más.
+          canPop: clock.state == MatchState.notStarted,
+          onPopInvokedWithResult: (didPop, _) => unawaited(_leave(didPop)),
+          child: Scaffold(
+            backgroundColor: ClockTheme.background,
+            body: SafeArea(
+              child: Stack(
                 children: [
-                  _Half(
-                    clock: clock,
-                    name: _nameOf(context, Player.two),
-                    player: Player.two,
-                    isUpsideDown: true,
-                    onTap: _tapHalf,
-                    onRename: clock.state == MatchState.notStarted ? _rename : null,
+                  Column(
+                    children: [
+                      _Half(
+                        clock: clock,
+                        name: _nameOf(context, Player.two),
+                        player: Player.two,
+                        isUpsideDown: true,
+                        onTap: _tapHalf,
+                        onRename: clock.state == MatchState.notStarted
+                            ? _rename
+                            : null,
+                      ),
+                      _Half(
+                        clock: clock,
+                        name: _nameOf(context, Player.one),
+                        player: Player.one,
+                        isUpsideDown: false,
+                        onTap: _tapHalf,
+                        onRename: clock.state == MatchState.notStarted
+                            ? _rename
+                            : null,
+                      ),
+                    ],
                   ),
-                  _Half(
-                    clock: clock,
-                    name: _nameOf(context, Player.one),
-                    player: Player.one,
-                    isUpsideDown: false,
-                    onTap: _tapHalf,
-                    onRename: clock.state == MatchState.notStarted ? _rename : null,
-                  ),
+                  // El acceso a los ajustes solo existe antes de empezar: con el
+                  // partido en marcha no hay ningún tiempo que tocar sin querer.
+                  if (clock.state == MatchState.notStarted)
+                    Positioned(
+                      top: 0,
+                      right: 0,
+                      child: SettingsButton(onPressed: widget.onOpenSettings),
+                    ),
+                  // El velo tapa las dos mitades, para que el toque no les llegue,
+                  // pero queda por debajo de la costura: el botón de pausa y el de
+                  // reinicio se siguen pudiendo pulsar con el partido pausado.
+                  if (clock.state == MatchState.paused)
+                    Positioned.fill(child: PausedVeil(onResume: _togglePause)),
+                  // La costura solo existe con el partido empezado.
+                  if (clock.state != MatchState.notStarted)
+                    Positioned.fill(
+                      child: Center(
+                        child: SeamControls(
+                          isPaused: clock.state == MatchState.paused,
+                          onPassTurn: _passTurn,
+                          onTogglePause: _togglePause,
+                          onReset: _reset,
+                        ),
+                      ),
+                    ),
                 ],
               ),
-              // El acceso a los ajustes solo existe antes de empezar: con el
-              // partido en marcha no hay ningún tiempo que tocar sin querer.
-              if (clock.state == MatchState.notStarted)
-                Positioned(
-                  top: 0,
-                  right: 0,
-                  child: SettingsButton(onPressed: widget.onOpenSettings),
-                ),
-              // El velo tapa las dos mitades, para que el toque no les llegue,
-              // pero queda por debajo de la costura: el botón de pausa y el de
-              // reinicio se siguen pudiendo pulsar con el partido pausado.
-              if (clock.state == MatchState.paused)
-                Positioned.fill(child: PausedVeil(onResume: _togglePause)),
-              // La costura solo existe con el partido empezado.
-              if (clock.state != MatchState.notStarted)
-                Positioned.fill(
-                  child: Center(
-                    child: SeamControls(
-                      isPaused: clock.state == MatchState.paused,
-                      onPassTurn: _passTurn,
-                      onTogglePause: _togglePause,
-                      onReset: _reset,
-                    ),
-                  ),
-                ),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 

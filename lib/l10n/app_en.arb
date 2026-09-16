@@ -82,6 +82,18 @@
   "@resetConfirm": {
     "description": "Botón que confirma el reinicio en el diálogo"
   },
+  "leaveTitle": "Leave the match?",
+  "@leaveTitle": {
+    "description": "Título del diálogo que confirma salir con el partido empezado"
+  },
+  "leaveBody": "The match in progress will be lost: the app does not save the clocks. The configured times and your own name are kept.",
+  "@leaveBody": {
+    "description": "Consecuencia de salir, que el diálogo describe antes de cerrar nada"
+  },
+  "leaveConfirm": "Leave",
+  "@leaveConfirm": {
+    "description": "Botón que confirma salir del partido en el diálogo"
+  },
   "playerOne": "Me",
   "@playerOne": {
     "description": "Nombre por defecto del dueño del móvil, fijado en el ADR-0003"
