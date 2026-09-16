@@ -16,5 +16,11 @@
   "settingsWarningHint": "Bocina antes de que se agote el turno",
   "minutes": "{count} min",
   "seconds": "{count} s",
-  "reset": "Reiniciar cronómetro"
+  "reset": "Reiniciar cronómetro",
+  "playerOne": "Jugador 1",
+  "playerTwo": "Oponente",
+  "rename": "Cambiar nombre",
+  "renameHint": "ej. Iván",
+  "cancel": "Cancelar",
+  "save": "Guardar"
 }

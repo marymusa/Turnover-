@@ -69,5 +69,29 @@
   "reset": "Reset timer",
   "@reset": {
     "description": "Etiqueta de accesibilidad del control de reinicio"
+  },
+  "playerOne": "Player 1",
+  "@playerOne": {
+    "description": "Nombre por defecto del dueño del móvil, fijado en el ADR-0003"
+  },
+  "playerTwo": "Opponent",
+  "@playerTwo": {
+    "description": "Nombre por defecto del jugador dos, al que se vuelve al reiniciar"
+  },
+  "rename": "Change name",
+  "@rename": {
+    "description": "Título del diálogo que cambia el nombre de un jugador"
+  },
+  "renameHint": "e.g. Ivan",
+  "@renameHint": {
+    "description": "Ejemplo dentro del campo de texto del diálogo de renombrar"
+  },
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "Botón que cierra el diálogo de renombrar sin cambiar nada"
+  },
+  "save": "Save",
+  "@save": {
+    "description": "Botón que confirma el nombre nuevo"
   }
 }

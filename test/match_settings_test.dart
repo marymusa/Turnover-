@@ -2,10 +2,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:turnover/domain/match_clock.dart';
 import 'package:turnover/domain/match_settings.dart';
 
+import 'memory_settings_store.dart';
+
 void main() {
   group('los ajustes', () {
     test('sin nada guardado son los del glosario', () async {
-      final settings = MatchSettings(_MemoryStore());
+      final settings = MatchSettings(MemorySettingsStore());
 
       await settings.load();
 
@@ -15,7 +17,7 @@ void main() {
     });
 
     test('lo guardado se lee en el arranque siguiente', () async {
-      final store = _MemoryStore();
+      final store = MemorySettingsStore();
       await MatchSettings(store).save(
         turn: const Duration(minutes: 5),
         reserve: const Duration(minutes: 20),
@@ -31,7 +33,7 @@ void main() {
     });
 
     test('guardar un solo tiempo deja los otros como estaban', () async {
-      final store = _MemoryStore();
+      final store = MemorySettingsStore();
       final settings = MatchSettings(store);
       await settings.load();
 
@@ -42,7 +44,7 @@ void main() {
     });
 
     test('avisa a quien escuche al guardar', () async {
-      final settings = MatchSettings(_MemoryStore());
+      final settings = MatchSettings(MemorySettingsStore());
       var notices = 0;
       settings.addListener(() => notices++);
 
@@ -57,7 +59,7 @@ void main() {
     // que se prueba aquí es el cable: que un cambio de ajustes llegue al
     // partido en curso sin que nadie lo empuje a mano.
     test('un cambio llega al partido en curso', () async {
-      final settings = MatchSettings(_MemoryStore());
+      final settings = MatchSettings(MemorySettingsStore());
       final clock = MatchClock(
         turn: defaultTurn,
         reserve: defaultReserve,
@@ -71,7 +73,7 @@ void main() {
     });
 
     test('cambiar el turno a media jugada no lo reinicia', () async {
-      final settings = MatchSettings(_MemoryStore());
+      final settings = MatchSettings(MemorySettingsStore());
       final clock = MatchClock(
         turn: defaultTurn,
         reserve: defaultReserve,
@@ -88,7 +90,7 @@ void main() {
     });
 
     test('ampliar la reserva conserva lo gastado', () async {
-      final settings = MatchSettings(_MemoryStore());
+      final settings = MatchSettings(MemorySettingsStore());
       final clock = MatchClock(
         turn: defaultTurn,
         reserve: defaultReserve,
@@ -104,16 +106,4 @@ void main() {
       expect(clock.reserveOf(Player.one), const Duration(minutes: 14));
     });
   });
-}
-
-class _MemoryStore implements SettingsStore {
-  final Map<String, int> _values = {};
-
-  @override
-  Future<int?> readSeconds(String key) async => _values[key];
-
-  @override
-  Future<void> writeSeconds(String key, int seconds) async {
-    _values[key] = seconds;
-  }
 }

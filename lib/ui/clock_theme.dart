@@ -21,6 +21,9 @@ abstract final class ClockTheme {
   static const reserveSize = 26.0;
   static const reserveSizeSpent = 60.0;
 
+  /// El nombre se lee, pero no compite con los relojes: es una etiqueta.
+  static const nameSize = 16.0;
+
   static const passTurnSize = 74.0;
   static const passTurnIconSize = 30.0;
   static const advancedSize = 40.0;

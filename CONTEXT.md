@@ -59,8 +59,12 @@ vibración (una, dos y tres pulsaciones).
 - Un cambio de tiempos redimensiona, no reinicia: lo ya gastado se conserva, de modo que
   ampliar la reserva de quince a veinte minutos con seis gastados deja catorce. Es la
   regla del reloj y vale siempre, aunque a los ajustes solo se llegue antes de empezar.
+- Los nombres son una etiqueta: se cambian tocándolos, en cualquier momento y sin
+  ceremonia, y no tocan ningún reloj. Por defecto "Jugador 1" y "Oponente", localizados.
+  Borrar el nombre entero devuelve al valor por defecto.
 - Lo que se guarda en el dispositivo son los tres tiempos y el nombre del jugador uno,
-  y nada más: ni relojes, ni partido en curso, ni historial (ADR-0003).
+  y nada más: ni relojes, ni partido en curso, ni historial (ADR-0003). Al reiniciar el
+  cronómetro, el del jugador dos vuelve a su valor por defecto.
 
 ## Fuera del alcance
 

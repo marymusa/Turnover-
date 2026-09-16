@@ -17,4 +17,12 @@ class PlatformSettingsStore implements SettingsStore {
   @override
   Future<void> writeSeconds(String key, int seconds) =>
       _preferences.setInt(key, seconds);
+
+  @override
+  Future<String?> readText(String key) => _preferences.getString(key);
+
+  @override
+  Future<void> writeText(String key, String? text) => text == null
+      ? _preferences.remove(key)
+      : _preferences.setString(key, text);
 }

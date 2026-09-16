@@ -7,6 +7,7 @@ import 'domain/alert_player.dart';
 import 'domain/awake_guard.dart';
 import 'domain/match_clock.dart';
 import 'domain/match_settings.dart';
+import 'domain/player_names.dart';
 import 'l10n/app_localizations.dart';
 import 'platform/platform_alert_device.dart';
 import 'platform/platform_screen.dart';
@@ -57,6 +58,7 @@ class TurnoverApp extends StatefulWidget {
 
 class _TurnoverAppState extends State<TurnoverApp> {
   late final MatchSettings _settings = MatchSettings(widget.store);
+  late final PlayerNames _names = PlayerNames(widget.store);
 
   /// Nace con los valores por defecto y lo guardado lo alcanza en cuanto se
   /// lee, por el mismo camino que cualquier cambio posterior: redimensionando.
@@ -74,12 +76,14 @@ class _TurnoverAppState extends State<TurnoverApp> {
     super.initState();
     _unbindSettings = applySettingsTo(_clock, _settings);
     unawaited(_settings.load());
+    unawaited(_names.load());
   }
 
   @override
   void dispose() {
     _unbindSettings();
     _settings.dispose();
+    _names.dispose();
     super.dispose();
   }
 
@@ -94,6 +98,7 @@ class _TurnoverAppState extends State<TurnoverApp> {
         alerts: widget.alerts,
         screen: widget.screen,
         clock: _clock,
+        names: _names,
         onOpenSettings: _openSettings,
       ),
     );

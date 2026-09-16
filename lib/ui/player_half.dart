@@ -4,11 +4,13 @@ import '../domain/clock_format.dart';
 import '../l10n/app_localizations.dart';
 import 'clock_theme.dart';
 
-/// La mitad de un jugador: el turno grande, la reserva debajo y la barra del
-/// reloj que corre. La de arriba se gira 180 grados para que cada jugador lea
-/// la suya de frente.
+/// La mitad de un jugador: su nombre, el turno grande, la reserva debajo y la
+/// barra del reloj que corre. La de arriba se gira 180 grados para que cada
+/// jugador lea la suya de frente.
 class PlayerHalf extends StatelessWidget {
   const PlayerHalf({
+    required this.name,
+    required this.onRename,
     required this.turn,
     required this.reserve,
     required this.remainingFraction,
@@ -18,6 +20,14 @@ class PlayerHalf extends StatelessWidget {
     required this.onTap,
     super.key,
   });
+
+  /// El nombre ya resuelto: quien pinta es quien sabe cuál es el valor por
+  /// defecto, porque está localizado.
+  final String name;
+
+  /// Abre el cambio de nombre. Funciona en cualquier momento, también con el
+  /// partido empezado: el nombre es una etiqueta y no toca ningún reloj.
+  final VoidCallback onRename;
 
   final Duration turn;
   final Duration reserve;
@@ -48,6 +58,7 @@ class PlayerHalf extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
+            _Name(name, onTap: onRename),
             if (!isStarted) _Hint(AppLocalizations.of(context)!.startHint),
             _ClockText(
               formatClock(turn),
@@ -79,6 +90,36 @@ class PlayerHalf extends StatelessWidget {
       // la mitad entera y no solo lo que ocupan los números.
       behavior: HitTestBehavior.opaque,
       child: isUpsideDown ? RotatedBox(quarterTurns: 2, child: half) : half,
+    );
+  }
+}
+
+/// El nombre, encima de los relojes y tocable por su cuenta. El gesto va aquí
+/// dentro y no en la mitad, de modo que tocar el nombre no pase turno.
+class _Name extends StatelessWidget {
+  const _Name(this.text, {required this.onTap});
+
+  final String text;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+        child: Text(
+          text,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            fontSize: ClockTheme.nameSize,
+            fontWeight: FontWeight.w600,
+            color: ClockTheme.text.withValues(alpha: 0.75),
+          ),
+        ),
+      ),
     );
   }
 }

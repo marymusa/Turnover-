@@ -23,6 +23,13 @@ abstract interface class SettingsStore {
   Future<int?> readSeconds(String key);
 
   Future<void> writeSeconds(String key, int seconds);
+
+  /// Nulo si nunca se ha guardado nada bajo esa clave.
+  Future<String?> readText(String key);
+
+  /// Escribir nulo borra la clave, que es lo que distingue no haber guardado
+  /// nada de haber guardado la cadena vacía.
+  Future<void> writeText(String key, String? text);
 }
 
 /// Las claves con las que cada tiempo vive en el almacén. Cambiarlas pierde lo

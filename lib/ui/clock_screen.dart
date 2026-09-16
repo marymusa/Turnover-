@@ -7,9 +7,12 @@ import '../domain/alert_player.dart';
 import '../domain/awake_guard.dart';
 import '../domain/match_clock.dart';
 import '../domain/match_ticker.dart';
+import '../domain/player_names.dart';
+import '../l10n/app_localizations.dart';
 import 'clock_theme.dart';
 import 'paused_veil.dart';
 import 'player_half.dart';
+import 'rename_dialog.dart';
 import 'settings_button.dart';
 import 'seam_controls.dart';
 
@@ -18,6 +21,7 @@ import 'seam_controls.dart';
 class ClockScreen extends StatefulWidget {
   const ClockScreen({
     required this.clock,
+    required this.names,
     required this.alerts,
     required this.screen,
     required this.onOpenSettings,
@@ -25,6 +29,10 @@ class ClockScreen extends StatefulWidget {
   });
 
   final MatchClock clock;
+
+  /// Los nombres de los dos jugadores. Se cambian desde aquí en cualquier
+  /// momento, también con el partido empezado.
+  final PlayerNames names;
 
   /// Quien convierte en sonido y vibración lo que emite el reloj. El reloj no
   /// lo conoce: los eventos pasan por aquí.
@@ -132,6 +140,17 @@ class _ClockScreenState extends State<ClockScreen>
     _ticker.refresh();
   }
 
+  /// Cambiar el nombre no toca ningún reloj, así que no refresca el ticker ni
+  /// mira en qué estado está el partido.
+  Future<void> _rename(Player player) async {
+    final name = await askForName(
+      context,
+      current: widget.names.nameOf(player),
+    );
+    if (name == null) return;
+    await widget.names.rename(player, name);
+  }
+
   @override
   Widget build(BuildContext context) {
     final clock = _clock;
@@ -139,22 +158,26 @@ class _ClockScreenState extends State<ClockScreen>
       backgroundColor: ClockTheme.background,
       body: SafeArea(
         child: ListenableBuilder(
-          listenable: _ticker,
+          listenable: Listenable.merge([_ticker, widget.names]),
           builder: (context, _) => Stack(
             children: [
               Column(
                 children: [
                   _Half(
                     clock: clock,
+                    name: _nameOf(context, Player.two),
                     player: Player.two,
                     isUpsideDown: true,
                     onTap: _tapHalf,
+                    onRename: _rename,
                   ),
                   _Half(
                     clock: clock,
+                    name: _nameOf(context, Player.one),
                     player: Player.one,
                     isUpsideDown: false,
                     onTap: _tapHalf,
+                    onRename: _rename,
                   ),
                 ],
               ),
@@ -192,21 +215,36 @@ class _ClockScreenState extends State<ClockScreen>
       ),
     );
   }
+
+  /// Resuelve aquí el nombre por defecto, que está localizado y por eso no
+  /// puede vivir en [PlayerNames].
+  String _nameOf(BuildContext context, Player player) {
+    final strings = AppLocalizations.of(context)!;
+    return widget.names.nameOf(player) ??
+        switch (player) {
+          Player.one => strings.playerOne,
+          Player.two => strings.playerTwo,
+        };
+  }
 }
 
 /// Lee del reloj lo que le toca a un jugador y se lo pasa a [PlayerHalf].
 class _Half extends StatelessWidget {
   const _Half({
     required this.clock,
+    required this.name,
     required this.player,
     required this.isUpsideDown,
     required this.onTap,
+    required this.onRename,
   });
 
   final MatchClock clock;
+  final String name;
   final Player player;
   final bool isUpsideDown;
   final void Function(Player) onTap;
+  final void Function(Player) onRename;
 
   @override
   Widget build(BuildContext context) {
@@ -214,6 +252,8 @@ class _Half extends StatelessWidget {
     // mitades tienen que repartirse la pantalla por igual.
     return Expanded(
       child: PlayerHalf(
+        name: name,
+        onRename: () => onRename(player),
         turn: clock.turnOf(player),
         reserve: clock.reserveOf(player),
         remainingFraction: clock.remainingFractionOf(player),
