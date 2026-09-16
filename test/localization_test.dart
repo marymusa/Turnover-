@@ -45,12 +45,12 @@ void main() {
 
     test('los nombres por defecto están en los dos idiomas', () {
       final es = lookupAppLocalizations(const Locale('es'));
-      expect(es.playerOne, 'Jugador 1');
-      expect(es.playerTwo, 'Oponente');
+      expect(es.playerOne, 'Yo');
+      expect(es.playerTwo, 'Mi rival');
 
       final en = lookupAppLocalizations(const Locale('en'));
-      expect(en.playerOne, 'Player 1');
-      expect(en.playerTwo, 'Opponent');
+      expect(en.playerOne, 'Me');
+      expect(en.playerTwo, 'My opponent');
     });
 
     test('el nombre visible no se traduce', () {

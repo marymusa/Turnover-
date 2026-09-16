@@ -74,7 +74,7 @@
   "@resetTitle": {
     "description": "Título del diálogo que confirma el reinicio"
   },
-  "resetBody": "The match in progress will be lost, the clocks will go back to their initial value and the opponent's name will go back to the default. The configured times and player 1's name are kept.",
+  "resetBody": "The match in progress will be lost, the clocks will go back to their initial value and your opponent's name will go back to the default. The configured times and your own name are kept.",
   "@resetBody": {
     "description": "Consecuencia del reinicio, que el diálogo describe antes de hacer nada"
   },
@@ -82,11 +82,11 @@
   "@resetConfirm": {
     "description": "Botón que confirma el reinicio en el diálogo"
   },
-  "playerOne": "Player 1",
+  "playerOne": "Me",
   "@playerOne": {
     "description": "Nombre por defecto del dueño del móvil, fijado en el ADR-0003"
   },
-  "playerTwo": "Opponent",
+  "playerTwo": "My opponent",
   "@playerTwo": {
     "description": "Nombre por defecto del jugador dos, al que se vuelve al reiniciar"
   },

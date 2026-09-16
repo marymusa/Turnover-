@@ -62,8 +62,10 @@ vibración (una, dos y tres pulsaciones).
 - Los nombres son una etiqueta y no tocan ningún reloj, pero solo se cambian antes de
   empezar, con una pulsación larga sobre la mitad del jugador. La mitad ya sirve para
   pasar turno, que es un toque, y los dos gestos no pueden convivir con el partido en
-  marcha: un dedo lento abriría un diálogo en mitad del juego. Por defecto "Jugador 1" y
-  "Oponente", localizados. Borrar el nombre entero devuelve al valor por defecto.
+  marcha: un dedo lento abriría un diálogo en mitad del juego. Por defecto "Yo" y
+  "Mi rival", localizados: el móvil es de uno de los dos y los nombres lo dicen, en vez
+  de numerar a dos jugadores intercambiables. Borrar el nombre entero devuelve al valor
+  por defecto.
 - Lo que se guarda en el dispositivo son los tres tiempos y el nombre del jugador uno,
   y nada más: ni relojes, ni partido en curso, ni historial (ADR-0003). Al reiniciar el
   cronómetro, el del jugador dos vuelve a su valor por defecto.

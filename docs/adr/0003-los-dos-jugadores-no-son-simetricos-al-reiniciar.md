@@ -16,8 +16,12 @@ la liga y siempre con el mismo nombre. El otro es un oponente diferente cada vez
 El jugador 1 es el dueño del móvil y su nombre se guarda en el dispositivo. Sobrevive
 a reiniciar el cronómetro y a cerrar la aplicación.
 
-El jugador 2 vuelve a su nombre por defecto, "Oponente", cada vez que se reinicia el
+El jugador 2 vuelve a su nombre por defecto, "Mi rival", cada vez que se reinicia el
 cronómetro.
+
+Los valores por defecto son "Yo" y "Mi rival", no "Jugador 1" y "Jugador 2". Numerarlos
+los presenta como dos jugadores intercambiables, que es justo lo que esta decisión dice
+que no son: el móvil es de uno de los dos.
 
 Al reiniciar se ponen a cero los relojes, se conserva la configuración de tiempos y
 se conserva el nombre del jugador 1.

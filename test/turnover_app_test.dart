@@ -60,28 +60,28 @@ void main() {
       await tester.pumpWidget(_app(store: MemorySettingsStore()));
       await _settle(tester);
 
-      expect(find.text('Player 1'), findsOneWidget);
-      expect(find.text('Opponent'), findsOneWidget);
+      expect(find.text('Me'), findsOneWidget);
+      expect(find.text('My opponent'), findsOneWidget);
     });
 
     testWidgets('una pulsación larga en la mitad lo cambia', (tester) async {
       await tester.pumpWidget(_app(store: MemorySettingsStore()));
       await _settle(tester);
 
-      await _rename(tester, from: 'Player 1', to: 'Ivan');
+      await _rename(tester, from: 'Me', to: 'Ivan');
 
       expect(find.text('Ivan'), findsOneWidget);
-      expect(find.text('Player 1'), findsNothing);
+      expect(find.text('Me'), findsNothing);
     });
 
     testWidgets('renombra al jugador de la mitad que se pulsa', (tester) async {
       await tester.pumpWidget(_app(store: MemorySettingsStore()));
       await _settle(tester);
 
-      await _rename(tester, from: 'Opponent', to: 'Nurgle');
+      await _rename(tester, from: 'My opponent', to: 'Nurgle');
 
       expect(find.text('Nurgle'), findsOneWidget);
-      expect(find.text('Player 1'), findsOneWidget);
+      expect(find.text('Me'), findsOneWidget);
     });
 
     // Los tiempos y los nombres se pactan con el partido parado: despues, la
@@ -92,10 +92,10 @@ void main() {
       await _settle(tester);
       // Se empieza tocando, que es el camino real: es el toque el que hace
       // que la pantalla se vuelva a pintar sin el gesto de renombrar.
-      await tester.tap(_halfShowing('Player 1'));
+      await tester.tap(_halfShowing('Me'));
       await _settle(tester);
 
-      await tester.longPress(_halfShowing('Opponent'));
+      await tester.longPress(_halfShowing('My opponent'));
       await _settle(tester);
 
       expect(find.text('Change name'), findsNothing);
@@ -107,7 +107,7 @@ void main() {
       await tester.pumpWidget(_app(store: MemorySettingsStore()));
       await _settle(tester);
 
-      await tester.longPress(_halfShowing('Player 1'));
+      await tester.longPress(_halfShowing('Me'));
       await _settle(tester);
 
       expect(_clockOnScreen(tester).state, MatchState.notStarted);
@@ -120,7 +120,7 @@ void main() {
       await tester.pumpWidget(_app(store: MemorySettingsStore()));
       await _settle(tester);
 
-      await tester.tap(find.text('Player 1'));
+      await tester.tap(find.text('Me'));
       await _settle(tester);
 
       expect(find.text('Change name'), findsNothing);
@@ -133,7 +133,7 @@ void main() {
       final store = MemorySettingsStore();
       await tester.pumpWidget(_app(store: store));
       await _settle(tester);
-      await _rename(tester, from: 'Player 1', to: 'Ivan');
+      await _rename(tester, from: 'Me', to: 'Ivan');
 
       await tester.pumpWidget(_app(store: store, key: const Key('again')));
       await _settle(tester);
@@ -147,12 +147,12 @@ void main() {
       final store = MemorySettingsStore();
       await tester.pumpWidget(_app(store: store));
       await _settle(tester);
-      await _rename(tester, from: 'Opponent', to: 'Nurgle');
+      await _rename(tester, from: 'My opponent', to: 'Nurgle');
 
       await tester.pumpWidget(_app(store: store, key: const Key('again')));
       await _settle(tester);
 
-      expect(find.text('Opponent'), findsOneWidget);
+      expect(find.text('My opponent'), findsOneWidget);
       expect(find.text('Nurgle'), findsNothing);
     });
 
@@ -161,20 +161,20 @@ void main() {
     ) async {
       await tester.pumpWidget(_app(store: MemorySettingsStore()));
       await _settle(tester);
-      await _rename(tester, from: 'Player 1', to: 'Ivan');
+      await _rename(tester, from: 'Me', to: 'Ivan');
 
       await _rename(tester, from: 'Ivan', to: '');
 
-      expect(find.text('Player 1'), findsOneWidget);
+      expect(find.text('Me'), findsOneWidget);
     });
 
     testWidgets('cancelar deja el nombre como estaba', (tester) async {
       await tester.pumpWidget(_app(store: MemorySettingsStore()));
       await _settle(tester);
 
-      await _rename(tester, from: 'Player 1', to: 'Ivan', confirm: false);
+      await _rename(tester, from: 'Me', to: 'Ivan', confirm: false);
 
-      expect(find.text('Player 1'), findsOneWidget);
+      expect(find.text('Me'), findsOneWidget);
       expect(find.text('Ivan'), findsNothing);
     });
   });
@@ -209,7 +209,7 @@ void main() {
         findsOneWidget,
       );
       expect(
-        find.textContaining("the opponent's name will go back to the default"),
+        find.textContaining("your opponent's name will go back to the default"),
         findsOneWidget,
       );
       // Preguntar no es hacer: hasta confirmar, el partido sigue donde estaba.
@@ -302,7 +302,7 @@ void main() {
     testWidgets('conserva el nombre del jugador uno', (tester) async {
       await tester.pumpWidget(_app(store: MemorySettingsStore()));
       await _settle(tester);
-      await _rename(tester, from: 'Player 1', to: 'Ivan');
+      await _rename(tester, from: 'Me', to: 'Ivan');
       await _startAndSpend(tester);
 
       await _confirmReset(tester);
@@ -315,12 +315,12 @@ void main() {
     ) async {
       await tester.pumpWidget(_app(store: MemorySettingsStore()));
       await _settle(tester);
-      await _rename(tester, from: 'Opponent', to: 'Nurgle');
+      await _rename(tester, from: 'My opponent', to: 'Nurgle');
       await _startAndSpend(tester);
 
       await _confirmReset(tester);
 
-      expect(find.text('Opponent'), findsOneWidget);
+      expect(find.text('My opponent'), findsOneWidget);
       expect(find.text('Nurgle'), findsNothing);
     });
   });
