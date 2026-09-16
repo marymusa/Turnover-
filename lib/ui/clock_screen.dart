@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
+import '../domain/alert_player.dart';
 import '../domain/match_clock.dart';
 import '../domain/match_ticker.dart';
 import 'clock_theme.dart';
@@ -10,9 +13,13 @@ import 'seam_controls.dart';
 /// La cara del cronómetro. Lo único que hace es pintar lo que dice
 /// [MatchClock] y devolverle los toques: aquí no vive ninguna regla.
 class ClockScreen extends StatefulWidget {
-  const ClockScreen({required this.clock, super.key});
+  const ClockScreen({required this.clock, required this.alerts, super.key});
 
   final MatchClock clock;
+
+  /// Quien convierte en sonido y vibración lo que emite el reloj. El reloj no
+  /// lo conoce: los eventos pasan por aquí.
+  final AlertPlayer alerts;
 
   @override
   State<ClockScreen> createState() => _ClockScreenState();
@@ -21,7 +28,13 @@ class ClockScreen extends StatefulWidget {
 class _ClockScreenState extends State<ClockScreen>
     with SingleTickerProviderStateMixin {
   late final MatchTicker _ticker = MatchTicker(widget.clock);
-  late final Ticker _frames = createTicker(_ticker.tick);
+  late final Ticker _frames = createTicker(_onFrame);
+
+  /// El aviso se dispara y no se espera: lo que tarde el aparato en sonar no
+  /// puede retrasar el toque de reloj siguiente.
+  void _onFrame(Duration now) {
+    unawaited(widget.alerts.handle(_ticker.tick(now)));
+  }
 
   @override
   void initState() {

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'domain/alert_player.dart';
 import 'domain/match_clock.dart';
 import 'l10n/app_localizations.dart';
+import 'platform/platform_alert_device.dart';
 import 'ui/clock_screen.dart';
 
 /// Los tiempos por defecto del glosario. Configurarlos es cosa de #8.
@@ -13,11 +15,17 @@ const _defaultWarning = Duration(seconds: 30);
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-  runApp(const TurnoverApp());
+
+  final device = PlatformAlertDevice();
+  await device.prepare();
+
+  runApp(TurnoverApp(alerts: AlertPlayer(device)));
 }
 
 class TurnoverApp extends StatelessWidget {
-  const TurnoverApp({super.key});
+  const TurnoverApp({required this.alerts, super.key});
+
+  final AlertPlayer alerts;
 
   @override
   Widget build(BuildContext context) {
@@ -27,6 +35,7 @@ class TurnoverApp extends StatelessWidget {
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: ClockScreen(
+        alerts: alerts,
         clock: MatchClock(
           turn: _defaultTurn,
           reserve: _defaultReserve,
