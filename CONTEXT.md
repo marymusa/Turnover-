@@ -40,7 +40,9 @@ vibración (una, dos y tres pulsaciones).
 - El turno se reinicia en cada cambio de jugador. La reserva dura todo el partido.
 - Pasar turno funciona siempre, también con la reserva consumiéndose. Lo único que
   lo impide es que el cronómetro esté pausado.
-- Pausar y reanudar son el mismo botón, con dos estados excluyentes.
+- Pausar y reanudar son el mismo botón, con dos estados excluyentes. Pausado se
+  reanuda además tocando en cualquier sitio: el velo que lo anuncia se come el
+  toque, para que reanudar no se confunda con pasar turno.
 - El partido empieza al tocar al jugador que recibe la patada inicial. No hay botón
   de comenzar.
 - La aplicación solo cuenta el tiempo en primer plano. Si se cierra o pasa a
