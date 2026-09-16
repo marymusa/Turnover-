@@ -20,9 +20,7 @@ class SeamControls extends StatelessWidget {
   final bool isPaused;
   final VoidCallback onPassTurn;
   final VoidCallback onTogglePause;
-  /// Nulo mientras el reinicio no esté cableado: el control se pinta igual,
-  /// porque la costura tiene que quedar centrada desde el primer día.
-  final VoidCallback? onReset;
+  final VoidCallback onReset;
 
   @override
   Widget build(BuildContext context) {
@@ -105,7 +103,7 @@ class _AdvancedControl extends StatelessWidget {
 
   final IconData icon;
   final String label;
-  final VoidCallback? onPressed;
+  final VoidCallback onPressed;
   final bool isHighlighted;
 
   @override

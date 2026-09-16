@@ -151,6 +151,152 @@ void main() {
       expect(find.text('Ivan'), findsNothing);
     });
   });
+
+  group('reiniciar el partido', () {
+    // El reinicio se define por lo que no borra, y por eso se comprueba con
+    // los tiempos cambiados y los dos nombres puestos: lo que sobrevive es
+    // tan parte del trato como lo que se va.
+
+    testWidgets('el control no existe antes de empezar', (tester) async {
+      await tester.pumpWidget(_app(store: MemorySettingsStore()));
+      await _settle(tester);
+
+      expect(_resetControl, findsNothing);
+    });
+
+    testWidgets('pide confirmación describiendo la consecuencia', (
+      tester,
+    ) async {
+      await tester.pumpWidget(_app(store: MemorySettingsStore()));
+      await _settle(tester);
+      await _startAndSpend(tester);
+
+      await tester.tap(_resetControl);
+      await _settle(tester);
+
+      expect(find.text('Reset the timer?'), findsOneWidget);
+      // La consecuencia entera, también lo que se pierde sin ser el partido:
+      // el nombre del oponente es lo otro que no sobrevive.
+      expect(
+        find.textContaining('The match in progress will be lost'),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining("the opponent's name will go back to the default"),
+        findsOneWidget,
+      );
+      // Preguntar no es hacer: hasta confirmar, el partido sigue donde estaba.
+      expect(_clockOnScreen(tester).state, MatchState.running);
+    });
+
+    testWidgets('cancelar deja el partido intacto', (tester) async {
+      await tester.pumpWidget(_app(store: MemorySettingsStore()));
+      await _settle(tester);
+      await _startAndSpend(tester);
+      final spent = _clockOnScreen(tester).turnOf(Player.one);
+
+      await tester.tap(_resetControl);
+      await _settle(tester);
+      await tester.tap(find.text('Cancel'));
+      await _settle(tester);
+
+      expect(_clockOnScreen(tester).state, MatchState.running);
+      // Sigue gastando turno donde lo dejó: preguntar no detiene el reloj, así
+      // que lo que importa es que no haya vuelto a los cuatro minutos.
+      expect(
+        _clockOnScreen(tester).turnOf(Player.one),
+        lessThanOrEqualTo(spent),
+      );
+    });
+
+    testWidgets('confirmar devuelve los relojes a su valor inicial', (
+      tester,
+    ) async {
+      await tester.pumpWidget(_app(store: MemorySettingsStore()));
+      await _settle(tester);
+      await _startAndSpend(tester);
+
+      await _confirmReset(tester);
+
+      final clock = _clockOnScreen(tester);
+      expect(clock.turnOf(Player.one), const Duration(minutes: 4));
+      expect(clock.reserveOf(Player.one), const Duration(minutes: 15));
+      expect(clock.reserveOf(Player.two), const Duration(minutes: 15));
+    });
+
+    testWidgets('confirmar deja el partido esperando el toque inicial', (
+      tester,
+    ) async {
+      await tester.pumpWidget(_app(store: MemorySettingsStore()));
+      await _settle(tester);
+      await _startAndSpend(tester);
+
+      await _confirmReset(tester);
+
+      expect(_clockOnScreen(tester).state, MatchState.notStarted);
+      expect(_clockOnScreen(tester).activePlayer, isNull);
+      // Y el toque siguiente vuelve a elegir quién recibe: la invitación de
+      // cada mitad ha vuelto, que es la señal de que el partido no ha
+      // empezado.
+      expect(find.text('Whoever taps here receives the ball'), findsNWidgets(2));
+      await tester.tap(find.text('Whoever taps here receives the ball').last);
+      await _settle(tester);
+      expect(_clockOnScreen(tester).activePlayer, Player.one);
+    });
+
+    testWidgets('reiniciar pausado no deja el partido pausado', (tester) async {
+      await tester.pumpWidget(_app(store: MemorySettingsStore()));
+      await _settle(tester);
+      await _startAndSpend(tester);
+      await tester.tap(find.bySemanticsLabel('Pause'));
+      await _settle(tester);
+
+      await _confirmReset(tester);
+
+      expect(_clockOnScreen(tester).state, MatchState.notStarted);
+      expect(find.text('Paused. Tap anywhere to resume'), findsNothing);
+    });
+
+    testWidgets('conserva la configuración de tiempos', (tester) async {
+      final store = MemorySettingsStore();
+      await store.writeSeconds('turn_seconds', 180);
+      await store.writeSeconds('reserve_seconds', 600);
+      await tester.pumpWidget(_app(store: store));
+      await _settle(tester);
+      await _startAndSpend(tester);
+
+      await _confirmReset(tester);
+
+      final clock = _clockOnScreen(tester);
+      expect(clock.turnOf(Player.one), const Duration(minutes: 3));
+      expect(clock.reserveOf(Player.one), const Duration(minutes: 10));
+    });
+
+    testWidgets('conserva el nombre del jugador uno', (tester) async {
+      await tester.pumpWidget(_app(store: MemorySettingsStore()));
+      await _settle(tester);
+      await _rename(tester, from: 'Player 1', to: 'Ivan');
+      await _startAndSpend(tester);
+
+      await _confirmReset(tester);
+
+      expect(find.text('Ivan'), findsOneWidget);
+    });
+
+    testWidgets('devuelve el del jugador dos al valor por defecto', (
+      tester,
+    ) async {
+      await tester.pumpWidget(_app(store: MemorySettingsStore()));
+      await _settle(tester);
+      await _rename(tester, from: 'Opponent', to: 'Nurgle');
+      await _startAndSpend(tester);
+
+      await _confirmReset(tester);
+
+      expect(find.text('Opponent'), findsOneWidget);
+      expect(find.text('Nurgle'), findsNothing);
+    });
+  });
 }
 
 Widget _app({required SettingsStore store, Key? key}) => TurnoverApp(
@@ -179,6 +325,23 @@ Future<void> _rename(
   await _settle(tester);
   await tester.enterText(find.byType(TextField), to);
   await tester.tap(find.text(confirm ? 'Save' : 'Cancel'));
+  await _settle(tester);
+}
+
+final _resetControl = find.bySemanticsLabel('Reset timer');
+
+/// Arranca el partido y gasta un rato, que es el estado desde el que reiniciar
+/// significa algo: con los relojes intactos no se distingue de no hacer nada.
+Future<void> _startAndSpend(WidgetTester tester) async {
+  _clockOnScreen(tester).start(Player.one);
+  await tester.pump();
+  await tester.pump(const Duration(seconds: 70));
+}
+
+Future<void> _confirmReset(WidgetTester tester) async {
+  await tester.tap(_resetControl);
+  await _settle(tester);
+  await tester.tap(find.text('Reset'));
   await _settle(tester);
 }
 

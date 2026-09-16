@@ -13,6 +13,7 @@ import 'clock_theme.dart';
 import 'paused_veil.dart';
 import 'player_half.dart';
 import 'rename_dialog.dart';
+import 'reset_dialog.dart';
 import 'settings_button.dart';
 import 'seam_controls.dart';
 
@@ -151,6 +152,18 @@ class _ClockScreenState extends State<ClockScreen>
     await widget.names.rename(player, name);
   }
 
+  /// Reiniciar pierde el partido en curso, así que se pregunta antes de tocar
+  /// nada. Lo que sobrevive, los tiempos y el nombre del jugador uno,
+  /// sobrevive porque nadie lo toca: el reloj conserva su configuración al
+  /// reiniciarse y aquí solo se devuelve a su valor por defecto el nombre del
+  /// oponente (ADR-0003).
+  Future<void> _reset() async {
+    if (!await askToReset(context)) return;
+    _clock.reset();
+    widget.names.resetOpponent();
+    _ticker.refresh();
+  }
+
   @override
   Widget build(BuildContext context) {
     final clock = _clock;
@@ -202,10 +215,7 @@ class _ClockScreenState extends State<ClockScreen>
                       isPaused: clock.state == MatchState.paused,
                       onPassTurn: _passTurn,
                       onTogglePause: _togglePause,
-                      // El reinicio se cablea en la tarea que le toca,
-                      // junto con el diálogo que describe la consecuencia.
-                      // Aquí el control solo existe.
-                      onReset: null,
+                      onReset: _reset,
                     ),
                   ),
                 ),
