@@ -16,6 +16,25 @@ flutter run
 `flutter pub get` genera las clases de localización a partir de los `.arb`, así que hay
 que ejecutarlo antes que nada en un clon recién hecho.
 
+## En el emulador
+
+```powershell
+.\scripts\run-emulator.ps1
+.\scripts\run-app.ps1
+```
+
+El primero enciende el emulador y espera a que termine de arrancar, porque
+`flutter emulators --launch` vuelve antes de que el aparato esté listo. El segundo
+instala y arranca la aplicación en el emulador que encuentre. Con `-Clean` para los
+demonios de Gradle y borra `build/` antes de compilar, que es lo que hace falta cuando
+una compilación deja la carpeta bloqueada.
+
+La compilación incremental de Kotlin queda desactivada en
+`android/gradle.properties`. Con ella puesta, la compilación de Android falla siempre
+con `Could not close incremental caches` en cualquier plugin que traiga código Kotlin
+(`shared_preferences_android`, `audioplayers_android`). Apagarla solo cuesta tiempo de
+recompilación.
+
 ## Comprobaciones
 
 ```sh

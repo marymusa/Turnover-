@@ -49,3 +49,6 @@ app.*.map.json
 
 # Localización generada a partir de los .arb por flutter gen-l10n
 /lib/l10n/app_localizations*.dart
+
+# Trabajo de usar y tirar: capturas del emulador, pruebas sueltas.
+.scratch/
