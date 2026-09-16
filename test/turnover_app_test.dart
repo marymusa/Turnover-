@@ -1,4 +1,7 @@
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:turnover/domain/alert_player.dart';
 import 'package:turnover/domain/awake_guard.dart';
@@ -249,6 +252,33 @@ void main() {
       expect(tester.takeException(), isNull);
       expect(find.byType(SettingsScreen), findsOneWidget);
     });
+
+    // Vigila que la transición entre las dos pantallas no se aclare por
+    // dentro, fotografiando cada fotograma y mirando el color que más se
+    // repite, que es el del fondo. El toImage necesita trabajo asíncrono de
+    // verdad, así que va dentro de runAsync: en el bucle de pump se cuelga.
+    //
+    // No es la comprobación del destello que se veía en el móvil. Aquel salía
+    // de android:windowBackground, la ventana que hay por detrás de la
+    // superficie de Flutter, y desde aquí no se ve: este banco de pruebas no
+    // tiene ventana de Android. Lo que se ve aquí es solo lo que pinta
+    // Flutter, y por eso esta comprobación pasaba con el móvil destellando.
+    testWidgets('abrir los ajustes no da un destello claro', (tester) async {
+      await tester.pumpWidget(_app(store: MemorySettingsStore()));
+      await _settle(tester);
+
+      await tester.tap(find.bySemanticsLabel('Settings'));
+
+      final background = <int>[];
+      for (var frame = 0; frame < 20; frame++) {
+        await tester.pump(const Duration(milliseconds: 16));
+        background.add(await _dominantLuma(tester));
+      }
+
+      // El fondo del cronómetro está en luma 29 y el de los ajustes en 17, así
+      // que la transición entre ambos no tiene por qué aclararse nunca.
+      expect(background, everyElement(lessThanOrEqualTo(29)));
+    });
   });
 
   group('reiniciar el partido', () {
@@ -458,6 +488,39 @@ Future<void> _confirmReset(WidgetTester tester) async {
   await _settle(tester);
   await tester.tap(find.text('Reset'));
   await _settle(tester);
+}
+
+/// El luma del color que más se repite en la escena ya compuesta, que es el
+/// del fondo. Un destello es una superficie entera que se aclara, así que la
+/// moda lo ve y una media la escondería entre los textos.
+Future<int> _dominantLuma(WidgetTester tester) async {
+  final layer = tester.binding.rootElement!.renderObject!.debugLayer!
+      as OffsetLayer;
+
+  late int dominant;
+  await tester.runAsync(() async {
+    final image = await layer.toImage(
+      ui.Offset.zero & tester.view.physicalSize,
+    );
+    final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+    final bytes = data!.buffer.asUint8List();
+    image.dispose();
+
+    final histogram = <int, int>{};
+    for (var i = 0; i < bytes.length; i += 4) {
+      final luma = (bytes[i] + bytes[i + 1] + bytes[i + 2]) ~/ 3;
+      histogram.update(luma, (n) => n + 1, ifAbsent: () => 1);
+    }
+    var most = 0;
+    dominant = 0;
+    histogram.forEach((luma, count) {
+      if (count > most) {
+        most = count;
+        dominant = luma;
+      }
+    });
+  });
+  return dominant;
 }
 
 MatchClock _clockOnScreen(WidgetTester tester) =>
