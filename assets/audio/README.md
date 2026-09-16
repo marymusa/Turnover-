@@ -19,15 +19,21 @@ cortado dice "aquí falta algo" antes que "se acabó el turno".
 
 ## De dónde salen
 
-Los tres vienen de Freesound y conservan aquí el fichero original con su nombre de
-descarga, que lleva el identificador y el autor. Los `horn_*.wav` que lee la
-aplicación se derivan de ellos, no se descargan.
+Los tres vienen de Freesound. Los `horn_*.wav` que lee la aplicación se derivan de
+ellos, no se descargan.
 
-| Bocina | Original |
+El original no se guarda en el repositorio: son dieciséis megas que no se leen nunca
+y que se cuelan en el paquete de la aplicación. Lo que hace falta para volver a
+encontrarlos es el número, que es el identificador de Freesound y va en la dirección
+`https://freesound.org/s/<número>/`.
+
+| Bocina | Original en Freesound |
 |---|---|
-| `horn_soft.wav` | `194812__funnyman850__epic-angry-boatinception-sound-effect.mp3` |
-| `horn_strong.wav` | `414208__jacksonacademyashmore__airhorn.wav` |
-| `horn_strongest.wav` | `455491__affreftony__whistle-end0012.wav` |
+| `horn_soft.wav` | 194812, de funnyman850, "epic angry boatinception sound effect" |
+| `horn_strong.wav` | 414208, de jacksonacademyashmore, "airhorn" |
+| `horn_strongest.wav` | 455491, de affreftony, "whistle end0012" |
+
+Para rehacer alguno hay que descargarlo otra vez de esas páginas.
 
 Antes de publicar hay que comprobar la licencia de cada uno en su página de Freesound:
 las de CC0 no piden nada, pero las de CC-BY obligan a citar al autor en los créditos.
