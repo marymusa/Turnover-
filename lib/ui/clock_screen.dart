@@ -34,8 +34,9 @@ class ClockScreen extends StatefulWidget {
   /// corre. Quien decide cuándo es [AwakeGuard], no este widget.
   final Screen screen;
 
-  /// Abre los ajustes, desde la costura con el partido empezado y desde la
-  /// esquina antes de empezar: los tiempos se corrigen sobre la marcha.
+  /// Abre los ajustes. Solo se llega antes de empezar: los tiempos se eligen
+  /// con el partido parado, y lo que sí se cambia a media partida son los
+  /// nombres, que son una etiqueta y no tocan el reloj.
   final VoidCallback onOpenSettings;
 
   @override
@@ -157,9 +158,8 @@ class _ClockScreenState extends State<ClockScreen>
                   ),
                 ],
               ),
-              // Antes de empezar no hay costura, así que el acceso a los
-              // ajustes vive en una esquina. Con el partido empezado lo lleva
-              // la costura, junto a las demás operaciones avanzadas.
+              // El acceso a los ajustes solo existe antes de empezar: con el
+              // partido en marcha no hay ningún tiempo que tocar sin querer.
               if (clock.state == MatchState.notStarted)
                 Positioned(
                   top: 0,
@@ -179,7 +179,6 @@ class _ClockScreenState extends State<ClockScreen>
                       isPaused: clock.state == MatchState.paused,
                       onPassTurn: _passTurn,
                       onTogglePause: _togglePause,
-                      onOpenSettings: widget.onOpenSettings,
                       // El reinicio se cablea en la tarea que le toca,
                       // junto con el diálogo que describe la consecuencia.
                       // Aquí el control solo existe.

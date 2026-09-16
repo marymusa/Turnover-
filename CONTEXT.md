@@ -53,10 +53,12 @@ vibración (una, dos y tres pulsaciones).
   corre el reloj.
 - La pantalla se mantiene encendida mientras un reloj corre, y se libera al pausar.
 - Los tres tiempos (turno, reserva y aviso previo) se configuran en una pantalla propia,
-  a la que se llega desde la costura con el partido empezado y desde una esquina antes
-  de empezar. Un cambio se corrige sobre la marcha: redimensiona el partido en curso y
-  no lo reinicia, de modo que ampliar la reserva de quince a veinte minutos con seis
-  gastados deja catorce.
+  a la que solo se llega antes de empezar: los tiempos se pactan con el partido parado.
+  Lo que sí se cambia con el partido en curso son los nombres, que son una etiqueta y no
+  tocan ningún reloj (ADR-0006).
+- Un cambio de tiempos redimensiona, no reinicia: lo ya gastado se conserva, de modo que
+  ampliar la reserva de quince a veinte minutos con seis gastados deja catorce. Es la
+  regla del reloj y vale siempre, aunque a los ajustes solo se llegue antes de empezar.
 - Lo que se guarda en el dispositivo son los tres tiempos y el nombre del jugador uno,
   y nada más: ni relojes, ni partido en curso, ni historial (ADR-0003).
 
