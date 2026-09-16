@@ -8,6 +8,7 @@ import 'package:turnover/domain/match_settings.dart';
 import 'package:turnover/main.dart';
 import 'package:turnover/ui/clock_screen.dart';
 import 'package:turnover/ui/player_half.dart';
+import 'package:turnover/ui/settings_screen.dart';
 
 import 'memory_settings_store.dart';
 
@@ -176,6 +177,22 @@ void main() {
 
       expect(find.text('Me'), findsOneWidget);
       expect(find.text('Ivan'), findsNothing);
+    });
+  });
+
+  group('los ajustes', () {
+    // El acceso se abría con el context de TurnoverApp, que está por encima
+    // del MaterialApp y no tiene Navigator debajo: pulsar el botón reventaba y
+    // la pantalla de ajustes no se alcanzaba nunca.
+    testWidgets('el botón abre la pantalla de ajustes', (tester) async {
+      await tester.pumpWidget(_app(store: MemorySettingsStore()));
+      await _settle(tester);
+
+      await tester.tap(find.bySemanticsLabel('Settings'));
+      await _settle(tester);
+
+      expect(tester.takeException(), isNull);
+      expect(find.byType(SettingsScreen), findsOneWidget);
     });
   });
 

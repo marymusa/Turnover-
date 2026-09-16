@@ -94,17 +94,22 @@ class _TurnoverAppState extends State<TurnoverApp> {
       onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      home: ClockScreen(
-        alerts: widget.alerts,
-        screen: widget.screen,
-        clock: _clock,
-        names: _names,
-        onOpenSettings: _openSettings,
+      // El Builder da un context por debajo del MaterialApp, que es donde vive
+      // el Navigator. El de este State está por encima, y abrir los ajustes
+      // con él reventaba.
+      home: Builder(
+        builder: (context) => ClockScreen(
+          alerts: widget.alerts,
+          screen: widget.screen,
+          clock: _clock,
+          names: _names,
+          onOpenSettings: () => _openSettings(context),
+        ),
       ),
     );
   }
 
-  void _openSettings() {
+  void _openSettings(BuildContext context) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (context) => SettingsScreen(settings: _settings),
