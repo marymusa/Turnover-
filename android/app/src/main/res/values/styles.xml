@@ -17,6 +17,11 @@
 
          This Theme is only used starting with V2 of Flutter's Android embedding. -->
     <style name="NormalTheme" parent="@android:style/Theme.Light.NoTitleBar">
-        <item name="android:windowBackground">?android:colorBackground</item>
+        <!-- El fondo del cronómetro, no el del tema del sistema. Esta ventana
+             se ve por detrás de la superficie de Flutter en cuanto deja de
+             taparla entera, y con ?android:colorBackground eso era un destello
+             blanco al abrir los ajustes. La aplicación es oscura siempre, así
+             que la ventana de detrás también. -->
+        <item name="android:windowBackground">@color/launch_background</item>
     </style>
 </resources>
