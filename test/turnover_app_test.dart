@@ -4,6 +4,7 @@ import 'package:turnover/domain/alert_player.dart';
 import 'package:turnover/domain/awake_guard.dart';
 import 'package:turnover/domain/match_alerts.dart';
 import 'package:turnover/domain/match_clock.dart';
+import 'package:turnover/domain/match_settings.dart';
 import 'package:turnover/main.dart';
 import 'package:turnover/ui/clock_screen.dart';
 
@@ -24,6 +25,7 @@ void main() {
           builder: (context, _) => TurnoverApp(
             alerts: const AlertPlayer(_SilentDevice()),
             screen: const _IgnoredScreen(),
+            store: _MemoryStore(),
           ),
         ),
       );
@@ -59,6 +61,14 @@ class _SilentDevice implements AlertDevice {
 
   @override
   Future<void> vibrate(int pulses) async {}
+}
+
+class _MemoryStore implements SettingsStore {
+  @override
+  Future<int?> readSeconds(String key) async => null;
+
+  @override
+  Future<void> writeSeconds(String key, int seconds) async {}
 }
 
 class _IgnoredScreen implements Screen {

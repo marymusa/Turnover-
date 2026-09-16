@@ -4,7 +4,10 @@ import '../l10n/app_localizations.dart';
 import 'clock_theme.dart';
 
 /// La costura entre las dos mitades: pasar turno en el centro y, discretos a
-/// los lados, pausar y reiniciar, que son operaciones avanzadas.
+/// los lados, los ajustes y la pausa a la izquierda y el reinicio a la
+/// derecha, que son operaciones avanzadas. Un hueco a la derecha compensa al
+/// tercer control de la izquierda, para que pasar turno siga cayendo en el
+/// centro de la costura como lo fijó el prototipo.
 ///
 /// Antes de empezar no hay costura, así que esto no se pinta: la pantalla
 /// decide cuándo mostrarla.
@@ -13,6 +16,7 @@ class SeamControls extends StatelessWidget {
     required this.isPaused,
     required this.onPassTurn,
     required this.onTogglePause,
+    required this.onOpenSettings,
     required this.onReset,
     super.key,
   });
@@ -20,6 +24,10 @@ class SeamControls extends StatelessWidget {
   final bool isPaused;
   final VoidCallback onPassTurn;
   final VoidCallback onTogglePause;
+
+  /// Los tiempos se pueden corregir sobre la marcha: un cambio redimensiona el
+  /// partido en curso y no lo reinicia.
+  final VoidCallback onOpenSettings;
   /// Nulo mientras el reinicio no esté cableado: el control se pinta igual,
   /// porque la costura tiene que quedar centrada desde el primer día.
   final VoidCallback? onReset;
@@ -30,6 +38,13 @@ class SeamControls extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
+        _AdvancedControl(
+          icon: Icons.tune,
+          label: strings.settings,
+          onPressed: onOpenSettings,
+          isHighlighted: false,
+        ),
+        const SizedBox(width: ClockTheme.seamGap),
         _AdvancedControl(
           icon: isPaused ? Icons.play_arrow : Icons.pause,
           label: isPaused ? strings.resume : strings.pause,
@@ -49,6 +64,10 @@ class SeamControls extends StatelessWidget {
           onPressed: onReset,
           isHighlighted: false,
         ),
+        // El hueco del cuarto control, que no existe. Sin él, los tres de la
+        // izquierda empujarían a pasar turno fuera del centro de la costura, y
+        // el prototipo lo fijó centrado.
+        const SizedBox(width: ClockTheme.seamGap + ClockTheme.advancedSize),
       ],
     );
   }

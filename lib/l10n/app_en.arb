@@ -28,6 +28,44 @@
   "@pausedHint": {
     "description": "Velo que cubre la pantalla con el partido pausado"
   },
+  "settings": "Settings",
+  "@settings": {
+    "description": "Etiqueta de accesibilidad del acceso a los ajustes y título de su pantalla"
+  },
+  "settingsTurn": "Turn",
+  "@settingsTurn": {
+    "description": "Nombre del tiempo de turno en los ajustes"
+  },
+  "settingsReserve": "Reserve",
+  "@settingsReserve": {
+    "description": "Nombre del tiempo de reserva en los ajustes"
+  },
+  "settingsWarning": "Early warning",
+  "@settingsWarning": {
+    "description": "Nombre del aviso previo en los ajustes"
+  },
+  "settingsTurnHint": "Restarted at the beginning of each turn",
+  "@settingsTurnHint": {
+    "description": "Qué es el turno, debajo de su nombre en los ajustes"
+  },
+  "settingsReserveHint": "Extra time for the whole match, never refilled",
+  "@settingsReserveHint": {
+    "description": "Qué es la reserva, debajo de su nombre en los ajustes"
+  },
+  "settingsWarningHint": "Horn before the turn runs out",
+  "@settingsWarningHint": {
+    "description": "Qué es el aviso previo, debajo de su nombre en los ajustes"
+  },
+  "minutes": "{count} min",
+  "@minutes": {
+    "description": "Un tiempo en minutos, en los ajustes",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "seconds": "{count} s",
+  "@seconds": {
+    "description": "Un tiempo en segundos, en los ajustes",
+    "placeholders": { "count": { "type": "int" } }
+  },
   "reset": "Reset timer",
   "@reset": {
     "description": "Etiqueta de accesibilidad del control de reinicio"

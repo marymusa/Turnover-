@@ -1,7 +1,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Sin copia de seguridad en la nube (ADR-0003): lo que se guarda son los
+         tres tiempos y el nombre del jugador uno, que se vuelven a escribir en
+         cuatro segundos. Una copia de seguridad es una superficie más que
+         revisar en las tiendas a cambio de nada. -->
     <application
         android:label="Turnover!"
         android:name="${applicationName}"
+        android:allowBackup="false"
+        android:fullBackupContent="false"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"

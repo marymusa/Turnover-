@@ -10,6 +10,7 @@ import '../domain/match_ticker.dart';
 import 'clock_theme.dart';
 import 'paused_veil.dart';
 import 'player_half.dart';
+import 'settings_button.dart';
 import 'seam_controls.dart';
 
 /// La cara del cronómetro. Lo único que hace es pintar lo que dice
@@ -19,6 +20,7 @@ class ClockScreen extends StatefulWidget {
     required this.clock,
     required this.alerts,
     required this.screen,
+    required this.onOpenSettings,
     super.key,
   });
 
@@ -31,6 +33,10 @@ class ClockScreen extends StatefulWidget {
   /// La pantalla del aparato, que se mantiene encendida mientras un reloj
   /// corre. Quien decide cuándo es [AwakeGuard], no este widget.
   final Screen screen;
+
+  /// Abre los ajustes, desde la costura con el partido empezado y desde la
+  /// esquina antes de empezar: los tiempos se corrigen sobre la marcha.
+  final VoidCallback onOpenSettings;
 
   @override
   State<ClockScreen> createState() => _ClockScreenState();
@@ -151,6 +157,15 @@ class _ClockScreenState extends State<ClockScreen>
                   ),
                 ],
               ),
+              // Antes de empezar no hay costura, así que el acceso a los
+              // ajustes vive en una esquina. Con el partido empezado lo lleva
+              // la costura, junto a las demás operaciones avanzadas.
+              if (clock.state == MatchState.notStarted)
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: SettingsButton(onPressed: widget.onOpenSettings),
+                ),
               // El velo tapa las dos mitades, para que el toque no les llegue,
               // pero queda por debajo de la costura: el botón de pausa y el de
               // reinicio se siguen pudiendo pulsar con el partido pausado.
@@ -164,6 +179,7 @@ class _ClockScreenState extends State<ClockScreen>
                       isPaused: clock.state == MatchState.paused,
                       onPassTurn: _passTurn,
                       onTogglePause: _togglePause,
+                      onOpenSettings: widget.onOpenSettings,
                       // El reinicio se cablea en la tarea que le toca,
                       // junto con el diálogo que describe la consecuencia.
                       // Aquí el control solo existe.

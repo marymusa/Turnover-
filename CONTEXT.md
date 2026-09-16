@@ -27,11 +27,14 @@ Nunca "bolsa de tiempo": la reserva es lo que se guarda para cuando hace falta, 
 **overtime**: el tiempo que sigue contando una vez agotada la reserva, mostrado en
 negativo. No detiene nada: deja constancia de cuánto se ha pasado un jugador.
 
+**aviso previo**: los segundos que quedan de turno cuando suena la primera
+bocina, 30 por defecto. Es uno de los tres tiempos configurables.
+
 **pasar turno**: la única acción del jugador activo. Detiene sus relojes y activa
 los del oponente.
 
-**bocina**: cada uno de los tres avisos sonoros, de menor a mayor intensidad: quedan
-30 segundos de turno, se agota el turno, se agota la reserva. Cada bocina lleva su
+**bocina**: cada uno de los tres avisos sonoros, de menor a mayor intensidad: queda
+el aviso previo de turno, se agota el turno, se agota la reserva. Cada bocina lleva su
 vibración (una, dos y tres pulsaciones).
 
 ## Reglas del dominio
@@ -49,6 +52,13 @@ vibración (una, dos y tres pulsaciones).
   segundo plano, el tiempo se pausa. El compromiso es no tocar el móvil mientras
   corre el reloj.
 - La pantalla se mantiene encendida mientras un reloj corre, y se libera al pausar.
+- Los tres tiempos (turno, reserva y aviso previo) se configuran en una pantalla propia,
+  a la que se llega desde la costura con el partido empezado y desde una esquina antes
+  de empezar. Un cambio se corrige sobre la marcha: redimensiona el partido en curso y
+  no lo reinicia, de modo que ampliar la reserva de quince a veinte minutos con seis
+  gastados deja catorce.
+- Lo que se guarda en el dispositivo son los tres tiempos y el nombre del jugador uno,
+  y nada más: ni relojes, ni partido en curso, ni historial (ADR-0003).
 
 ## Fuera del alcance
 

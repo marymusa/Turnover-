@@ -7,5 +7,14 @@
   "pause": "Pausar",
   "resume": "Reanudar",
   "pausedHint": "Pausado. Toca la pantalla para reanudar",
+  "settings": "Ajustes",
+  "settingsTurn": "Turno",
+  "settingsReserve": "Reserva",
+  "settingsWarning": "Aviso previo",
+  "settingsTurnHint": "Se reinicia al principio de cada turno",
+  "settingsReserveHint": "Tiempo adicional para todo el partido, no se recarga",
+  "settingsWarningHint": "Bocina antes de que se agote el turno",
+  "minutes": "{count} min",
+  "seconds": "{count} s",
   "reset": "Reiniciar cronómetro"
 }
