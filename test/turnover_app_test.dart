@@ -263,6 +263,16 @@ void main() {
       expect(find.byType(SettingsScreen), findsOneWidget);
     });
 
+    // El acceso era un icono solo, y apagado, y en las pruebas de campo no se
+    // encontraba. Ahora lleva el nombre escrito, que es además lo que lo
+    // anuncia al lector de pantalla: por eso se busca el texto y no el icono.
+    testWidgets('el acceso muestra el nombre escrito', (tester) async {
+      await tester.pumpWidget(_app(store: MemorySettingsStore()));
+      await _settle(tester);
+
+      expect(find.text('Settings'), findsOneWidget);
+    });
+
     // Vigila que la transición entre las dos pantallas no se aclare por
     // dentro, fotografiando cada fotograma y mirando el color que más se
     // repite, que es el del fondo. El toImage necesita trabajo asíncrono de

@@ -34,6 +34,11 @@ abstract final class ClockTheme {
   static const advancedSize = 40.0;
   static const advancedIconSize = 15.0;
 
+  /// El nombre que acompaña al icono de los ajustes. Menor que la letra de los
+  /// nombres de jugador, que es la referencia de la pantalla antes de empezar:
+  /// el acceso se tiene que encontrar, pero no encabeza nada.
+  static const settingsLabelSize = 13.0;
+
   /// Lo que separa los tres controles de la costura.
   static const seamGap = 26.0;
 
