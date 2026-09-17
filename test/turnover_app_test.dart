@@ -2,6 +2,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:turnover/domain/alert_player.dart';
 import 'package:turnover/domain/awake_guard.dart';
@@ -10,12 +11,21 @@ import 'package:turnover/domain/match_clock.dart';
 import 'package:turnover/domain/match_settings.dart';
 import 'package:turnover/main.dart';
 import 'package:turnover/ui/clock_screen.dart';
+import 'package:turnover/ui/clock_theme.dart';
 import 'package:turnover/ui/player_half.dart';
 import 'package:turnover/ui/settings_screen.dart';
 
 import 'memory_settings_store.dart';
 
 void main() {
+  // `rootBundle` guarda en cache lo que lee, por clave. El banco de pruebas
+  // rehace el canal de assets entre test y test, así que la entrada guardada
+  // en el primero queda apuntando a un canal muerto: a partir del segundo, la
+  // espera de `LogoOutline.load()` no se resuelve nunca y la presentación del
+  // escudo no llega a arrancar. Vaciar la cache devuelve a cada test una
+  // lectura suya, que sí termina.
+  setUp(rootBundle.clear);
+
   group('el dueño del reloj', () {
     // El partido se perdía porque el reloj se construía en `build`: un rebuild
     // del padre dejaba dos instancias vivas, la que pintaba la pantalla con el
@@ -370,6 +380,30 @@ void main() {
       expect(_clockOnScreen(tester).activePlayer, Player.one);
     });
 
+    // La invitación esperaba a la presentación del escudo la primera vez, pero
+    // no al reiniciar: se quedaba encima de un escudo que se estaba volviendo
+    // a dibujar. Reiniciar devuelve la pantalla a antes de empezar, y eso
+    // incluye volver a esperar.
+    testWidgets('reiniciar hace esperar la invitación a la presentación', (
+      tester,
+    ) async {
+      await tester.pumpWidget(_app(store: MemorySettingsStore()));
+      await _settle(tester);
+      expect(_inviteAlpha(tester), 0);
+
+      await _passReveal(tester);
+      expect(_inviteAlpha(tester), 1);
+
+      await _startAndSpend(tester);
+      expect(_inviteAlpha(tester), 0);
+
+      await _confirmReset(tester);
+
+      expect(_inviteAlpha(tester), 0);
+      await _passReveal(tester);
+      expect(_inviteAlpha(tester), 1);
+    });
+
     testWidgets('reiniciar pausado no deja el partido pausado', (tester) async {
       await tester.pumpWidget(_app(store: MemorySettingsStore()));
       await _settle(tester);
@@ -479,6 +513,29 @@ Future<void> _startAndSpend(WidgetTester tester) async {
   _clockOnScreen(tester).start(Player.one);
   await tester.pump();
   await tester.pump(const Duration(seconds: 70));
+}
+
+/// Lo transparente que está la invitación a empezar. Siempre está en el árbol,
+/// para que su hueco no cambie de tamaño, así que buscarla no dice nada: lo que
+/// se mira es su alfa.
+double _inviteAlpha(WidgetTester tester) =>
+    tester.widget<Text>(find.text('Tap to start').last).style!.color!.a;
+
+/// Deja terminar la presentación del escudo, que dura lo que suman
+/// `logoTraceDuration` y `logoSettleDuration`.
+///
+/// Se avanza a pasos y no de una vez. El contorno se lee antes de arrancar la
+/// animación, así que en un solo salto el reloj se adelantaría entero mientras
+/// no corre nada y la presentación se quedaría sin empezar. A pasos, la lectura
+/// se resuelve en uno de ellos y los siguientes ya mueven la animación.
+Future<void> _passReveal(WidgetTester tester) async {
+  const step = Duration(milliseconds: 100);
+  final total = ClockTheme.logoTraceDuration + ClockTheme.logoSettleDuration;
+  // De sobra: lo que importa es que la presentación haya acabado, no clavar
+  // su duración.
+  for (var spent = Duration.zero; spent <= total * 2; spent += step) {
+    await tester.pump(step);
+  }
 }
 
 Future<void> _confirmReset(WidgetTester tester) async {
