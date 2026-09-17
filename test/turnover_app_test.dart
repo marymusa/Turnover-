@@ -206,7 +206,7 @@ void main() {
 
       expect(find.text('Leave the match?'), findsOneWidget);
       expect(
-        find.textContaining('The match in progress will be lost'),
+        find.textContaining('The current timers will be lost'),
         findsOneWidget,
       );
     });
@@ -304,14 +304,11 @@ void main() {
       await _settle(tester);
 
       expect(find.text('Reset the timer?'), findsOneWidget);
-      // La consecuencia entera, también lo que se pierde sin ser el partido:
-      // el nombre del oponente es lo otro que no sobrevive.
+      // El diálogo dice lo que se pierde antes de tocar nada. Que el nombre
+      // del oponente vuelva a su valor por defecto lo cubre su propio test:
+      // aquí solo se comprueba que se avisa.
       expect(
-        find.textContaining('The match in progress will be lost'),
-        findsOneWidget,
-      );
-      expect(
-        find.textContaining("your opponent's name will go back to the default"),
+        find.textContaining('The current timers will be lost'),
         findsOneWidget,
       );
       // Preguntar no es hacer: hasta confirmar, el partido sigue donde estaba.
@@ -367,11 +364,8 @@ void main() {
       // Y el toque siguiente vuelve a elegir quién recibe: la invitación de
       // cada mitad ha vuelto, que es la señal de que el partido no ha
       // empezado.
-      expect(
-        find.text('Whoever taps here receives the ball'),
-        findsNWidgets(2),
-      );
-      await tester.tap(find.text('Whoever taps here receives the ball').last);
+      expect(find.text('Tap to start'), findsNWidgets(2));
+      await tester.tap(find.text('Tap to start').last);
       await _settle(tester);
       expect(_clockOnScreen(tester).activePlayer, Player.one);
     });
@@ -440,6 +434,10 @@ Widget _app({required SettingsStore store, Key? key}) => TurnoverApp(
 
 /// El ticker del cronómetro corre en todos los fotogramas, así que la
 /// aplicación no llega nunca a asentarse: hay que pedir los fotogramas a mano.
+/// Deja terminar la presentación de la costura. El contorno del escudo se lee
+/// de un asset, así que primero hay que dejar resolver esa espera y solo
+/// después correr la animación: con un `pump` de duración fija, el reparto de
+/// microtareas decide si da tiempo o no.
 Future<void> _settle(WidgetTester tester) async {
   // Bastante para que entre o salga el diálogo, que es la única animación
   // que hay que dejar terminar.

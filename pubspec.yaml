@@ -1,7 +1,7 @@
 name: turnover
-description: "Cronómetro de turno y reserva para partidas de Blood Bowl."
+description: "Cronómetro para partidos de Blood Bowl."
 publish_to: 'none'
-version: 0.1.0+1
+version: 1.0.1+2
 
 environment:
   sdk: ^3.13.1
@@ -27,6 +27,7 @@ flutter:
   generate: true
   assets:
     - assets/audio/
+    - assets/images/
 
 # El icono de la aplicación. Los ficheros de assets/branding/ no se empaquetan:
 # son la fuente desde la que se generan los iconos de cada plataforma, y no se

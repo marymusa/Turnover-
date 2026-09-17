@@ -105,6 +105,17 @@ class _TurnoverAppState extends State<TurnoverApp> {
           surface: ClockTheme.background,
         ),
         scaffoldBackgroundColor: ClockTheme.background,
+        // El globo que sale al arrastrar un deslizador va en el azul activo,
+        // y su letra la resolvía el esquema en un gris que encima de ese azul
+        // no se leía. Va aquí y no en cada deslizador: es cosa del tema.
+        sliderTheme: const SliderThemeData(
+          valueIndicatorColor: ClockTheme.active,
+          valueIndicatorTextStyle: TextStyle(
+            color: ClockTheme.text,
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,

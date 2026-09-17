@@ -8,11 +8,19 @@
   "@appTagline": {
     "description": "Subtítulo de la aplicación, fijado en el ADR-0004"
   },
-  "startHint": "Whoever taps here receives the ball",
+  "startHint": "Tap to start",
   "@startHint": {
     "description": "Invitación de cada mitad antes de empezar el partido"
   },
-  "passTurn": "Pass turn",
+  "renameHintInline": "Hold to change this name",
+  "@renameHintInline": {
+    "description": "Frase entera del gesto de renombrar, la que leen los lectores de pantalla"
+  },
+  "renameHintShort": "Hold to rename",
+  "@renameHintShort": {
+    "description": "Pista al lado del nombre, solo antes de empezar, de que una pulsación larga lo cambia"
+  },
+  "passTurn": "End my turn",
   "@passTurn": {
     "description": "Etiqueta de accesibilidad del control central"
   },
@@ -32,13 +40,21 @@
   "@settings": {
     "description": "Etiqueta de accesibilidad del acceso a los ajustes y título de su pantalla"
   },
-  "settingsTurn": "Turn",
+  "turnTimeLabel": "Turn time",
+  "@turnTimeLabel": {
+    "description": "Nombra el reloj de turno en la mitad de cada jugador, antes de empezar. Más corto que el de los ajustes: aquí va encima del número grande"
+  },
+  "extraTimeLabel": "Extra time",
+  "@extraTimeLabel": {
+    "description": "Nombra el reloj de tiempo extra en la mitad de cada jugador, antes de empezar"
+  },
+  "settingsTurn": "Available time per turn",
   "@settingsTurn": {
     "description": "Nombre del tiempo de turno en los ajustes"
   },
-  "settingsReserve": "Reserve",
+  "settingsReserve": "Extra time",
   "@settingsReserve": {
-    "description": "Nombre del tiempo de reserva en los ajustes"
+    "description": "Nombre del tiempo extra en los ajustes"
   },
   "settingsWarning": "Early warning",
   "@settingsWarning": {
@@ -48,13 +64,17 @@
   "@settingsTurnHint": {
     "description": "Qué es el turno, debajo de su nombre en los ajustes"
   },
-  "settingsReserveHint": "Extra time for the whole match, never refilled",
+  "settingsReserveHint": "For the whole match, never refilled",
   "@settingsReserveHint": {
-    "description": "Qué es la reserva, debajo de su nombre en los ajustes"
+    "description": "Qué es el tiempo extra, debajo de su nombre en los ajustes"
   },
   "settingsWarningHint": "Horn before the turn runs out",
   "@settingsWarningHint": {
     "description": "Qué es el aviso previo, debajo de su nombre en los ajustes"
+  },
+  "settingsWarningOff": "Off",
+  "@settingsWarningOff": {
+    "description": "Valor del aviso previo cuando está a cero, en lugar de los segundos"
   },
   "minutes": "{count} min",
   "@minutes": {
@@ -74,7 +94,7 @@
   "@resetTitle": {
     "description": "Título del diálogo que confirma el reinicio"
   },
-  "resetBody": "The match in progress will be lost, the clocks will go back to their initial value and your opponent's name will go back to the default. The configured times and your own name are kept.",
+  "resetBody": "The current timers will be lost.",
   "@resetBody": {
     "description": "Consecuencia del reinicio, que el diálogo describe antes de hacer nada"
   },
@@ -86,7 +106,7 @@
   "@leaveTitle": {
     "description": "Título del diálogo que confirma salir con el partido empezado"
   },
-  "leaveBody": "The match in progress will be lost: the app does not save the clocks. The configured times and your own name are kept.",
+  "leaveBody": "The current timers will be lost.",
   "@leaveBody": {
     "description": "Consecuencia de salir, que el diálogo describe antes de cerrar nada"
   },
@@ -106,7 +126,7 @@
   "@rename": {
     "description": "Título del diálogo que cambia el nombre de un jugador"
   },
-  "renameHint": "e.g. Ivan",
+  "renameHint": "e.g. Nuffle",
   "@renameHint": {
     "description": "Ejemplo dentro del campo de texto del diálogo de renombrar"
   },

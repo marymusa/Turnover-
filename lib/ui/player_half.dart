@@ -18,6 +18,7 @@ class PlayerHalf extends StatelessWidget {
     required this.isActive,
     required this.isStarted,
     required this.isUpsideDown,
+    required this.isRevealed,
     required this.onTap,
     super.key,
   });
@@ -42,6 +43,10 @@ class PlayerHalf extends StatelessWidget {
   final bool isActive;
   final bool isStarted;
   final bool isUpsideDown;
+
+  /// Si la presentación de la costura ya ha terminado. La invitación no sale
+  /// antes: mientras el escudo se dibuja, la pantalla ya está diciendo algo.
+  final bool isRevealed;
   final VoidCallback onTap;
 
   /// El turno a cero es lo que hace de la reserva el número principal.
@@ -62,21 +67,44 @@ class PlayerHalf extends StatelessWidget {
     // lado de la mesa: invertir aquí además la dejaría del revés.
     final strings = AppLocalizations.of(context)!;
     final rows = <Widget>[
-      _Name(name),
-      // La pista de renombrar va atada al nombre y sigue a quien de verdad
-      // ofrece el gesto: `onRename` es nulo con el partido empezado, y
-      // entonces no hay nada que sugerir.
-      if (onRename != null) _RenameHint(strings.renameHintInline),
+      // La pista de renombrar va en la misma fila que el nombre y no en una
+      // propia: así aparecer y desaparecer no cambia la altura de la mitad, y
+      // empezar el partido no mueve los relojes de sitio.
+      _Name(
+        name,
+        canRename: onRename != null,
+        hint: strings.renameHintShort,
+        hintLong: strings.renameHintInline,
+      ),
+      // Encima del turno, y vacío con el partido empezado: el hueco se queda
+      // igual, que es lo que impide que empezar mueva los relojes de sitio.
+      SizedBox(
+        height: ClockTheme.labelSlotHeight,
+        child: Center(
+          child: _ClockLabel(isStarted ? null : strings.turnTimeLabel),
+        ),
+      ),
+      const SizedBox(height: ClockTheme.labelToClockGap),
       _ClockText(
         formatClock(turn),
         size: _isTurnSpent ? ClockTheme.turnSizeSpent : ClockTheme.turnSize,
       ),
-      const SizedBox(height: 12),
-      _ProgressBar(
-        remainingFraction: remainingFraction,
-        isReserve: _isTurnSpent,
+      const SizedBox(height: ClockTheme.clockToSlotGap),
+      // El mismo hueco para los dos: la barra con el partido en marcha y el
+      // nombre del reloj antes de empezar. Fijar la altura aquí es lo que
+      // hace que empezar no mueva los relojes de sitio.
+      SizedBox(
+        height: ClockTheme.barSlotHeight,
+        child: Center(
+          child: isStarted
+              ? _ProgressBar(
+                  remainingFraction: remainingFraction,
+                  isReserve: _isTurnSpent,
+                )
+              : _ClockLabel(strings.extraTimeLabel),
+        ),
       ),
-      const SizedBox(height: 14),
+      const SizedBox(height: ClockTheme.labelToClockGap),
       _ClockText(
         formatClock(reserve),
         size: _isTurnSpent
@@ -87,7 +115,10 @@ class PlayerHalf extends StatelessWidget {
       // La invitación cierra el bloque, debajo de los dos relojes, y late para
       // que se vea que la mitad espera un toque. Reserva su hueco también con
       // el partido empezado: sin eso, empezar mueve los relojes de sitio.
-      _StartHint(text: strings.startHint, isVisible: !isStarted),
+      _StartHint(
+        text: strings.startHint,
+        isVisible: !isStarted && isRevealed,
+      ),
     ];
 
     final half = AnimatedOpacity(
@@ -121,14 +152,29 @@ class PlayerHalf extends StatelessWidget {
 /// cubre entero, de modo que tocar aquí pasa turno como en cualquier otro
 /// punto y la pulsación larga renombra.
 class _Name extends StatelessWidget {
-  const _Name(this.text);
+  const _Name(
+    this.text, {
+    required this.canRename,
+    required this.hint,
+    required this.hintLong,
+  });
 
   final String text;
 
+  /// Con el partido empezado no se renombra, y entonces no hay lápiz: el
+  /// gesto que anuncia no existe.
+  final bool canRename;
+
+  /// La pista corta que se ve, al lado del nombre.
+  final String hint;
+
+  /// La frase entera, solo para los lectores de pantalla: la corta se apoya en
+  /// el lápiz que tiene al lado, y sin verlo no se entiende sola.
+  final String hintLong;
+
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+    final label = Flexible(
       child: Text(
         text,
         maxLines: 1,
@@ -138,6 +184,47 @@ class _Name extends StatelessWidget {
           fontWeight: FontWeight.w600,
           color: ClockTheme.text.withValues(alpha: 0.75),
         ),
+      ),
+    );
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        // La fila se ciñe al nombre en vez de ocupar el ancho entero: así el
+        // lápiz queda pegado a él y no en el borde de la pantalla.
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          label,
+          if (canRename) ...[
+            const SizedBox(width: 8),
+            // El lápiz y la pista se leen juntos, y de una vez: por separado
+            // un lector de pantalla diría dos cosas para un solo gesto.
+            Semantics(
+              label: hintLong,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.edit_outlined,
+                    size: ClockTheme.renameIconSize,
+                    color: ClockTheme.text.withValues(alpha: 0.4),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    hint,
+                    maxLines: 1,
+                    style: TextStyle(
+                      fontSize: ClockTheme.renameHintSize,
+                      fontWeight: FontWeight.w500,
+                      color: ClockTheme.text.withValues(alpha: 0.4),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }
@@ -204,7 +291,7 @@ class _StartHintState extends State<_StartHint>
     final label = Text(
       widget.text,
       style: TextStyle(
-        fontSize: 11,
+        fontSize: ClockTheme.startHintSize,
         fontWeight: FontWeight.w600,
         letterSpacing: 1.5,
         color: widget.isVisible
@@ -225,31 +312,6 @@ class _StartHintState extends State<_StartHint>
   }
 }
 
-/// La pista de que el nombre se cambia con una pulsación larga. Va pegada al
-/// nombre y más apagada que él: es una ayuda para la primera vez, no algo que
-/// haya que leer en cada partida.
-class _RenameHint extends StatelessWidget {
-  const _RenameHint(this.text);
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
-      child: Text(
-        text,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w500,
-          color: ClockTheme.text.withValues(alpha: 0.4),
-        ),
-      ),
-    );
-  }
-}
 
 class _ClockText extends StatelessWidget {
   const _ClockText(this.text, {required this.size, this.color});
@@ -275,8 +337,36 @@ class _ClockText extends StatelessWidget {
   }
 }
 
-/// Una sola barra por mitad, la del reloj que está corriendo. Con el partido
-/// parado se queda el carril vacío, para que la mitad no cambie de altura.
+/// Nombra el reloj que tiene al lado mientras el partido no ha empezado, que
+/// es cuando hay tiempo de leerlo. Empezado, el nombre sobra y el hueco se
+/// queda vacío: quien juega ya sabe qué mira, y la mitad no puede cambiar de
+/// altura por eso.
+///
+/// Con [text] nulo no pinta nada y solo ocupa su sitio, que es como se reserva
+/// el hueco sin decir nada.
+class _ClockLabel extends StatelessWidget {
+  const _ClockLabel(this.text);
+
+  final String? text;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = this.text;
+    if (text == null) return const SizedBox.shrink();
+    return Text(
+      text,
+      style: TextStyle(
+        fontSize: ClockTheme.clockLabelSize,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 1.2,
+        color: ClockTheme.text.withValues(alpha: 0.45),
+      ),
+    );
+  }
+}
+
+/// Una sola barra por mitad, la del reloj que está corriendo. Antes de empezar
+/// no la pinta nadie: en su hueco va [_ExtraTimeLabel].
 class _ProgressBar extends StatelessWidget {
   const _ProgressBar({
     required this.remainingFraction,

@@ -4,27 +4,29 @@ Cronómetro para partidas de Blood Bowl. Un solo móvil sobre la mesa, dos jugad
 sin red y sin sincronización.
 
 La aplicación es un árbitro, no un juez: mide el tiempo, avisa con bocinas y
-vibraciones, y no decide nada. Lo que ocurre cuando a un jugador se le agota la
-reserva lo deciden los jugadores.
+vibraciones, y no decide nada. Lo que ocurre cuando a un jugador se le agota el
+tiempo extra lo deciden los jugadores.
 
 ## Glosario
 
 **turno**: el tiempo reglamentario del que dispone el jugador activo, 4 minutos por
 defecto. Se reinicia al principio de cada turno.
 
-**reserva**: el tiempo adicional del que dispone cada jugador para todo el partido,
-15 minutos por defecto. Solo baja, nunca se recarga. Empieza a consumirse en cuanto
-el turno llega a cero.
+**tiempo extra**: el tiempo adicional del que dispone cada jugador para todo el
+partido, 15 minutos por defecto. Solo baja, nunca se recarga. Empieza a consumirse
+en cuanto el turno llega a cero.
 
-Nunca "bolsa de tiempo": la reserva es lo que se guarda para cuando hace falta, y
-"bolsa" no lo dice. En el código, `turnClock` y `reserveClock`.
+Nunca "bolsa de tiempo". En el código sigue siendo `reserveClock`, y los ajustes
+guardados conservan su clave: el nombre de cara al jugador cambió después, y
+renombrar el almacenamiento habría perdido la configuración de quien ya tenía la
+aplicación instalada.
 
 **jugador activo**: aquel cuyo turno corre. Solo hay uno en cada momento, y solo a
 él le suenan los avisos.
 
 **jugador inactivo**: el oponente mientras espera. Sus dos relojes están detenidos.
 
-**overtime**: el tiempo que sigue contando una vez agotada la reserva, mostrado en
+**overtime**: el tiempo que sigue contando una vez agotado el tiempo extra, mostrado en
 negativo. No detiene nada: deja constancia de cuánto se ha pasado un jugador.
 
 **aviso previo**: los segundos que quedan de turno cuando suena la primera
@@ -34,7 +36,7 @@ bocina, 30 por defecto. Es uno de los tres tiempos configurables.
 los del oponente.
 
 **bocina**: cada uno de los tres avisos sonoros, de menor a mayor intensidad: queda
-el aviso previo de turno, se agota el turno, se agota la reserva. Cada bocina lleva su
+el aviso previo de turno, se agota el turno, se agota el tiempo extra. Cada bocina lleva su
 vibración, en la misma intensidad que ella.
 
 **intensidad**: lo que gradúa un aviso, de suave a fuerte a más fuerte. La comparten
@@ -45,15 +47,17 @@ pulsaciones: lo que sube con la gravedad es la fuerza del golpe, no cuántos son
 
 ## Reglas del dominio
 
-- Los dos jugadores son simétricos en tiempo: mismo turno, misma reserva.
-- El turno se reinicia en cada cambio de jugador. La reserva dura todo el partido.
-- Pasar turno funciona siempre, también con la reserva consumiéndose. Lo único que
+- Los dos jugadores son simétricos en tiempo: mismo turno, mismo tiempo extra.
+- El turno se reinicia en cada cambio de jugador. El tiempo extra dura todo el partido.
+- Pasar turno funciona siempre, también con el tiempo extra consumiéndose. Lo único que
   lo impide es que el cronómetro esté pausado.
 - Pausar y reanudar son el mismo botón, con dos estados excluyentes. Pausado se
   reanuda además tocando en cualquier sitio: el velo que lo anuncia se come el
   toque, para que reanudar no se confunda con pasar turno.
 - El partido empieza al tocar al jugador que recibe la patada inicial. No hay botón
-  de comenzar.
+  de comenzar. La invitación de cada mitad dice "Pulsa para comenzar" y no de quién
+  es la patada: el reloj no reparte el saque, lo reparte el dado antes de tocar
+  nada, y la pantalla solo recoge lo que los jugadores ya han acordado.
 - La aplicación solo cuenta el tiempo en primer plano. Si se cierra o pasa a
   segundo plano, el tiempo se pausa. El compromiso es no tocar el móvil mientras
   corre el reloj.
@@ -62,12 +66,12 @@ pulsaciones: lo que sube con la gravedad es la fuerza del golpe, no cuántos son
   se pregunta antes, describiendo lo que se pierde. Sin empezar no hay nada que perder y
   se sale sin más.
 - La pantalla se mantiene encendida mientras un reloj corre, y se libera al pausar.
-- Los tres tiempos (turno, reserva y aviso previo) se configuran en una pantalla propia,
+- Los tres tiempos (turno, tiempo extra y aviso previo) se configuran en una pantalla propia,
   a la que solo se llega antes de empezar: los tiempos se pactan con el partido parado
   (ADR-0006). Los nombres se pactan igual, y por la misma razón: con el partido en marcha
   la pantalla no ofrece nada que no sea jugar.
 - Un cambio de tiempos redimensiona, no reinicia: lo ya gastado se conserva, de modo que
-  ampliar la reserva de quince a veinte minutos con seis gastados deja catorce. Es la
+  ampliar el tiempo extra de quince a veinte minutos con seis gastados deja catorce. Es la
   regla del reloj y vale siempre, aunque a los ajustes solo se llegue antes de empezar.
 - Los nombres son una etiqueta y no tocan ningún reloj, pero solo se cambian antes de
   empezar, con una pulsación larga sobre la mitad del jugador. La mitad ya sirve para

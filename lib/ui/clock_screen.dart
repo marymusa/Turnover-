@@ -11,6 +11,7 @@ import '../domain/match_ticker.dart';
 import '../domain/player_names.dart';
 import '../l10n/app_localizations.dart';
 import 'clock_theme.dart';
+import 'halfway_line.dart';
 import 'leave_dialog.dart';
 import 'paused_veil.dart';
 import 'player_half.dart';
@@ -63,6 +64,11 @@ class _ClockScreenState extends State<ClockScreen>
   late final MatchTicker _ticker = MatchTicker(widget.clock);
   late final Ticker _frames = createTicker(_onFrame);
   late final AwakeGuard _awake = AwakeGuard(widget.clock, widget.screen);
+
+  /// Si la presentación del escudo ya ha terminado. La invitación a empezar
+  /// espera a que lo haga: mientras se dibuja la costura, la pantalla está
+  /// contando otra cosa, y dos animaciones a la vez se estorban.
+  bool _isRevealed = false;
 
   /// El aviso se dispara y no se espera: lo que tarde el aparato en sonar no
   /// puede retrasar el toque de reloj siguiente.
@@ -164,6 +170,10 @@ class _ClockScreenState extends State<ClockScreen>
     if (!await askToReset(context)) return;
     _clock.reset();
     widget.names.resetOpponent();
+    // Reiniciar devuelve la pantalla a antes de empezar, y la costura se
+    // presenta otra vez: la invitación vuelve a esperar a que termine, como
+    // la primera vez.
+    setState(() => _isRevealed = false);
     _ticker.refresh();
   }
 
@@ -211,6 +221,7 @@ class _ClockScreenState extends State<ClockScreen>
                         onRename: clock.state == MatchState.notStarted
                             ? _rename
                             : null,
+                        isRevealed: _isRevealed,
                       ),
                       _Half(
                         clock: clock,
@@ -221,6 +232,7 @@ class _ClockScreenState extends State<ClockScreen>
                         onRename: clock.state == MatchState.notStarted
                             ? _rename
                             : null,
+                        isRevealed: _isRevealed,
                       ),
                     ],
                   ),
@@ -237,6 +249,15 @@ class _ClockScreenState extends State<ClockScreen>
                   // reinicio se siguen pudiendo pulsar con el partido pausado.
                   if (clock.state == MatchState.paused)
                     Positioned.fill(child: PausedVeil(onResume: _togglePause)),
+                  // Antes de empezar la costura está vacía, y la línea central
+                  // del campo la ocupa. Se va en cuanto arranca el partido,
+                  // que es cuando los controles la necesitan.
+                  if (clock.state == MatchState.notStarted)
+                    Positioned.fill(
+                      child: HalfwayLine(
+                        onRevealed: () => setState(() => _isRevealed = true),
+                      ),
+                    ),
                   // La costura solo existe con el partido empezado.
                   if (clock.state != MatchState.notStarted)
                     Positioned.fill(
@@ -279,6 +300,7 @@ class _Half extends StatelessWidget {
     required this.isUpsideDown,
     required this.onTap,
     required this.onRename,
+    required this.isRevealed,
   });
 
   final MatchClock clock;
@@ -289,6 +311,10 @@ class _Half extends StatelessWidget {
 
   /// Nulo con el partido empezado: renombrar se pacta antes de empezar.
   final void Function(Player)? onRename;
+
+  /// Si la presentación del escudo ya ha terminado, que es cuando la mitad
+  /// puede ofrecer el toque inicial.
+  final bool isRevealed;
 
   @override
   Widget build(BuildContext context) {
@@ -304,6 +330,7 @@ class _Half extends StatelessWidget {
         isActive: clock.activePlayer == player,
         isStarted: clock.state != MatchState.notStarted,
         isUpsideDown: isUpsideDown,
+        isRevealed: isRevealed,
         onTap: () => onTap(player),
       ),
     );
