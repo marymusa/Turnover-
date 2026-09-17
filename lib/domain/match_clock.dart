@@ -154,10 +154,15 @@ class MatchClock {
     final turnClock = _turnClock[active]!;
     final reserveClock = _reserveClock[active]!;
 
+    // El aviso previo a cero está desactivado, no es un aviso que llegue justo
+    // al final: sin esto coincidiría con el agotamiento y sonarían dos bocinas
+    // en el mismo instante.
+    final hasWarning = _warning > Duration.zero;
+
     final thisMatch = _emittedThisMatch[active]!;
-    at(turnClock <= _warning, Horn.turnWarning, _emittedThisTurn);
+    at(hasWarning && turnClock <= _warning, Horn.turnWarning, _emittedThisTurn);
     at(turnClock <= Duration.zero, Horn.turnExpired, _emittedThisTurn);
-    at(reserveClock <= _warning, Horn.reserveWarning, thisMatch);
+    at(hasWarning && reserveClock <= _warning, Horn.reserveWarning, thisMatch);
     at(reserveClock <= Duration.zero, Horn.reserveExpired, thisMatch);
 
     return events;

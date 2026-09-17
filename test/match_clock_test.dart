@@ -68,6 +68,35 @@ void main() {
       ]);
     });
 
+    test('el aviso a cero no suena: cero es desactivado', () {
+      final clock = MatchClock(
+        turn: const Duration(minutes: 4),
+        reserve: const Duration(minutes: 15),
+        warning: Duration.zero,
+      );
+      clock.start(Player.one);
+
+      // Al agotarse el turno suena que se ha agotado, y nada más: sin el aviso
+      // previo, que a cero coincidiría con el final y sonaría dos veces.
+      expect(clock.advance(const Duration(minutes: 4)), [
+        const MatchEvent(Horn.turnExpired, Player.one),
+      ]);
+    });
+
+    test('el aviso de reserva a cero tampoco suena', () {
+      final clock = MatchClock(
+        turn: const Duration(minutes: 4),
+        reserve: const Duration(minutes: 15),
+        warning: Duration.zero,
+      );
+      clock.start(Player.one);
+      clock.advance(const Duration(minutes: 4));
+
+      expect(clock.advance(const Duration(minutes: 15)), [
+        const MatchEvent(Horn.reserveExpired, Player.one),
+      ]);
+    });
+
     test('el aviso de turno no se repite en los avances siguientes', () {
       final clock = newClock();
       clock.start(Player.one);

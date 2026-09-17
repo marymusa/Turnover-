@@ -57,6 +57,39 @@ class PlayerHalf extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Las dos mitades llevan el mismo orden. De girar la de arriba se encarga
+    // el RotatedBox del final, que ya la deja leyéndose de frente desde su
+    // lado de la mesa: invertir aquí además la dejaría del revés.
+    final strings = AppLocalizations.of(context)!;
+    final rows = <Widget>[
+      _Name(name),
+      // La pista de renombrar va atada al nombre y sigue a quien de verdad
+      // ofrece el gesto: `onRename` es nulo con el partido empezado, y
+      // entonces no hay nada que sugerir.
+      if (onRename != null) _RenameHint(strings.renameHintInline),
+      _ClockText(
+        formatClock(turn),
+        size: _isTurnSpent ? ClockTheme.turnSizeSpent : ClockTheme.turnSize,
+      ),
+      const SizedBox(height: 12),
+      _ProgressBar(
+        remainingFraction: remainingFraction,
+        isReserve: _isTurnSpent,
+      ),
+      const SizedBox(height: 14),
+      _ClockText(
+        formatClock(reserve),
+        size: _isTurnSpent
+            ? ClockTheme.reserveSizeSpent
+            : ClockTheme.reserveSize,
+        color: _isTurnSpent ? ClockTheme.reserve : null,
+      ),
+      // La invitación cierra el bloque, debajo de los dos relojes, y late para
+      // que se vea que la mitad espera un toque. Reserva su hueco también con
+      // el partido empezado: sin eso, empezar mueve los relojes de sitio.
+      _StartHint(text: strings.startHint, isVisible: !isStarted),
+    ];
+
     final half = AnimatedOpacity(
       duration: const Duration(milliseconds: 200),
       opacity: !isStarted || isActive ? 1 : ClockTheme.inactiveOpacity,
@@ -68,29 +101,7 @@ class PlayerHalf extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            _Name(name),
-            if (!isStarted) _Hint(AppLocalizations.of(context)!.startHint),
-            _ClockText(
-              formatClock(turn),
-              size: _isTurnSpent
-                  ? ClockTheme.turnSizeSpent
-                  : ClockTheme.turnSize,
-            ),
-            const SizedBox(height: 12),
-            _ProgressBar(
-              remainingFraction: remainingFraction,
-              isReserve: _isTurnSpent,
-            ),
-            const SizedBox(height: 14),
-            _ClockText(
-              formatClock(reserve),
-              size: _isTurnSpent
-                  ? ClockTheme.reserveSizeSpent
-                  : ClockTheme.reserveSize,
-              color: _isTurnSpent ? ClockTheme.reserve : null,
-            ),
-          ],
+          children: rows,
         ),
       ),
     );
@@ -132,22 +143,108 @@ class _Name extends StatelessWidget {
   }
 }
 
-class _Hint extends StatelessWidget {
-  const _Hint(this.text);
+/// La invitación a empezar, latiendo despacio debajo de los relojes.
+///
+/// Late con [ScaleTransition] y no cambiando el cuerpo de la letra: escalar
+/// solo repinta, mientras que agrandar el texto rehace la medida y empujaría a
+/// los relojes en cada fotograma.
+///
+/// Con el partido empezado no se pinta, pero su hueco se queda: el texto se
+/// sustituye por uno transparente del mismo tamaño, de modo que la mitad mide
+/// igual antes y después y empezar no mueve nada de sitio.
+class _StartHint extends StatefulWidget {
+  const _StartHint({required this.text, required this.isVisible});
+
+  final String text;
+  final bool isVisible;
+
+  @override
+  State<_StartHint> createState() => _StartHintState();
+}
+
+class _StartHintState extends State<_StartHint>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 900),
+  );
+
+  late final Animation<double> _scale = Tween(begin: 1.0, end: 1.12).animate(
+    CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+  );
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.isVisible) _controller.repeat(reverse: true);
+  }
+
+  /// El latido solo corre mientras se ve. Parado, el controlador no despierta
+  /// a nadie en cada fotograma.
+  @override
+  void didUpdateWidget(_StartHint old) {
+    super.didUpdateWidget(old);
+    if (widget.isVisible == old.isVisible) return;
+    if (widget.isVisible) {
+      _controller.repeat(reverse: true);
+    } else {
+      _controller.stop();
+      _controller.value = 0;
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final label = Text(
+      widget.text,
+      style: TextStyle(
+        fontSize: 11,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 1.5,
+        color: widget.isVisible
+            ? ClockTheme.text
+            : ClockTheme.text.withValues(alpha: 0),
+      ),
+    );
+
+    // Simétrico y no solo por arriba: la mitad de arriba va girada, y un
+    // margen de un solo lado le queda del lado contrario, pegando el texto al
+    // reloj de reserva. El hueco que deja el escalado entra en esta medida.
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 14),
+      child: widget.isVisible
+          ? ScaleTransition(scale: _scale, child: label)
+          : label,
+    );
+  }
+}
+
+/// La pista de que el nombre se cambia con una pulsación larga. Va pegada al
+/// nombre y más apagada que él: es una ayuda para la primera vez, no algo que
+/// haya que leer en cada partida.
+class _RenameHint extends StatelessWidget {
+  const _RenameHint(this.text);
 
   final String text;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 18),
+      padding: const EdgeInsets.only(bottom: 6),
       child: Text(
         text,
-        style: const TextStyle(
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
           fontSize: 11,
-          fontWeight: FontWeight.w600,
-          letterSpacing: 1.5,
-          color: ClockTheme.text,
+          fontWeight: FontWeight.w500,
+          color: ClockTheme.text.withValues(alpha: 0.4),
         ),
       ),
     );

@@ -54,7 +54,11 @@ class SettingsScreen extends StatelessWidget {
               _TimeSetting(
                 name: strings.settingsWarning,
                 hint: strings.settingsWarningHint,
-                value: strings.seconds(settings.warning.inSeconds),
+                // Cero no se lee como "0 s" sino como lo que significa: que no
+                // hay aviso previo.
+                value: settings.warning > Duration.zero
+                    ? strings.seconds(settings.warning.inSeconds)
+                    : strings.settingsWarningOff,
                 amount: settings.warning.inSeconds.toDouble(),
                 min: _minWarningSeconds,
                 max: _maxWarningSeconds,
@@ -76,12 +80,15 @@ const _minTurnMinutes = 1.0;
 const _maxTurnMinutes = 10.0;
 const _minReserveMinutes = 1.0;
 const _maxReserveMinutes = 30.0;
-const _minWarningSeconds = 5.0;
+/// El aviso previo sí llega a cero, que es apagarlo: el turno se acaba sin
+/// avisar antes. Es el único de los tres que se puede desactivar, porque los
+/// otros dos son el tiempo del partido y sin ellos no hay nada que medir.
+const _minWarningSeconds = 0.0;
 const _maxWarningSeconds = 60.0;
 
 /// El aviso previo va de cinco en cinco segundos, no de uno en uno: afinarlo
-/// al segundo no le dice nada a nadie. Once tramos entre cinco y sesenta.
-const _warningDivisions = 11;
+/// al segundo no le dice nada a nadie. Doce tramos entre cero y sesenta.
+const _warningDivisions = 12;
 
 class _TimeSetting extends StatelessWidget {
   const _TimeSetting({
