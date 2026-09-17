@@ -52,3 +52,10 @@ app.*.map.json
 
 # Trabajo de usar y tirar: capturas del emulador, pruebas sueltas.
 .scratch/
+
+# La clave de firma y su contraseña. Perder la clave impide volver a publicar
+# una actualización de la aplicación, así que vive fuera del repositorio y con
+# copia de seguridad aparte.
+*.jks
+*.keystore
+/android/key.properties
