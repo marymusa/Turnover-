@@ -76,9 +76,9 @@
   "@settingsWarningOff": {
     "description": "Valor de los avisos previos cuando los dos agarres están a cero"
   },
-  "secondsRange": "{early} s and {late} s",
+  "secondsRange": "{late} s and {early} s",
   "@secondsRange": {
-    "description": "Los dos avisos previos separados, a la derecha de su nombre en los ajustes",
+    "description": "Los dos avisos previos separados, en el mismo orden en que salen los agarres del deslizador: primero el tardío, que va a la izquierda",
     "placeholders": {
       "early": { "type": "int" },
       "late": { "type": "int" }

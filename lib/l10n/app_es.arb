@@ -19,7 +19,7 @@
   "settingsReserveHint": "Para todo el partido, no se recarga",
   "settingsWarningHint": "Separando los agarres suenan dos avisos antes de agotarse el tiempo",
   "settingsWarningOff": "Desactivado",
-  "secondsRange": "{early} s y {late} s",
+  "secondsRange": "{late} s y {early} s",
   "minutes": "{count} min",
   "seconds": "{count} s",
   "reset": "Reiniciar cronómetro",
