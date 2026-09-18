@@ -117,6 +117,16 @@ final _shots = <_Shot>[
     playerTwo: 'Nuffle',
   ),
   _Shot(name: '08-ajustes', seed: (_) {}, isSettings: true),
+  // El rival con el turno gastado: es la única combinación que enseña a la vez
+  // el naranja de su mitad y el amarillo de la reserva, que es lo que hay que
+  // mirar junto para saber si el aviso se sigue leyendo encima del naranja.
+  _Shot(
+    name: '09-rival-con-el-turno-gastado',
+    seed: (clock) {
+      clock.start(Player.two);
+      clock.advance(_turn + const Duration(minutes: 2, seconds: 12));
+    },
+  ),
 ];
 
 class _CaptureApp extends StatefulWidget {
