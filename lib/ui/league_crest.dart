@@ -22,8 +22,7 @@ class _RevealedLogo extends StatefulWidget {
   /// que no cierra el contorno no entra nada.
   final Animation<double> trace;
 
-  /// La entrada del escudo, que comparte con la línea: las dos empiezan al
-  /// cerrarse el contorno y acaban juntas.
+  /// La entrada del escudo: empieza al cerrarse el contorno y acaba con él.
   final Animation<double> settle;
 
   /// Avisa de que el contorno ya está resuelto, con o sin éxito. Quien manda
@@ -168,27 +167,28 @@ class _OutlinePainter extends CustomPainter {
       old.progress != progress || old.fade != fade;
 }
 
-/// La línea central del campo con el escudo de la liga encima, la que parte
+/// El escudo de la liga en el centro del campo, donde la línea central parte
 /// las veintiséis casillas en dos mitades de trece. Ocupa la costura, que
 /// antes de empezar está vacía, y desaparece en cuanto el partido arranca y
 /// los controles la necesitan.
 ///
+/// La línea que lo acompañaba se quitó al meter las mitades en tarjetas: el
+/// hueco que queda entre las dos ya parte el campo, y la línea encima cruzaba
+/// ese hueco cortando los bordes de ambas.
+///
 /// Es decoración y nada más: no recibe el toque, que tiene que seguir llegando
 /// a la mitad que hay debajo para elegir quién recibe la patada inicial.
-///
-/// La línea pasa por detrás del escudo y no se corta: es el centro del campo,
-/// y ahí la línea y el escudo conviven.
-class HalfwayLine extends StatefulWidget {
-  const HalfwayLine({required this.onRevealed, super.key});
+class LeagueCrest extends StatefulWidget {
+  const LeagueCrest({required this.onRevealed, super.key});
 
-  /// Se llama al terminar la presentación entera, escudo y línea incluidos.
+  /// Se llama al terminar la presentación entera.
   final VoidCallback onRevealed;
 
   @override
-  State<HalfwayLine> createState() => _HalfwayLineState();
+  State<LeagueCrest> createState() => _LeagueCrestState();
 }
 
-class _HalfwayLineState extends State<HalfwayLine>
+class _LeagueCrestState extends State<LeagueCrest>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller = AnimationController(
     vsync: this,
@@ -227,15 +227,6 @@ class _HalfwayLineState extends State<HalfwayLine>
         child: Stack(
           alignment: Alignment.center,
           children: [
-            // La línea y el escudo entran a la vez y tardan lo mismo: los dos
-            // leen de `_settle`, así que no hay forma de que se descuadren.
-            AnimatedBuilder(
-              animation: _settle,
-              builder: (context, _) => CustomPaint(
-                size: Size.infinite,
-                painter: _HalfwayLinePainter(progress: _settle.value),
-              ),
-            ),
             _RevealedLogo(
               trace: _trace,
               settle: _settle,
@@ -265,30 +256,3 @@ class _HalfwayLineState extends State<HalfwayLine>
   }
 }
 
-/// Las dos mitades de la línea central, que crecen desde los bordes hacia el
-/// centro. Con [progress] a uno se tocan y forman la línea entera.
-class _HalfwayLinePainter extends CustomPainter {
-  const _HalfwayLinePainter({required this.progress});
-
-  final double progress;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (progress <= 0) return;
-    final paint = Paint()
-      ..color = ClockTheme.text.withValues(alpha: ClockTheme.halfwayLineOpacity)
-      ..strokeWidth = ClockTheme.halfwayLineHeight;
-
-    final middle = size.height / 2;
-    final reach = size.width / 2 * progress;
-    canvas.drawLine(Offset(0, middle), Offset(reach, middle), paint);
-    canvas.drawLine(
-      Offset(size.width, middle),
-      Offset(size.width - reach, middle),
-      paint,
-    );
-  }
-
-  @override
-  bool shouldRepaint(_HalfwayLinePainter old) => old.progress != progress;
-}

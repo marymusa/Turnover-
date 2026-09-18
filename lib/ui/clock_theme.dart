@@ -61,6 +61,17 @@ abstract final class ClockTheme {
   /// lado de la mesa.
   static const inactiveOpacity = 0.3;
 
+  /// La mitad no llega hasta el borde: el color vive dentro de una tarjeta, y
+  /// el fondo de la pantalla se ve alrededor. Lo que se aparta es poco a
+  /// propósito, que el alto de la pantalla ya va justo con los dos relojes.
+  ///
+  /// El toque no se encoge con ella: sigue cogiendo la mitad entera, márgenes
+  /// incluidos. En una mesa se golpea la pantalla, no se apunta.
+  static const halfCardInset = 12.0;
+  static const halfCardRadius = 20.0;
+  static const halfCardBorderWidth = 1.0;
+  static const halfCardBorderAlpha = 0.14;
+
   /// El velo de pausa deja ver los relojes por debajo: se pausa para hablar de
   /// la jugada, y el tiempo se sigue leyendo mientras se habla.
   static const veilOpacity = 0.82;
@@ -101,12 +112,6 @@ abstract final class ClockTheme {
   /// tamaño no se distinguía de una etiqueta más.
   static const startHintSize = 14.0;
 
-  /// La línea central del campo, antes de empezar. Cruza la pantalla de lado a
-  /// lado, como la del campo, y es más estrecha que las barras de los relojes:
-  /// recuerda al campo sin disputarle nada a los números.
-  static const halfwayLineHeight = 4.0;
-  static const halfwayLineOpacity = 0.6;
-
 
   /// El escudo de la liga, en el centro del campo y solo antes de empezar. Va
   /// a plena opacidad: sus colores son los suyos, y apagarlos no lo vuelve
@@ -114,11 +119,10 @@ abstract final class ClockTheme {
   static const leagueLogoSize = 96.0;
 
   /// La presentación del escudo, en dos tiempos: el cometa recorre el contorno
-  /// y, al cerrarlo, entran a la vez el escudo y la línea central mientras el
-  /// trazo se apaga. Una sola vez, al abrir la pantalla.
+  /// y, al cerrarlo, entra el escudo mientras el trazo se apaga. Una sola vez,
+  /// al abrir la pantalla.
   ///
-  /// El cometa manda sobre lo demás: hasta que no cierra la silueta no entra
-  /// nada, y lo que entra después lo hace junto.
+  /// El cometa manda: hasta que no cierra la silueta no entra el escudo.
   static const logoRevealColor = text;
   static const logoTraceDuration = Duration(milliseconds: 1500);
   static const logoSettleDuration = Duration(milliseconds: 700);

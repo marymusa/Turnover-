@@ -133,7 +133,20 @@ class PlayerHalf extends StatelessWidget {
       opacity: !isStarted || isActive ? 1 : ClockTheme.inactiveOpacity,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        color: isActive ? activeColor : ClockTheme.inactive,
+        // El color vive aquí dentro y no en la mitad entera: lo que se ve es
+        // una tarjeta con el fondo de la pantalla alrededor. El margen no
+        // recorta el toque, que lo coge el GestureDetector de fuera.
+        margin: const EdgeInsets.all(ClockTheme.halfCardInset),
+        decoration: BoxDecoration(
+          color: isActive ? activeColor : ClockTheme.inactive,
+          borderRadius: BorderRadius.circular(ClockTheme.halfCardRadius),
+          border: Border.all(
+            color: ClockTheme.text.withValues(
+              alpha: ClockTheme.halfCardBorderAlpha,
+            ),
+            width: ClockTheme.halfCardBorderWidth,
+          ),
+        ),
         // Ancho completo: la mitad es tocable entera, no solo donde hay números.
         width: double.infinity,
         child: Column(

@@ -11,7 +11,7 @@ import '../domain/match_ticker.dart';
 import '../domain/player_names.dart';
 import '../l10n/app_localizations.dart';
 import 'clock_theme.dart';
-import 'halfway_line.dart';
+import 'league_crest.dart';
 import 'leave_dialog.dart';
 import 'paused_veil.dart';
 import 'player_half.dart';
@@ -249,12 +249,12 @@ class _ClockScreenState extends State<ClockScreen>
                   // reinicio se siguen pudiendo pulsar con el partido pausado.
                   if (clock.state == MatchState.paused)
                     Positioned.fill(child: PausedVeil(onResume: _togglePause)),
-                  // Antes de empezar la costura está vacía, y la línea central
-                  // del campo la ocupa. Se va en cuanto arranca el partido,
-                  // que es cuando los controles la necesitan.
+                  // Antes de empezar la costura está vacía, y el escudo de la
+                  // liga la ocupa. Se va en cuanto arranca el partido, que es
+                  // cuando los controles la necesitan.
                   if (clock.state == MatchState.notStarted)
                     Positioned.fill(
-                      child: HalfwayLine(
+                      child: LeagueCrest(
                         onRevealed: () => setState(() => _isRevealed = true),
                       ),
                     ),
