@@ -111,25 +111,25 @@ void main() {
         );
       });
 
-      // Un botón que no se despega del fondo se lee como una mancha pegada
-      // encima y no como algo que se pueda pulsar. En la paleta clara el canto
-      // lo pone el borde, porque el blanco sobre el gris casi no separa.
-      test('el botón tiene canto contra el fondo', () {
-        final edge = math.max(
-          _contrast(palette.controlSurface, palette.background),
-          _contrast(palette.controlBorder, palette.background),
-        );
-        expect(edge, greaterThan(1.3));
+      // El botón se tiene que despegar del fondo, y cada paleta lo consigue
+      // por donde puede, que es lo que hace Material: en la clara con la
+      // sombra, porque el blanco sobre el gris no separa; en la oscura con la
+      // propia superficie, porque una sombra negra sobre un fondo casi negro
+      // no se ve. Basta con que funcione uno de los dos.
+      test('el botón se despega del fondo', () {
+        final bySurface = _contrast(palette.controlSurface, palette.background);
+        final byShadow = _contrast(palette.controlShadow, palette.background);
+        expect(math.max(bySurface, byShadow), greaterThan(1.3));
       });
 
-      // El borde de la tarjeta separa la mitad del fondo. No es texto, así que
-      // no se le pide contraste de lectura, pero tiene que verse.
-      test('el borde de la tarjeta se ve sobre la mitad inactiva', () {
-        final border = _over(
-          palette.text.withValues(alpha: palette.halfCardBorderAlpha),
-          palette.inactive,
+      // El borde de la tarjeta es lo que la hace parecer una tarjeta: el fondo
+      // de la pantalla y el de la tarjeta se parecen mucho en las dos paletas,
+      // así que sin canto lo que se ve es un trozo de fondo.
+      test('el borde perfila la tarjeta contra el fondo', () {
+        expect(
+          _contrast(palette.halfCardBorder, palette.inactive),
+          greaterThan(1.3),
         );
-        expect(_contrast(border, palette.inactive), greaterThan(1.1));
       });
     });
   }

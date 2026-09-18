@@ -147,12 +147,17 @@ class PlayerHalf extends StatelessWidget {
     // color, que ahora es el suyo y no el de la mitad activa apagada.
     final half = AnimatedContainer(
       duration: const Duration(milliseconds: 200),
-      margin: const EdgeInsets.all(ClockTheme.halfCardInset),
+      // Arriba y abajo va la mitad que a los lados: en la costura las dos
+      // tarjetas suman sus márgenes y el hueco sale igual que el de los lados.
+      margin: const EdgeInsets.symmetric(
+        horizontal: ClockTheme.halfCardInset,
+        vertical: ClockTheme.halfCardVerticalInset,
+      ),
       decoration: BoxDecoration(
         color: isActive ? activeColor : colors.inactive,
         borderRadius: BorderRadius.circular(ClockTheme.halfCardRadius),
         border: Border.all(
-          color: colors.text.withValues(alpha: colors.halfCardBorderAlpha),
+          color: colors.halfCardBorder,
           width: ClockTheme.halfCardBorderWidth,
         ),
       ),

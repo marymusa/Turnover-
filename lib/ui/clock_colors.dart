@@ -28,8 +28,8 @@ class ClockColors {
     required this.dialogSurface,
     required this.veilText,
     required this.controlSurface,
-    required this.controlBorder,
-    required this.halfCardBorderAlpha,
+    required this.controlShadow,
+    required this.halfCardBorder,
     required this.veilOpacity,
   });
 
@@ -109,14 +109,19 @@ class ClockColors {
   /// Con superficie propia se apoyan en la pantalla en vez de flotar.
   final Color controlSurface;
 
-  /// Lo que los perfila. En la paleta clara es quien hace el trabajo: el
-  /// blanco sobre el gris del fondo se queda en 1,1:1 y solo, sin borde, el
-  /// botón no tendría canto.
-  final Color controlBorder;
+  /// La sombra que los levanta de la pantalla. En la paleta clara es la que
+  /// hace el trabajo: el blanco del botón sobre el gris del fondo se queda en
+  /// 1,1:1, así que lo que lo despega no es el color sino la altura.
+  final Color controlShadow;
 
-  /// El borde de la tarjeta, sobre [text]: la tarjeta es oscura en las dos
-  /// paletas, así que quien la perfila es la letra clara.
-  final double halfCardBorderAlpha;
+  /// Lo que perfila la tarjeta del jugador que espera.
+  ///
+  /// Es un color entero y no una alfa sobre [text]. La tarjeta y el fondo de
+  /// la pantalla se parecen mucho en las dos paletas, 1,1:1, así que lo que
+  /// hace que se lea como una tarjeta y no como un trozo de fondo es el canto.
+  /// Con una alfa de la letra clara, en la paleta clara salía blanco sobre
+  /// blanco y la tarjeta desaparecía.
+  final Color halfCardBorder;
 
   /// El velo de pausa deja ver los relojes por debajo: se pausa para hablar de
   /// la jugada, y el tiempo se sigue leyendo mientras se habla.
@@ -138,8 +143,8 @@ class ClockColors {
     dialogSurface: Color(0xFF161B26),
     veilText: Color(0xFFF8FAFC),
     controlSurface: Color(0xFF232A38),
-    controlBorder: Color(0xFF394356),
-    halfCardBorderAlpha: 0.14,
+    controlShadow: Color(0xFF000000),
+    halfCardBorder: Color(0xFF363A44),
     veilOpacity: 0.82,
   );
 
@@ -157,7 +162,7 @@ class ClockColors {
   static const light = ClockColors(
     brightness: Brightness.light,
     background: Color(0xFFF1F5F9),
-    inactive: Color(0xFFF1F5F9),
+    inactive: Color(0xFFFFFFFF),
     active: Color(0xFF234FC7),
     activeOpponent: Color(0xFF973E20),
     text: Color(0xFF0F172A),
@@ -169,8 +174,8 @@ class ClockColors {
     dialogSurface: Color(0xFFFFFFFF),
     veilText: Color(0xFF0F172A),
     controlSurface: Color(0xFFFFFFFF),
-    controlBorder: Color(0xFFCBD5E1),
-    halfCardBorderAlpha: 0.14,
+    controlShadow: Color(0xFF64748B),
+    halfCardBorder: Color(0xFFCBD5E1),
     veilOpacity: 0.82,
   );
 

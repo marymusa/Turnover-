@@ -71,9 +71,12 @@ class _PassTurnControl extends StatelessWidget {
         opacity: onPressed == null ? 0.25 : 1,
         child: Material(
           color: colors.controlSurface,
-          shape: CircleBorder(
-            side: BorderSide(color: colors.controlBorder, width: 2),
-          ),
+          shape: const CircleBorder(),
+          // Pasar turno va más levantado que los otros dos: es el gesto
+          // principal, y en Material la altura es lo que lo dice.
+          elevation: ClockTheme.passTurnElevation,
+          shadowColor: colors.controlShadow,
+          clipBehavior: Clip.antiAlias,
           child: InkWell(
             customBorder: const CircleBorder(),
             onTap: onPressed,

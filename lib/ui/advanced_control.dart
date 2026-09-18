@@ -6,10 +6,13 @@ import 'clock_theme.dart';
 /// Un control redondo y discreto, el de las operaciones que acompañan al
 /// partido sin ser el gesto principal: pausar, reiniciar, abrir los ajustes.
 ///
-/// Lleva superficie y borde propios, no una tinta sobre el fondo: lo que manda
-/// en la costura es pasar turno, y a estos los distingue el tamaño, no estar
-/// medio borrados. Apagados hasta desaparecer se leían como manchas pegadas
-/// sobre la pantalla, sobre todo en la paleta clara.
+/// Es un botón de Material, con su superficie y su sombra: lo que lo separa de
+/// la pantalla es la elevación, como en cualquier botón redondo del sistema.
+/// Pintado plano y con una tinta sobre el fondo se leía como una mancha pegada
+/// encima, sobre todo en la paleta clara.
+///
+/// Lo que manda en la costura sigue siendo pasar turno, y a estos los distingue
+/// el tamaño, no estar medio borrados.
 class AdvancedControl extends StatelessWidget {
   const AdvancedControl({
     required this.icon,
@@ -34,7 +37,10 @@ class AdvancedControl extends StatelessWidget {
       label: label,
       child: Material(
         color: isHighlighted ? colors.paused : colors.controlSurface,
-        shape: CircleBorder(side: BorderSide(color: colors.controlBorder)),
+        shape: const CircleBorder(),
+        elevation: ClockTheme.controlElevation,
+        shadowColor: colors.controlShadow,
+        clipBehavior: Clip.antiAlias,
         child: InkWell(
           customBorder: const CircleBorder(),
           onTap: onPressed,

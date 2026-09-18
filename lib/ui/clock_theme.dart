@@ -40,6 +40,12 @@ abstract final class ClockTheme {
   /// Lo que separa los tres controles de la costura.
   static const seamGap = 26.0;
 
+  /// Lo que se levantan los controles de la costura. Pasar turno va más alto
+  /// que los otros dos: en Material la altura dice cuál manda, y aquí manda
+  /// el que pasa el turno.
+  static const controlElevation = 3.0;
+  static const passTurnElevation = 6.0;
+
   /// Lo que el botón de los ajustes se aparta del centro, medido hasta su
   /// propio centro: media anchura de escudo, media de botón y el hueco de la
   /// costura entre los dos. El escudo no se mueve de sitio, que es el centro
@@ -57,6 +63,11 @@ abstract final class ClockTheme {
   /// El toque no se encoge con ella: sigue cogiendo la mitad entera, márgenes
   /// incluidos. En una mesa se golpea la pantalla, no se apunta.
   static const halfCardInset = 12.0;
+
+  /// Arriba y abajo, cada tarjeta se aparta la mitad. En la costura las dos se
+  /// suman y el hueco sale entero; contra el borde de la pantalla no hay otra
+  /// tarjeta que sume, así que la mitad que falta la pone la pantalla.
+  static const halfCardVerticalInset = halfCardInset / 2;
   static const halfCardRadius = 20.0;
   static const halfCardBorderWidth = 1.0;
 

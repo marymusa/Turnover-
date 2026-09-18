@@ -39,19 +39,39 @@ al cambio de fondo, pero apuntando a las razones de contraste que tenía la
 oscura y no a las máximas posibles: subidos hasta el tope, las dos mitades se
 volvían dos bloques casi negros sobre una página blanca.
 
-## Los botones llevan superficie propia
+## Los botones son botones de Material
 
 Los controles redondos de la costura se pintaban tiñendo el fondo con un 0,07
 de la letra. Eso los dejaba a 1,15:1 de la pantalla en las dos paletas, y a esa
 distancia no se leen como botones puestos encima sino como manchas pegadas,
-cosa que en la paleta clara salta a la vista. Pasan a tener color de superficie
-y borde propios, `controlSurface` y `controlBorder`. En la clara el canto lo
-pone el borde: el blanco sobre el gris del fondo se queda en 1,1:1 y solo no
-tendría canto.
+cosa que en la paleta clara salta a la vista.
+
+Pasan a ser lo que aparentan: un `Material` con su superficie y su elevación,
+como cualquier botón redondo del sistema. Pasar turno va más alto que los otros
+dos, porque en Material la altura dice cuál manda.
+
+Cada paleta se despega del fondo por donde puede, que es lo que hace Material:
+en la clara con la sombra, porque el blanco del botón sobre el gris del fondo
+se queda en 1,1:1; en la oscura con la propia superficie, porque una sombra
+negra sobre un fondo casi negro no se ve. Por eso hay `controlSurface` y
+`controlShadow`, y la prueba pide que funcione uno de los dos, no los dos.
 
 Con eso desaparece la distinción entre un control acompañado y uno suelto: la
 subía para que el botón de los ajustes no se leyera como deshabilitado, y con
 superficie propia ya no hace falta.
+
+## El hueco de la costura
+
+Las dos tarjetas se apartan la mitad por arriba y por abajo, y la mitad que les
+falta contra el borde de la pantalla la pone la pantalla. Con la medida entera
+a los cuatro lados, en la costura se sumaban los márgenes de las dos y el hueco
+del centro salía del doble que los de fuera.
+
+La mitad de arriba va girada entera, así que el `RotatedBox` gira también su
+margen: lo que se ponga dentro de la mitad acaba en el lado que no es. Por eso
+el margen de fuera vive en la pantalla y no en la mitad. Se midieron los píxeles
+en el móvil para saberlo; deducirlo del código llevó a dos arreglos que no lo
+eran.
 
 ## Consecuencias
 
@@ -64,6 +84,6 @@ medir el contraste de las dos en cada ejecución, cada letra contra su propia
 superficie y cada aviso contra la suya. Un valor cambiado a mano que rompa
 alguna de las condiciones sale ahí.
 
-Queda sin comprobar por las pruebas lo que solo se ve en un móvil: que la
-paleta clara no deslumbre y que el cambio de ajuste del sistema con la
-aplicación abierta no deje nada a medias. Ver `docs/agents/device-testing.md`.
+Lo que las pruebas no ven se comprobó en un Mi 9, las dos paletas y el cambio
+de ajuste del sistema con la aplicación abierta, que repinta sin reiniciar. Ver
+`docs/agents/device-testing.md`.

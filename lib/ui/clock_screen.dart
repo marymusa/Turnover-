@@ -211,31 +211,40 @@ class _ClockScreenState extends State<ClockScreen>
             body: SafeArea(
               child: Stack(
                 children: [
-                  Column(
-                    children: [
-                      _Half(
-                        clock: clock,
-                        name: _nameOf(context, Player.two),
-                        player: Player.two,
-                        isUpsideDown: true,
-                        onTap: _tapHalf,
-                        onRename: clock.state == MatchState.notStarted
-                            ? _rename
-                            : null,
-                        isRevealed: _isRevealed,
-                      ),
-                      _Half(
-                        clock: clock,
-                        name: _nameOf(context, Player.one),
-                        player: Player.one,
-                        isUpsideDown: false,
-                        onTap: _tapHalf,
-                        onRename: clock.state == MatchState.notStarted
-                            ? _rename
-                            : null,
-                        isRevealed: _isRevealed,
-                      ),
-                    ],
+                  // La mitad del margen que a las tarjetas les falta contra el
+                  // borde de la pantalla. Va aquí y no dentro de la mitad
+                  // porque dentro la giraría el `RotatedBox` de la de arriba,
+                  // y acabaría en el lado que no es.
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: ClockTheme.halfCardVerticalInset,
+                    ),
+                    child: Column(
+                      children: [
+                        _Half(
+                          clock: clock,
+                          name: _nameOf(context, Player.two),
+                          player: Player.two,
+                          isUpsideDown: true,
+                          onTap: _tapHalf,
+                          onRename: clock.state == MatchState.notStarted
+                              ? _rename
+                              : null,
+                          isRevealed: _isRevealed,
+                        ),
+                        _Half(
+                          clock: clock,
+                          name: _nameOf(context, Player.one),
+                          player: Player.one,
+                          isUpsideDown: false,
+                          onTap: _tapHalf,
+                          onRename: clock.state == MatchState.notStarted
+                              ? _rename
+                              : null,
+                          isRevealed: _isRevealed,
+                        ),
+                      ],
+                    ),
                   ),
                   // El velo tapa las dos mitades, para que el toque no les llegue,
                   // pero queda por debajo de la costura: el botón de pausa y el de
