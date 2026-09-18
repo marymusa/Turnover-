@@ -236,14 +236,6 @@ class _ClockScreenState extends State<ClockScreen>
                       ),
                     ],
                   ),
-                  // El acceso a los ajustes solo existe antes de empezar: con el
-                  // partido en marcha no hay ningún tiempo que tocar sin querer.
-                  if (clock.state == MatchState.notStarted)
-                    Positioned(
-                      top: 0,
-                      right: 0,
-                      child: SettingsButton(onPressed: widget.onOpenSettings),
-                    ),
                   // El velo tapa las dos mitades, para que el toque no les llegue,
                   // pero queda por debajo de la costura: el botón de pausa y el de
                   // reinicio se siguen pudiendo pulsar con el partido pausado.
@@ -256,6 +248,24 @@ class _ClockScreenState extends State<ClockScreen>
                     Positioned.fill(
                       child: LeagueCrest(
                         onRevealed: () => setState(() => _isRevealed = true),
+                      ),
+                    ),
+                  // El acceso a los ajustes solo existe antes de empezar: con el
+                  // partido en marcha no hay ningún tiempo que tocar sin querer.
+                  //
+                  // Va en la costura, al lado del escudo, que es el hueco que no
+                  // pertenece a ninguna de las dos mitades: pegado a una esquina
+                  // caía dentro de la tarjeta del rival y parecía suya. El
+                  // escudo se queda centrado y esto se aparta a su derecha.
+                  if (clock.state == MatchState.notStarted)
+                    Positioned.fill(
+                      child: Center(
+                        child: Transform.translate(
+                          offset: const Offset(ClockTheme.settingsOffset, 0),
+                          child: SettingsButton(
+                            onPressed: widget.onOpenSettings,
+                          ),
+                        ),
                       ),
                     ),
                   // La costura solo existe con el partido empezado.

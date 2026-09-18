@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../l10n/app_localizations.dart';
+import 'advanced_control.dart';
 import 'clock_theme.dart';
 
 /// La costura entre las dos mitades: pasar turno en el centro y, discretos a
@@ -28,7 +29,7 @@ class SeamControls extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        _AdvancedControl(
+        AdvancedControl(
           icon: isPaused ? Icons.play_arrow : Icons.pause,
           label: isPaused ? strings.resume : strings.pause,
           onPressed: onTogglePause,
@@ -41,11 +42,10 @@ class SeamControls extends StatelessWidget {
           onPressed: isPaused ? null : onPassTurn,
         ),
         const SizedBox(width: ClockTheme.seamGap),
-        _AdvancedControl(
+        AdvancedControl(
           icon: Icons.refresh,
           label: strings.reset,
           onPressed: onReset,
-          isHighlighted: false,
         ),
       ],
     );
@@ -85,48 +85,6 @@ class _PassTurnControl extends StatelessWidget {
                 size: ClockTheme.passTurnIconSize,
                 color: ClockTheme.text,
               ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _AdvancedControl extends StatelessWidget {
-  const _AdvancedControl({
-    required this.icon,
-    required this.label,
-    required this.onPressed,
-    required this.isHighlighted,
-  });
-
-  final IconData icon;
-  final String label;
-  final VoidCallback onPressed;
-  final bool isHighlighted;
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      label: label,
-      child: Material(
-        color: isHighlighted
-            ? ClockTheme.paused
-            : ClockTheme.text.withValues(alpha: 0.07),
-        shape: const CircleBorder(),
-        child: InkWell(
-          customBorder: const CircleBorder(),
-          onTap: onPressed,
-          child: SizedBox.square(
-            dimension: ClockTheme.advancedSize,
-            child: Icon(
-              icon,
-              size: ClockTheme.advancedIconSize,
-              color: isHighlighted
-                  ? ClockTheme.text
-                  : ClockTheme.text.withValues(alpha: 0.55),
             ),
           ),
         ),

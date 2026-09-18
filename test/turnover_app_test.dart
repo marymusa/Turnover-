@@ -263,14 +263,29 @@ void main() {
       expect(find.byType(SettingsScreen), findsOneWidget);
     });
 
-    // El acceso era un icono solo, y apagado, y en las pruebas de campo no se
-    // encontraba. Ahora lleva el nombre escrito, que es además lo que lo
-    // anuncia al lector de pantalla: por eso se busca el texto y no el icono.
-    testWidgets('el acceso muestra el nombre escrito', (tester) async {
+    // El acceso vive en la costura, al lado del escudo: es el hueco que no
+    // pertenece a ninguna de las dos mitades. Pegado arriba a la derecha caía
+    // dentro de la tarjeta del rival y parecía suyo.
+    //
+    // Se comprueba que se reparte entre las dos mitades en vez de caer en una,
+    // que es lo que se quería arreglar, y no la posición exacta, que es cosa
+    // del ojo y del móvil. Cruzar la costura es lo que se busca: el escudo, que
+    // ya está centrado en ella, la cruza igual.
+    testWidgets('el acceso queda repartido entre las dos mitades', (
+      tester,
+    ) async {
       await tester.pumpWidget(_app(store: MemorySettingsStore()));
       await _settle(tester);
 
-      expect(find.text('Settings'), findsOneWidget);
+      final access = tester.getRect(find.bySemanticsLabel('Settings'));
+      final halves = tester
+          .widgetList<PlayerHalf>(find.byType(PlayerHalf))
+          .map((half) => tester.getRect(find.byWidget(half)));
+
+      for (final half in halves) {
+        final shared = half.intersect(access);
+        expect(shared.height, moreOrLessEquals(access.height / 2));
+      }
     });
 
     // Vigila que la transición entre las dos pantallas no se aclare por

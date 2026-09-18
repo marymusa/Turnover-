@@ -49,13 +49,32 @@ abstract final class ClockTheme {
   static const advancedSize = 40.0;
   static const advancedIconSize = 15.0;
 
-  /// El nombre que acompaña al icono de los ajustes. Menor que la letra de los
-  /// nombres de jugador, que es la referencia de la pantalla antes de empezar:
-  /// el acceso se tiene que encontrar, pero no encabeza nada.
-  static const settingsLabelSize = 13.0;
+  /// Lo apagado que va un control avanzado. En la costura son tres en fila y
+  /// se explican entre ellos, así que pueden quedarse atrás: lo que manda allí
+  /// es pasar turno.
+  static const advancedFillAlpha = 0.07;
+  static const advancedIconAlpha = 0.55;
+
+  /// Lo mismo cuando el control va suelto, que es el caso de los ajustes antes
+  /// de empezar. Sin nadie al lado que lo sitúe, a los valores de la costura se
+  /// leía como un botón deshabilitado, y al lado del escudo, que va a plena
+  /// opacidad, todavía más.
+  static const advancedAloneFillAlpha = 0.12;
+  static const advancedAloneIconAlpha = 0.85;
 
   /// Lo que separa los tres controles de la costura.
   static const seamGap = 26.0;
+
+  /// Lo que el botón de los ajustes se aparta del centro, medido hasta su
+  /// propio centro: media anchura de escudo, media de botón y el hueco de la
+  /// costura entre los dos. El escudo no se mueve de sitio, que es el centro
+  /// del campo, y el botón se coloca a su lado sin empujarlo.
+  ///
+  /// El hueco va entero y no a la mitad: con la mitad el botón quedaba rozando
+  /// la mandíbula del escudo. El escudo llena su caja casi hasta el borde, así
+  /// que lo que separa a los dos es esto y nada más.
+  static const settingsOffset =
+      leagueLogoSize / 2 + advancedSize / 2 + seamGap;
 
   /// El jugador inactivo no se apaga del todo: se sigue leyendo desde el otro
   /// lado de la mesa.

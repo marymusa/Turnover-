@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
 
 import '../l10n/app_localizations.dart';
-import 'clock_theme.dart';
+import 'advanced_control.dart';
 
-/// El acceso a los ajustes, en una esquina. Solo se pinta antes de empezar:
-/// quién lo decide es la pantalla, no este widget.
+/// El acceso a los ajustes, en la costura y al lado del escudo. Solo se pinta
+/// antes de empezar: quién lo decide es la pantalla, no este widget.
 ///
-/// Lleva el nombre escrito al lado del icono, y los dos a plena opacidad. El
-/// icono solo, y apagado, no se encontraba, y la esquina antes de empezar está
-/// vacía: no hay nada a lo que quitarle protagonismo.
+/// Va en la costura y no en una esquina desde que las mitades viven dentro de
+/// tarjetas: pegado arriba a la derecha caía sobre la tarjeta del rival y
+/// parecía suyo. En el centro no es de nadie, que es lo que es.
+///
+/// Solo el icono, y con la misma forma que los controles de la costura: es una
+/// operación del mismo tipo que pausar o reiniciar, y se lee antes como parte
+/// de un juego de botones que como una etiqueta suelta.
 class SettingsButton extends StatelessWidget {
   const SettingsButton({required this.onPressed, super.key});
 
@@ -17,19 +21,11 @@ class SettingsButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final strings = AppLocalizations.of(context)!;
-    // Aquí no hace falta Semantics: el botón ya se anuncia con el nombre que
-    // lleva escrito. Añadirlo encima duplicaba la etiqueta.
-    return TextButton.icon(
+    return AdvancedControl(
+      icon: Icons.settings,
+      label: strings.settings,
       onPressed: onPressed,
-      icon: const Icon(Icons.settings, size: ClockTheme.advancedIconSize),
-      label: Text(
-        strings.settings,
-        style: const TextStyle(fontSize: ClockTheme.settingsLabelSize),
-      ),
-      style: TextButton.styleFrom(
-        foregroundColor: ClockTheme.text,
-        iconColor: ClockTheme.text,
-      ),
+      isAlone: true,
     );
   }
 }
