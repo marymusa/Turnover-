@@ -44,10 +44,21 @@ abstract final class ClockTheme {
   static const renameIconSize = 14.0;
   static const renameHintSize = 11.0;
 
-  static const passTurnSize = 74.0;
-  static const passTurnIconSize = 30.0;
-  static const advancedSize = 40.0;
-  static const advancedIconSize = 15.0;
+  /// Los tres controles de la costura, a tamaño de dedo. El objetivo táctil
+  /// mínimo que piden Material y Apple es de 48 píxeles, y los dos avanzados
+  /// lo pasan con margen: en una mesa se golpea la pantalla sin apuntar, y a
+  /// 40 se fallaba el de pausa.
+  ///
+  /// Pasar turno sigue siendo claramente el mayor. Lo que manda en la costura
+  /// lo dice el tamaño, y por eso los otros dos pueden crecer sin quitarle
+  /// nada: la jerarquía estaba en la diferencia, no en que fueran pequeños.
+  ///
+  /// El botón de los ajustes comparte [advancedSize] y crece con ellos, que es
+  /// lo que se quiere: es un objetivo de dedo como los demás.
+  static const passTurnSize = 96.0;
+  static const passTurnIconSize = 38.0;
+  static const advancedSize = 56.0;
+  static const advancedIconSize = 21.0;
 
   /// Lo apagado que va un control avanzado. En la costura son tres en fila y
   /// se explican entre ellos, así que pueden quedarse atrás: lo que manda allí

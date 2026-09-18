@@ -13,6 +13,7 @@ import 'package:turnover/main.dart';
 import 'package:turnover/ui/clock_screen.dart';
 import 'package:turnover/ui/clock_theme.dart';
 import 'package:turnover/ui/player_half.dart';
+import 'package:turnover/ui/seam_controls.dart';
 import 'package:turnover/ui/settings_screen.dart';
 
 import 'memory_settings_store.dart';
@@ -316,6 +317,83 @@ void main() {
     });
   });
 
+  group('los controles de la costura', () {
+    // En una mesa se golpea la pantalla sin apuntar, así que el objetivo
+    // táctil es lo que decide si el control se acierta.
+    //
+    // Lo que se mide es el círculo pintado, que aquí vale por el objetivo: el
+    // InkWell lo llena entero, de modo que lo que se ve es lo que recoge el
+    // toque. Medir el área del gesto de verdad pediría bajar al árbol de
+    // hit testing, y lo que se quiere vigilar es que el botón no encoja.
+    testWidgets('los tres llegan al tamaño de dedo', (tester) async {
+      await tester.pumpWidget(_app(store: MemorySettingsStore()));
+      await _settle(tester);
+      await _startAndSpend(tester);
+
+      for (final label in ['Pause', 'End my turn', 'Reset timer']) {
+        final size = tester.getSize(find.bySemanticsLabel(label));
+        expect(
+          size.shortestSide,
+          greaterThanOrEqualTo(_minimumTapTarget),
+          reason: '$label se queda por debajo del objetivo táctil',
+        );
+      }
+    });
+
+    // La jerarquía de la costura, que [ClockTheme.passTurnSize] explica: aquí
+    // solo se vigila que subir los tres no la haya deshecho.
+    testWidgets('pasar turno es el mayor de los tres', (tester) async {
+      await tester.pumpWidget(_app(store: MemorySettingsStore()));
+      await _settle(tester);
+      await _startAndSpend(tester);
+
+      final passTurn = tester.getSize(find.bySemanticsLabel('End my turn'));
+      for (final label in ['Pause', 'Reset timer']) {
+        expect(
+          passTurn.shortestSide,
+          greaterThan(tester.getSize(find.bySemanticsLabel(label)).shortestSide),
+        );
+      }
+    });
+
+    // La costura es un añadido centrado encima de las mitades, así que crecer
+    // no las empuja: se les echa encima. Lo que no puede pasar es que tape un
+    // reloj, que es lo que se está mirando mientras se juega.
+    //
+    // Se mira en overtime, que es el estado más apretado: con el turno gastado
+    // la reserva pasa de [ClockTheme.reserveSize] a
+    // [ClockTheme.reserveSizeSpent] y se acerca a la costura más que en
+    // ningún otro momento. Además el reloj sale con signo, `-0:39`, que es el
+    // caso que [_looksLikeClock] tiene que reconocer.
+    testWidgets('no se come ningún reloj de las mitades', (tester) async {
+      await tester.pumpWidget(_app(store: MemorySettingsStore()));
+      await _settle(tester);
+      _clockOnScreen(tester).start(Player.one);
+      await tester.pump();
+      // El turno entero y la reserva entera, y un poco más: así el reloj de
+      // reserva ya va en contra.
+      await tester.pump(const Duration(minutes: 19, seconds: 39));
+
+      final seam = tester.getRect(find.byType(SeamControls));
+      final clocks = tester
+          .widgetList<Text>(find.byType(Text))
+          .where((text) => _looksLikeClock(text.data));
+
+      // Los cuatro: turno y reserva de cada mitad. Contarlos es lo que impide
+      // que el bucle pase en vacío el día que la forma del reloj cambie y
+      // ninguno se reconozca.
+      expect(clocks, hasLength(4));
+      for (final clock in clocks) {
+        final rect = tester.getRect(find.byWidget(clock));
+        expect(
+          rect.overlaps(seam),
+          isFalse,
+          reason: 'la costura se come el reloj ${clock.data}',
+        );
+      }
+    });
+  });
+
   group('reiniciar el partido', () {
     // El reinicio se define por lo que no borra, y por eso se comprueba con
     // los tiempos cambiados y los dos nombres puestos: lo que sobrevive es
@@ -526,6 +604,20 @@ Future<void> _pressBack(WidgetTester tester) async {
 }
 
 final _resetControl = find.bySemanticsLabel('Reset timer');
+
+/// El objetivo táctil mínimo de Material, que es también el de Apple en sus
+/// propias unidades. Por debajo de esto el control se falla al golpear la
+/// pantalla sin apuntar, que es como se juega en una mesa.
+const _minimumTapTarget = 48.0;
+
+/// Si ese texto es uno de los cuatro relojes. Se reconocen por la forma,
+/// `m:ss` o `mm:ss`, que no la tiene ningún otro texto de la pantalla.
+///
+/// El signo entra en la forma: en overtime el reloj se escribe `-0:39`, y es
+/// justo el estado en el que hay que mirar si la costura tapa algo, porque la
+/// reserva agotada crece hasta [ClockTheme.reserveSizeSpent].
+bool _looksLikeClock(String? text) =>
+    text != null && RegExp(r'^-?\d{1,2}:\d{2}$').hasMatch(text);
 
 /// La mitad que pinta ese nombre. La pulsacion larga va sobre la mitad entera,
 /// asi que hay que apuntar a ella y no al texto.
