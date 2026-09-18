@@ -84,6 +84,30 @@ abstract final class ClockTheme {
   static const barHeight = 6.0;
   static const barWidthFactor = 0.74;
 
+  /// La brasa de la barra, en la cabeza de lo que queda: la barra es una mecha
+  /// que se consume, y esto es el punto por donde arde.
+  ///
+  /// Se derrama fuera de la barra en vez de aclararla por dentro: la barra de
+  /// turno ya es de este mismo blanco, y por dentro no se veía nada.
+  ///
+  /// Va corta y concentrada a propósito. Un halo ancho se lee como un foco
+  /// encendido detrás de la barra; lo que tiene que parecer es un punto que
+  /// quema, y para eso el brillo tiene que caer deprisa desde la cabeza.
+  ///
+  /// Un segundo por ciclo, que es más lento de lo que parpadea una llama de
+  /// verdad. Se eligió mirando los tres en el móvil: a esta altura, lo más
+  /// rápido se lee como un parpadeo nervioso al lado de los relojes, y un
+  /// segundo además hace de tictac, de modo que el adorno acaba diciendo algo.
+  static const barGlowDuration = Duration(seconds: 1);
+
+  /// No baja de aquí: la brasa se atenúa, pero no se apaga a medias. Por
+  /// debajo, el punto desaparecía de vista en la mitad floja del ciclo y lo
+  /// que se veía era un intermitente.
+  static const barGlowMinAlpha = 0.65;
+  static const barGlowMaxAlpha = 1.0;
+  static const barGlowBlur = barHeight * 0.9;
+  static const barGlowSpread = barHeight * 0.1;
+
   /// El hueco que comparten la barra y el nombre del reloj de tiempo extra.
   /// Lo manda el texto, que es el más alto de los dos: con la altura de la
   /// barra el nombre saldría partido.

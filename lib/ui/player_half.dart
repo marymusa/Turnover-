@@ -409,13 +409,95 @@ class _ProgressBar extends StatelessWidget {
         child: FractionallySizedBox(
           alignment: Alignment.centerLeft,
           widthFactor: remainingFraction ?? 0,
-          child: Container(
+          child: DecoratedBox(
             decoration: BoxDecoration(
               color: isReserve ? ClockTheme.reserve : ClockTheme.text,
               borderRadius: BorderRadius.circular(ClockTheme.barHeight / 2),
             ),
+            // Sin recortar: el halo tiene que salirse de la barra, que es lo
+            // único que lo hace visible. Dentro no se vería, porque la barra
+            // de turno ya es del mismo blanco que el brillo.
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: _BarGlow(
+                color: isReserve ? ClockTheme.reserve : ClockTheme.text,
+              ),
+            ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// La brasa que va en la cabeza de la barra mientras el reloj corre: la barra
+/// es una mecha que se consume, y esto es el punto por donde arde.
+///
+/// Se derrama fuera de la barra, y no es una mancha más clara encima. Aclarar
+/// por dentro no valía: la barra de turno ya es del mismo blanco que el
+/// brillo, y el primer intento salió con un 1% de diferencia, invisible en el
+/// móvil. Contra el fondo oscuro, en cambio, sí se lee.
+///
+/// Arde cambiando de opacidad y no de tamaño: el tamaño lo manda la barra, que
+/// se encoge sola, y hacerlo crecer aquí pelearía con ella.
+///
+/// Solo lo pinta [_ProgressBar], que ya sabe si el reloj corre: pausado no hay
+/// barra, así que la brasa no se queda despertando a nadie por detrás.
+class _BarGlow extends StatefulWidget {
+  const _BarGlow({required this.color});
+
+  /// El color de la barra a la que acompaña: el halo es del color de lo que
+  /// brilla, de modo que el de reserva sale amarillo como su barra.
+  final Color color;
+
+  @override
+  State<_BarGlow> createState() => _BarGlowState();
+}
+
+class _BarGlowState extends State<_BarGlow>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: ClockTheme.barGlowDuration,
+  )..repeat(reverse: true);
+
+  late final Animation<double> _glow =
+      Tween(
+        begin: ClockTheme.barGlowMinAlpha,
+        end: ClockTheme.barGlowMaxAlpha,
+      ).animate(
+        CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+      );
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Cuadrado y del alto de la barra: un halo redondo centrado en la cabeza,
+    // que se derrama por igual hacia los dos lados y por arriba y por abajo.
+    return SizedBox.square(
+      dimension: ClockTheme.barHeight,
+      child: AnimatedBuilder(
+        animation: _glow,
+        builder: (context, child) {
+          return DecoratedBox(
+            decoration: BoxDecoration(
+              color: widget.color,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: widget.color.withValues(alpha: _glow.value),
+                  blurRadius: ClockTheme.barGlowBlur,
+                  spreadRadius: ClockTheme.barGlowSpread,
+                ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
