@@ -56,7 +56,7 @@
   "@settingsReserve": {
     "description": "Nombre del tiempo extra en los ajustes"
   },
-  "settingsWarning": "When to warn",
+  "settingsWarning": "End of turn warnings",
   "@settingsWarning": {
     "description": "Nombre de los avisos previos en los ajustes"
   },
@@ -68,7 +68,7 @@
   "@settingsReserveHint": {
     "description": "Qué es el tiempo extra, debajo de su nombre en los ajustes"
   },
-  "settingsWarningHint": "Two warnings before time runs out when the handles are apart",
+  "settingsWarningHint": "Horn before the turn runs out of time",
   "@settingsWarningHint": {
     "description": "Qué son los avisos previos, debajo de su nombre en los ajustes"
   },
@@ -76,7 +76,7 @@
   "@settingsWarningOff": {
     "description": "Valor de los avisos previos cuando los dos agarres están a cero"
   },
-  "secondsRange": "{late} s and {early} s",
+  "secondsRange": "{late}s and {early}s",
   "@secondsRange": {
     "description": "Los dos avisos previos separados, en el mismo orden en que salen los agarres del deslizador: primero el tardío, que va a la izquierda",
     "placeholders": {
@@ -89,7 +89,7 @@
     "description": "Un tiempo en minutos, en los ajustes",
     "placeholders": { "count": { "type": "int" } }
   },
-  "seconds": "{count} s",
+  "seconds": "{count}s",
   "@seconds": {
     "description": "Un tiempo en segundos, en los ajustes",
     "placeholders": { "count": { "type": "int" } }

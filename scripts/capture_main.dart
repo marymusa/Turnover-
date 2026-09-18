@@ -54,7 +54,6 @@ class _Shot {
     this.playerOne,
     this.playerTwo,
     this.isSettings = false,
-    this.earlyWarning,
   });
 
   /// El nombre del fichero que le toca, para saber cuál se está mirando.
@@ -68,10 +67,6 @@ class _Shot {
 
   /// Los ajustes son otra pantalla, no otro estado del reloj.
   final bool isSettings;
-
-  /// Con qué aviso temprano nace la pantalla de ajustes, para ver el
-  /// deslizador con los dos agarres separados y no solo juntos.
-  final Duration? earlyWarning;
 }
 
 final _shots = <_Shot>[
@@ -122,12 +117,6 @@ final _shots = <_Shot>[
     playerTwo: 'Nuffle',
   ),
   _Shot(name: '08-ajustes', seed: (_) {}, isSettings: true),
-  _Shot(
-    name: '08b-ajustes-dos-avisos',
-    seed: (_) {},
-    isSettings: true,
-    earlyWarning: const Duration(seconds: 55),
-  ),
   // El rival con el turno gastado: es la única combinación que enseña a la vez
   // el naranja de su mitad y el amarillo de la reserva, que es lo que hay que
   // mirar junto para saber si el aviso se sigue leyendo encima del naranja.
@@ -181,8 +170,6 @@ class _CaptureAppState extends State<_CaptureApp> {
     if (two != null) _names.rename(Player.two, two);
 
     _settings = MatchSettings(_store);
-    final early = _shot.earlyWarning;
-    if (early != null) _settings.save(earlyWarning: early);
   }
 
   void _next() => setState(() {

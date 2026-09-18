@@ -13,10 +13,10 @@ const defaultTurn = Duration(minutes: 4);
 const defaultReserve = Duration(minutes: 15);
 const defaultWarning = Duration(seconds: 30);
 
-/// El aviso temprano nace apagado: un solo aviso es lo que había antes de que
-/// el deslizador tuviera dos agarres, y separarlos es cosa de quien los quiera
-/// separados.
-const defaultEarlyWarning = Duration.zero;
+/// El aviso temprano nace encendido y lejos del tardío. Es lo que enseña el
+/// control: con los dos agarres separados desde el principio se ve que son dos
+/// y que se pueden mover, cosa que con los dos juntos no se adivina.
+const defaultEarlyWarning = Duration(seconds: 55);
 
 /// Dónde se guardan los ajustes, visto desde el dominio. La implementación
 /// real toca la plataforma; en los tests se sustituye por una en memoria.

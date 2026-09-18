@@ -68,6 +68,7 @@ class _TurnoverAppState extends State<TurnoverApp> {
     turn: defaultTurn,
     reserve: defaultReserve,
     warning: defaultWarning,
+    earlyWarning: defaultEarlyWarning,
   );
 
   late final VoidCallback _unbindSettings;

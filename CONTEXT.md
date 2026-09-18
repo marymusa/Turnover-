@@ -32,8 +32,9 @@ negativo. No detiene nada: deja constancia de cuánto se ha pasado un jugador.
 **aviso previo**: los segundos que quedan cuando suena una bocina suave. Son dos,
 el temprano y el tardío, y se configuran con los dos agarres de un mismo
 deslizador: juntos son un aviso, separados son dos, y los dos en cero es no
-avisar. El tardío vale 30 por defecto y el temprano nace apagado. Valen igual
-para el turno y para el tiempo extra.
+avisar. Por defecto son dos, a 55 y a 30 segundos: nacen separados para que se
+vea que son dos y que se mueven. Valen igual para el turno y para el tiempo
+extra.
 
 **agarre**: cada uno de los dos puntos que se arrastran en el deslizador de los
 avisos previos. El de la derecha marca el aviso temprano, porque el deslizador

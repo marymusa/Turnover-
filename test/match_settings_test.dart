@@ -14,9 +14,9 @@ void main() {
       expect(settings.turn, const Duration(minutes: 4));
       expect(settings.reserve, const Duration(minutes: 15));
       expect(settings.warning, const Duration(seconds: 30));
-      // Un solo aviso es lo que había, y sigue siendo el arranque: el segundo
-      // lo enciende quien lo quiera separando los agarres.
-      expect(settings.earlyWarning, Duration.zero);
+      // Los dos avisos vienen encendidos y separados: con los dos agarres a la
+      // vista se ve de un vistazo que son dos y que se mueven.
+      expect(settings.earlyWarning, const Duration(seconds: 55));
     });
 
     test('el aviso temprano guardado se lee en el arranque siguiente', () async {
