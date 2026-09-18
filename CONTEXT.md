@@ -29,8 +29,16 @@ aplicación instalada.
 **overtime**: el tiempo que sigue contando una vez agotado el tiempo extra, mostrado en
 negativo. No detiene nada: deja constancia de cuánto se ha pasado un jugador.
 
-**aviso previo**: los segundos que quedan de turno cuando suena la primera
-bocina, 30 por defecto. Es uno de los tres tiempos configurables.
+**aviso previo**: los segundos que quedan cuando suena una bocina suave. Son dos,
+el temprano y el tardío, y se configuran con los dos agarres de un mismo
+deslizador: juntos son un aviso, separados son dos, y los dos en cero es no
+avisar. El tardío vale 30 por defecto y el temprano nace apagado. Valen igual
+para el turno y para el tiempo extra.
+
+**agarre**: cada uno de los dos puntos que se arrastran en el deslizador de los
+avisos previos. El de la derecha marca el aviso temprano, porque el deslizador
+mide lo que queda cuando suena y al temprano le queda más. En el código, el
+`RangeSlider` de Material.
 
 **pasar turno**: la única acción del jugador activo. Detiene sus relojes y activa
 los del oponente.
@@ -56,9 +64,11 @@ apunta quien anota al pulsar, porque después hay que desplegar otra vez.
 **acta**: la pantalla que cierra el partido. Muestra el resultado, el tiempo de juego
 total, el que ha jugado cada uno y el que ha estado parado. No se guarda (ADR-0003).
 
-**bocina**: cada uno de los tres avisos sonoros, de menor a mayor intensidad: queda
-el aviso previo de turno, se agota el turno, se agota el tiempo extra. Cada bocina lleva su
-vibración, en la misma intensidad que ella.
+**bocina**: cada uno de los tres sonidos, de menor a mayor intensidad: queda un
+aviso previo, se agota el turno, se agota el tiempo extra. Son tres bocinas para
+seis avisos, porque los cuatro previos, los dos del turno y los dos del tiempo
+extra, comparten la suave: lo que distingue al temprano del tardío es el reloj,
+no el sonido. Cada bocina lleva su vibración, en la misma intensidad que ella.
 
 **intensidad**: lo que gradúa un aviso, de suave a fuerte a más fuerte. La comparten
 la bocina y la vibración, que salen siempre a la par: no hay aviso que suene fuerte y
@@ -101,7 +111,7 @@ pulsaciones: lo que sube con la gravedad es la fuerza del golpe, no cuántos son
   se pregunta antes, describiendo lo que se pierde. Sin empezar no hay nada que perder y
   se sale sin más.
 - La pantalla se mantiene encendida mientras un reloj corre, y se libera al pausar.
-- Los tres tiempos (turno, tiempo extra y aviso previo) se configuran en una pantalla propia,
+- Los tiempos (turno, tiempo extra y los dos avisos previos) se configuran en una pantalla propia,
   a la que solo se llega antes de empezar: los tiempos se pactan con el partido parado
   (ADR-0006). Los nombres se pactan igual, y por la misma razón: con el partido en marcha
   la pantalla no ofrece nada que no sea jugar.

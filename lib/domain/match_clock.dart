@@ -11,10 +11,18 @@ enum ClockKind { turn, reserve }
 /// el botón y no uno nuevo (ADR-0001).
 enum MatchState { notStarted, running, paused }
 
-/// Las tres bocinas del glosario, de menor a mayor intensidad, y el aviso
-/// previo de reserva. La vibración que le corresponde a cada una la decide
-/// quien escucha, no este módulo.
-enum Horn { turnWarning, turnExpired, reserveWarning, reserveExpired }
+/// Lo que el cronómetro llega a anunciar. Son seis avisos y no seis bocinas:
+/// el turno y la reserva avisan cada uno dos veces antes de agotarse, pronto y
+/// a punto de acabar, y esos cuatro suenan igual. Con qué bocina se anuncia
+/// cada uno lo decide quien escucha, no este módulo.
+enum Horn {
+  turnWarningEarly,
+  turnWarning,
+  turnExpired,
+  reserveWarningEarly,
+  reserveWarning,
+  reserveExpired,
+}
 
 /// Aquello de lo que el cronómetro deja constancia: una bocina y de quién es.
 class MatchEvent {
@@ -39,6 +47,7 @@ class MatchClock {
     required Duration turn,
     required Duration reserve,
     required this._warning,
+    this._earlyWarning = Duration.zero,
   }) : _turn = turn,
        _reserve = reserve,
        _turnClock = {Player.one: turn, Player.two: turn},
@@ -47,6 +56,12 @@ class MatchClock {
   Duration _turn;
   Duration _reserve;
   Duration _warning;
+
+  /// El margen del aviso temprano. Solo avisa mientras quede por encima de
+  /// [_warning]: con los dos agarres del deslizador en la misma posición los
+  /// dos valores coinciden, y entonces avisa [_warning] a secas, que es un
+  /// aviso y no dos bocinas en el mismo instante. A cero es no tenerlo.
+  Duration _earlyWarning;
 
   final Map<Player, Duration> _turnClock;
   final Map<Player, Duration> _reserveClock;
@@ -69,6 +84,8 @@ class MatchClock {
   Player? get activePlayer => _active;
 
   Duration get warning => _warning;
+
+  Duration get earlyWarning => _earlyWarning;
 
   /// Lo que le queda al reloj que corre, entre cero y uno, para quien quiera
   /// pintar una barra. Nulo si este jugador no tiene ningún reloj corriendo,
@@ -159,9 +176,29 @@ class MatchClock {
     // en el mismo instante.
     final hasWarning = _warning > Duration.zero;
 
+    // Por lo mismo, el temprano tampoco avisa si coincide con el tardío. Y se
+    // mide contra [total], que es el reloj entero configurado y no lo que
+    // queda: un margen que cubre el reloj entero sonaría en su origen, y avisar
+    // al arrancar es no avisar de nada. Vale para los dos relojes, aunque hoy
+    // solo lo llegue a recortar el turno: con el tope del deslizador en 55
+    // segundos y los dos relojes en un minuto como mínimo, el tiempo extra no
+    // alcanza a cubrirse entero. Bajar ese mínimo lo pondría en juego.
+    bool hasEarly(Duration total) =>
+        _earlyWarning > _warning && _earlyWarning < total;
+
     final thisMatch = _emittedThisMatch[active]!;
+    at(
+      hasEarly(_turn) && turnClock <= _earlyWarning,
+      Horn.turnWarningEarly,
+      _emittedThisTurn,
+    );
     at(hasWarning && turnClock <= _warning, Horn.turnWarning, _emittedThisTurn);
     at(turnClock <= Duration.zero, Horn.turnExpired, _emittedThisTurn);
+    at(
+      hasEarly(_reserve) && reserveClock <= _earlyWarning,
+      Horn.reserveWarningEarly,
+      thisMatch,
+    );
     at(hasWarning && reserveClock <= _warning, Horn.reserveWarning, thisMatch);
     at(reserveClock <= Duration.zero, Horn.reserveExpired, thisMatch);
 
@@ -181,7 +218,12 @@ class MatchClock {
   /// Redimensiona, no reinicia: lo gastado se conserva. Ampliar la reserva de
   /// quince a veinte con seis gastados deja catorce. Lo que no se pasa se
   /// queda como estaba.
-  void reconfigure({Duration? turn, Duration? reserve, Duration? warning}) {
+  void reconfigure({
+    Duration? turn,
+    Duration? reserve,
+    Duration? warning,
+    Duration? earlyWarning,
+  }) {
     if (turn != null) {
       _resize(_turnClock, from: _turn, to: turn, keepSpent: true);
       _turn = turn;
@@ -191,6 +233,7 @@ class MatchClock {
       _reserve = reserve;
     }
     if (warning != null) _warning = warning;
+    if (earlyWarning != null) _earlyWarning = earlyWarning;
   }
 
   /// Conserva lo gastado sumando la diferencia.

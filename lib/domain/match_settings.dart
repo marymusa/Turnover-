@@ -13,6 +13,11 @@ const defaultTurn = Duration(minutes: 4);
 const defaultReserve = Duration(minutes: 15);
 const defaultWarning = Duration(seconds: 30);
 
+/// El aviso temprano nace apagado: un solo aviso es lo que había antes de que
+/// el deslizador tuviera dos agarres, y separarlos es cosa de quien los quiera
+/// separados.
+const defaultEarlyWarning = Duration.zero;
+
 /// Dónde se guardan los ajustes, visto desde el dominio. La implementación
 /// real toca la plataforma; en los tests se sustituye por una en memoria.
 ///
@@ -38,6 +43,10 @@ const _turnKey = 'turn_seconds';
 const _reserveKey = 'reserve_seconds';
 const _warningKey = 'warning_seconds';
 
+/// El aviso temprano llega con clave propia, y la vieja se queda con el tardío:
+/// así lo guardado antes sigue leyéndose como el aviso que era.
+const _earlyWarningKey = 'early_warning_seconds';
+
 class MatchSettings extends ChangeNotifier {
   MatchSettings(this._store);
 
@@ -46,10 +55,12 @@ class MatchSettings extends ChangeNotifier {
   Duration _turn = defaultTurn;
   Duration _reserve = defaultReserve;
   Duration _warning = defaultWarning;
+  Duration _earlyWarning = defaultEarlyWarning;
 
   Duration get turn => _turn;
   Duration get reserve => _reserve;
   Duration get warning => _warning;
+  Duration get earlyWarning => _earlyWarning;
 
   /// Lee lo guardado. Lo que no esté guardado se queda con su valor por
   /// defecto, que es el que ya tiene.
@@ -57,6 +68,7 @@ class MatchSettings extends ChangeNotifier {
     _turn = await _read(_turnKey) ?? _turn;
     _reserve = await _read(_reserveKey) ?? _reserve;
     _warning = await _read(_warningKey) ?? _warning;
+    _earlyWarning = await _read(_earlyWarningKey) ?? _earlyWarning;
     notifyListeners();
   }
 
@@ -67,6 +79,7 @@ class MatchSettings extends ChangeNotifier {
     Duration? turn,
     Duration? reserve,
     Duration? warning,
+    Duration? earlyWarning,
   }) async {
     if (turn != null) {
       _turn = turn;
@@ -79,6 +92,10 @@ class MatchSettings extends ChangeNotifier {
     if (warning != null) {
       _warning = warning;
       await _store.writeSeconds(_warningKey, warning.inSeconds);
+    }
+    if (earlyWarning != null) {
+      _earlyWarning = earlyWarning;
+      await _store.writeSeconds(_earlyWarningKey, earlyWarning.inSeconds);
     }
     notifyListeners();
   }
@@ -99,6 +116,7 @@ VoidCallback applySettingsTo(MatchClock clock, MatchSettings settings) {
     turn: settings.turn,
     reserve: settings.reserve,
     warning: settings.warning,
+    earlyWarning: settings.earlyWarning,
   );
 
   settings.addListener(apply);

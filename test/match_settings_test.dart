@@ -14,6 +14,34 @@ void main() {
       expect(settings.turn, const Duration(minutes: 4));
       expect(settings.reserve, const Duration(minutes: 15));
       expect(settings.warning, const Duration(seconds: 30));
+      // Un solo aviso es lo que había, y sigue siendo el arranque: el segundo
+      // lo enciende quien lo quiera separando los agarres.
+      expect(settings.earlyWarning, Duration.zero);
+    });
+
+    test('el aviso temprano guardado se lee en el arranque siguiente', () async {
+      final store = MemorySettingsStore();
+      await MatchSettings(store).save(earlyWarning: const Duration(minutes: 1));
+
+      final settings = MatchSettings(store);
+      await settings.load();
+
+      expect(settings.earlyWarning, const Duration(minutes: 1));
+      expect(settings.warning, const Duration(seconds: 30));
+    });
+
+    test('un aviso temprano llega al partido en curso', () async {
+      final settings = MatchSettings(MemorySettingsStore());
+      final clock = MatchClock(
+        turn: defaultTurn,
+        reserve: defaultReserve,
+        warning: defaultWarning,
+      );
+      applySettingsTo(clock, settings);
+
+      await settings.save(earlyWarning: const Duration(minutes: 1));
+
+      expect(clock.earlyWarning, const Duration(minutes: 1));
     });
 
     test('lo guardado se lee en el arranque siguiente', () async {

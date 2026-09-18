@@ -166,6 +166,109 @@ void main() {
     });
   });
 
+  group('el aviso temprano', () {
+    test('llega antes que el tardío, y cada uno una vez', () {
+      final clock = newClock(earlyWarning: const Duration(minutes: 1));
+      clock.start(Player.one);
+
+      expect(clock.advance(const Duration(minutes: 3)), [
+        const MatchEvent(Horn.turnWarningEarly, Player.one),
+      ]);
+      expect(clock.advance(const Duration(seconds: 30)), [
+        const MatchEvent(Horn.turnWarning, Player.one),
+      ]);
+    });
+
+    test('a cero está desactivado, que es lo que hay ahora', () {
+      final clock = newClock();
+      clock.start(Player.one);
+
+      expect(clock.advance(const Duration(minutes: 3, seconds: 30)), [
+        const MatchEvent(Horn.turnWarning, Player.one),
+      ]);
+    });
+
+    test('los dos juntos en el mismo valor suenan una sola vez', () {
+      final clock = newClock(earlyWarning: const Duration(seconds: 30));
+      clock.start(Player.one);
+
+      // Los dos agarres del deslizador en la misma posición son un aviso, no
+      // dos bocinas en el mismo instante.
+      expect(clock.advance(const Duration(minutes: 3, seconds: 30)), [
+        const MatchEvent(Horn.turnWarning, Player.one),
+      ]);
+    });
+
+    test('la reserva también avisa dos veces', () {
+      final clock = newClock(earlyWarning: const Duration(minutes: 1));
+      clock.start(Player.one);
+      clock.advance(const Duration(minutes: 4));
+
+      expect(clock.advance(const Duration(minutes: 14)), [
+        const MatchEvent(Horn.reserveWarningEarly, Player.one),
+      ]);
+      expect(clock.advance(const Duration(seconds: 30)), [
+        const MatchEvent(Horn.reserveWarning, Player.one),
+      ]);
+    });
+
+    test('un aviso que cubre el turno entero no avisa de nada', () {
+      // Con el turno de un minuto, un aviso al minuto sonaría al arrancar.
+      final clock = MatchClock(
+        turn: const Duration(minutes: 1),
+        reserve: const Duration(minutes: 15),
+        warning: const Duration(seconds: 30),
+        earlyWarning: const Duration(minutes: 1),
+      );
+      clock.start(Player.one);
+
+      expect(clock.advance(const Duration(seconds: 1)), isEmpty);
+      expect(clock.advance(const Duration(seconds: 29)), [
+        const MatchEvent(Horn.turnWarning, Player.one),
+      ]);
+    });
+
+    test('sobrevive solo al tardío apagado', () {
+      // El agarre de la derecha en cero con el de la izquierda arriba: queda un
+      // aviso, el temprano, y es el único que suena.
+      final clock = MatchClock(
+        turn: const Duration(minutes: 4),
+        reserve: const Duration(minutes: 15),
+        warning: Duration.zero,
+        earlyWarning: const Duration(minutes: 1),
+      );
+      clock.start(Player.one);
+
+      expect(clock.advance(const Duration(minutes: 3)), [
+        const MatchEvent(Horn.turnWarningEarly, Player.one),
+      ]);
+      expect(clock.advance(const Duration(minutes: 1)), [
+        const MatchEvent(Horn.turnExpired, Player.one),
+      ]);
+    });
+
+    test('vuelve a llegar después de pasar turno', () {
+      final clock = newClock(earlyWarning: const Duration(minutes: 1));
+      clock.start(Player.one);
+      clock.advance(const Duration(minutes: 4));
+      clock.passTurn();
+
+      expect(clock.advance(const Duration(minutes: 3)), [
+        const MatchEvent(Horn.turnWarningEarly, Player.two),
+      ]);
+    });
+
+    test('reconfigurar mueve el momento del aviso temprano', () {
+      final clock = newClock(earlyWarning: const Duration(minutes: 1));
+      clock.start(Player.one);
+      clock.reconfigure(earlyWarning: const Duration(minutes: 2));
+
+      expect(clock.advance(const Duration(minutes: 2)), [
+        const MatchEvent(Horn.turnWarningEarly, Player.one),
+      ]);
+    });
+  });
+
   group('pausar', () {
     test('el partido empieza sin empezar y corre al tocar', () {
       final clock = newClock();
@@ -582,8 +685,9 @@ void main() {
   });
 }
 
-MatchClock newClock() => MatchClock(
+MatchClock newClock({Duration earlyWarning = Duration.zero}) => MatchClock(
   turn: const Duration(minutes: 4),
   reserve: const Duration(minutes: 15),
   warning: const Duration(seconds: 30),
+  earlyWarning: earlyWarning,
 );

@@ -5,7 +5,7 @@ library;
 import 'match_clock.dart';
 
 /// Las tres bocinas empaquetadas, de menor a mayor intensidad. Son tres para
-/// cuatro eventos: los dos avisos previos comparten la suave.
+/// seis eventos: los cuatro avisos previos comparten la suave.
 enum AlertSound {
   soft('audio/horn_soft.wav'),
   strong('audio/horn_strong.wav'),
@@ -31,11 +31,14 @@ class Alert {
   final VibrationLevel vibration;
 }
 
-/// La jerarquía de intensidad del glosario: suave a los treinta segundos de
-/// turno y de reserva, más fuerte al agotarse el turno, y la más fuerte de las
-/// tres al agotarse la reserva.
+/// La jerarquía de intensidad del glosario: suave en los cuatro avisos previos,
+/// más fuerte al agotarse el turno, y la más fuerte de las tres al agotarse la
+/// reserva. Los dos avisos de un mismo reloj suenan igual a propósito: lo que
+/// los distingue es el reloj, no la bocina.
 Alert alertFor(Horn horn) => switch (horn) {
+  Horn.turnWarningEarly => const Alert(AlertSound.soft, VibrationLevel.soft),
   Horn.turnWarning => const Alert(AlertSound.soft, VibrationLevel.soft),
+  Horn.reserveWarningEarly => const Alert(AlertSound.soft, VibrationLevel.soft),
   Horn.reserveWarning => const Alert(AlertSound.soft, VibrationLevel.soft),
   Horn.turnExpired => const Alert(AlertSound.strong, VibrationLevel.strong),
   Horn.reserveExpired => const Alert(

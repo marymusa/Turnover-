@@ -56,9 +56,9 @@
   "@settingsReserve": {
     "description": "Nombre del tiempo extra en los ajustes"
   },
-  "settingsWarning": "Early warning",
+  "settingsWarning": "When to warn",
   "@settingsWarning": {
-    "description": "Nombre del aviso previo en los ajustes"
+    "description": "Nombre de los avisos previos en los ajustes"
   },
   "settingsTurnHint": "Restarted at the beginning of each turn",
   "@settingsTurnHint": {
@@ -68,13 +68,21 @@
   "@settingsReserveHint": {
     "description": "Qué es el tiempo extra, debajo de su nombre en los ajustes"
   },
-  "settingsWarningHint": "Horn before the turn runs out",
+  "settingsWarningHint": "Two warnings before time runs out when the handles are apart",
   "@settingsWarningHint": {
-    "description": "Qué es el aviso previo, debajo de su nombre en los ajustes"
+    "description": "Qué son los avisos previos, debajo de su nombre en los ajustes"
   },
   "settingsWarningOff": "Off",
   "@settingsWarningOff": {
-    "description": "Valor del aviso previo cuando está a cero, en lugar de los segundos"
+    "description": "Valor de los avisos previos cuando los dos agarres están a cero"
+  },
+  "secondsRange": "{early} s and {late} s",
+  "@secondsRange": {
+    "description": "Los dos avisos previos separados, a la derecha de su nombre en los ajustes",
+    "placeholders": {
+      "early": { "type": "int" },
+      "late": { "type": "int" }
+    }
   },
   "minutes": "{count} min",
   "@minutes": {
