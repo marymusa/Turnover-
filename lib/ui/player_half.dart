@@ -16,6 +16,7 @@ class PlayerHalf extends StatelessWidget {
     required this.reserve,
     required this.remainingFraction,
     required this.isActive,
+    required this.activeColor,
     required this.isStarted,
     required this.isUpsideDown,
     required this.isRevealed,
@@ -41,6 +42,12 @@ class PlayerHalf extends StatelessWidget {
   final double? remainingFraction;
 
   final bool isActive;
+
+  /// El color de esta mitad mientras es su turno. Lo elige quien pinta, que es
+  /// quien sabe de qué jugador es la mitad: aquí no se deduce del giro, que
+  /// dice hacia dónde se lee y no de quién es.
+  final Color activeColor;
+
   final bool isStarted;
   final bool isUpsideDown;
 
@@ -126,7 +133,7 @@ class PlayerHalf extends StatelessWidget {
       opacity: !isStarted || isActive ? 1 : ClockTheme.inactiveOpacity,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        color: isActive ? ClockTheme.active : ClockTheme.inactive,
+        color: isActive ? activeColor : ClockTheme.inactive,
         // Ancho completo: la mitad es tocable entera, no solo donde hay números.
         width: double.infinity,
         child: Column(

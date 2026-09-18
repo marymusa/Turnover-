@@ -328,6 +328,9 @@ class _Half extends StatelessWidget {
         reserve: clock.reserveOf(player),
         remainingFraction: clock.remainingFractionOf(player),
         isActive: clock.activePlayer == player,
+        activeColor: player == Player.one
+            ? ClockTheme.active
+            : ClockTheme.activeOpponent,
         isStarted: clock.state != MatchState.notStarted,
         isUpsideDown: isUpsideDown,
         isRevealed: isRevealed,

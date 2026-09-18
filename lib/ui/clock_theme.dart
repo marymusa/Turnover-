@@ -8,7 +8,22 @@ abstract final class ClockTheme {
   static const inactive = Color(0xFF161B26);
   static const active = Color(0xFF1D4ED8);
   static const text = Color(0xFFF8FAFC);
-  static const reserve = Color(0xFFF59E0B);
+
+  /// El azul del turno activo, para la mitad de abajo, y su complementario
+  /// para la de arriba: cada jugador tiene su color y no hay que mirar dos
+  /// veces para saber de quién es el turno.
+  ///
+  /// El naranja va quemado y no vivo. Con un naranja de los que salen en las
+  /// paletas junto a este azul, la letra blanca se queda en 2:1 y no se lee;
+  /// bajado hasta aquí llega a 7:1, parecido al 6,4:1 que tiene sobre el azul,
+  /// y las dos mitades se leen igual de bien.
+  static const activeOpponent = Color(0xFF9A3412);
+
+  /// El turno agotado, sobre el reloj de reserva y su barra. Amarillo y no
+  /// naranja desde que la mitad del rival es naranja: sobre ella, un naranja
+  /// sobre otro dejaba de avisar de nada. Es el único color que pasa de 5:1
+  /// sobre las dos mitades.
+  static const reserve = Color(0xFFFDE047);
 
   /// Solo la lleva el control de pausa mientras está pausado, que es el único
   /// sitio donde hace falta decir "esto está detenido a propósito".
