@@ -1,7 +1,7 @@
 # 0002 - Sin contador de turnos ni de drives
 
 Fecha: 2026-09-15
-Estado: aceptado
+Estado: superado por el ADR-0008
 
 ## Contexto
 

@@ -35,6 +35,27 @@ bocina, 30 por defecto. Es uno de los tres tiempos configurables.
 **pasar turno**: la única acción del jugador activo. Detiene sus relojes y activa
 los del oponente.
 
+**parte**: cada una de las dos mitades del partido, de ocho turnos por jugador. La
+primera parte termina cuando el segundo jugador pasa su turno 8.
+
+**drive**: cada una de las entradas en que se divide una parte. Empieza con el
+despliegue de las miniaturas y la patada inicial, y termina con una anotación o con el
+final de la parte. No se traduce: es el término del reglamento.
+
+**despliegue**: el parón al comienzo de cada drive, mientras los jugadores colocan las
+miniaturas. El reloj no corre y ese tiempo no es de nadie.
+
+**Tiempo Muerto**: el resultado 3 de la patada inicial. Si la ficha del equipo pateador
+está en el turno 6, 7 u 8, ambos entrenadores retroceden un espacio; en cualquier otro
+caso, ambos avanzan uno. Se tira después de desplegar, así que la aplicación lo ofrece
+al continuar, no al parar.
+
+**anotación**: el tanto que termina un drive. Nunca "gol", que es de otro juego. Lo
+apunta quien anota al pulsar, porque después hay que desplegar otra vez.
+
+**acta**: la pantalla que cierra el partido. Muestra el resultado, el tiempo de juego
+total, el que ha jugado cada uno y el que ha estado parado. No se guarda (ADR-0003).
+
 **bocina**: cada uno de los tres avisos sonoros, de menor a mayor intensidad: queda
 el aviso previo de turno, se agota el turno, se agota el tiempo extra. Cada bocina lleva su
 vibración, en la misma intensidad que ella.
@@ -57,7 +78,21 @@ pulsaciones: lo que sube con la gravedad es la fuerza del golpe, no cuántos son
 - El partido empieza al tocar al jugador que recibe la patada inicial. No hay botón
   de comenzar. La invitación de cada mitad dice "Pulsa para comenzar" y no de quién
   es la patada: el reloj no reparte el saque, lo reparte el dado antes de tocar
-  nada, y la pantalla solo recoge lo que los jugadores ya han acordado.
+  nada, y la pantalla solo recoge lo que los jugadores ya han acordado. Ese toque no
+  arranca el reloj, abre el despliegue del primer drive: primero se colocan las
+  miniaturas y se tira la patada inicial, y solo después corre el tiempo.
+- La segunda parte no se toca para elegir lado. El orden lo fijan las reglas y la
+  aplicación no reparte nada: quien recibe en la primera parte juega primero en ella,
+  y en la segunda patea y juega segundo.
+- Cada drive empieza con el reloj parado. El despliegue se acaba tocando en cualquier
+  sitio, igual que se reanuda una pausa, y al continuar se ofrece Tiempo Muerto, que se
+  ignora sin más si la patada inicial no lo ha sacado.
+- La cuenta de turnos es de cada jugador, de 1 a 8, y es la del tablero. Tiempo Muerto
+  la mueve según su regla, sin topes: una parte puede durar siete turnos o nueve, como
+  en la mesa. Lo que la aplicación no ve, como un turno que nadie pasó, se corrige a
+  mano con una pulsación larga sobre el número.
+- Anotar pasa turno y abre el drive siguiente. Si con ese pase se agotan los turnos de
+  la parte, lo que se abre es la parte siguiente, y la aplicación lo sabe sin preguntar.
 - La aplicación solo cuenta el tiempo en primer plano. Si se cierra o pasa a
   segundo plano, el tiempo se pausa. El compromiso es no tocar el móvil mientras
   corre el reloj.
@@ -86,12 +121,15 @@ pulsaciones: lo que sube con la gravedad es la fuerza del golpe, no cuántos son
 
 ## Fuera del alcance
 
-Sin contador de turnos ni de drives, sin descanso entre partes, sin marcador. El
-resultado 3 de la patada inicial mueve la cuenta de turnos del tablero, así que un
-contador se desincronizaría y habría que corregirlo a mano: más fricción que valor.
+Sin prórroga. El acta la nombra cuando hay empate, para que se sepa que la aplicación
+no la ignora, y se implementará cuando alguna liga la juegue de verdad (ADR-0008).
 
-Sin historial de partidos. Para dejar constancia de una partida se hace una captura
-de pantalla, y por eso la aplicación no bloquea las capturas.
+Los ocho turnos por parte no se configuran. Es la regla de Blood Bowl, y un ajuste
+devolvería la aplicación al terreno genérico.
+
+Sin historial de partidos. Ni siquiera el acta se guarda (ADR-0003). Para dejar
+constancia de una partida se hace una captura de pantalla, y por eso la aplicación no
+bloquea las capturas.
 
 Sin modo espectador ni modo árbitro. Sin red y sin cuentas. Tampoco se pide copia de
 seguridad en la nube, aunque en iOS los ajustes viajen igualmente en la de iCloud, que

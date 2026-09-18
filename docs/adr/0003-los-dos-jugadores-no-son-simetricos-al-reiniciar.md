@@ -55,3 +55,8 @@ no existe.
 
 Si algún día se guardara algo que de verdad no deba salir del aparato, esta decisión se
 revisa: el seam es `SettingsStore`, y cambiar lo que hay debajo no toca el dominio.
+
+El acta final que introduce el ADR-0008 no cambia nada de esto. El resultado, los
+tiempos jugados y el tiempo parado se calculan mientras dura el partido y se pierden al
+terminarlo, igual que los relojes. Para dejar constancia se hace una captura de
+pantalla: el acta la hace más útil, no la sustituye.
