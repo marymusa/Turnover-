@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../l10n/app_localizations.dart';
 import 'advanced_control.dart';
+import 'clock_colors.dart';
 import 'clock_theme.dart';
 
 /// La costura entre las dos mitades: pasar turno en el centro y, discretos a
@@ -62,28 +63,29 @@ class _PassTurnControl extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = ClockColors.of(context);
     return Semantics(
       button: true,
       label: label,
       child: Opacity(
         opacity: onPressed == null ? 0.25 : 1,
         child: Material(
-          color: ClockTheme.text.withValues(alpha: 0.16),
+          color: colors.onSurface.withValues(alpha: 0.16),
           shape: CircleBorder(
             side: BorderSide(
-              color: ClockTheme.text.withValues(alpha: 0.22),
+              color: colors.onSurface.withValues(alpha: 0.22),
               width: 2,
             ),
           ),
           child: InkWell(
             customBorder: const CircleBorder(),
             onTap: onPressed,
-            child: const SizedBox.square(
+            child: SizedBox.square(
               dimension: ClockTheme.passTurnSize,
               child: Icon(
                 Icons.swap_vert,
                 size: ClockTheme.passTurnIconSize,
-                color: ClockTheme.text,
+                color: colors.onSurface,
               ),
             ),
           ),

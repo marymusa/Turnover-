@@ -112,6 +112,11 @@ pulsaciones: lo que sube con la gravedad es la fuerza del golpe, no cuántos son
   se pregunta antes, describiendo lo que se pierde. Sin empezar no hay nada que perder y
   se sale sin más.
 - La pantalla se mantiene encendida mientras un reloj corre, y se libera al pausar.
+- El modo claro u oscuro lo decide el aparato y la aplicación no lo pregunta ni ofrece
+  un selector propio. Lo que cambia con la luz es el marco: el fondo de la pantalla,
+  los ajustes y los diálogos. Las dos mitades siguen siendo oscuras en los dos modos,
+  porque es lo que deja que el amarillo del tiempo extra agotado siga avisando
+  (ADR-0009).
 - Los tiempos (turno, tiempo extra y los dos avisos previos) se configuran en una pantalla propia,
   a la que solo se llega antes de empezar: los tiempos se pactan con el partido parado
   (ADR-0006). Los nombres se pactan igual, y por la misma razón: con el partido en marcha

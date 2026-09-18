@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../domain/match_settings.dart';
 import '../l10n/app_localizations.dart';
-import 'clock_theme.dart';
+import 'clock_colors.dart';
 
 /// Los tiempos configurables, con un deslizador cada uno: el del turno, el del
 /// tiempo extra y el de los dos avisos previos, que lleva dos agarres y por eso
@@ -20,11 +20,12 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final strings = AppLocalizations.of(context)!;
+    final colors = ClockColors.of(context);
     return Scaffold(
-      backgroundColor: ClockTheme.background,
+      backgroundColor: colors.background,
       appBar: AppBar(
-        backgroundColor: ClockTheme.background,
-        foregroundColor: ClockTheme.text,
+        backgroundColor: colors.background,
+        foregroundColor: colors.onSurface,
         title: Text(strings.settings),
       ),
       body: SafeArea(
@@ -112,6 +113,7 @@ class _WarningSetting extends StatelessWidget {
     // tardío: el agarre de la derecha se posa encima del otro, que es como se
     // ve un solo aviso.
     final rightHandle = earlySeconds < lateSeconds ? lateSeconds : earlySeconds;
+    final colors = ClockColors.of(context);
 
     return _Setting(
       name: strings.settingsWarning,
@@ -122,8 +124,8 @@ class _WarningSetting extends StatelessWidget {
         min: _minWarningSeconds,
         max: _maxWarningSeconds,
         divisions: _warningDivisions,
-        activeColor: ClockTheme.active,
-        inactiveColor: ClockTheme.text.withValues(alpha: 0.14),
+        activeColor: colors.active,
+        inactiveColor: colors.onSurface.withValues(alpha: 0.14),
         labels: RangeLabels(
           strings.seconds(lateSeconds.round()),
           strings.seconds(earlySeconds.round()),
@@ -169,6 +171,7 @@ class _TimeSetting extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = ClockColors.of(context);
     return _Setting(
       name: name,
       hint: hint,
@@ -178,8 +181,8 @@ class _TimeSetting extends StatelessWidget {
         min: min,
         max: max,
         divisions: (max - min).round(),
-        activeColor: ClockTheme.active,
-        inactiveColor: ClockTheme.text.withValues(alpha: 0.14),
+        activeColor: colors.active,
+        inactiveColor: colors.onSurface.withValues(alpha: 0.14),
         label: value,
         onChanged: onChanged,
       ),
@@ -204,6 +207,7 @@ class _Setting extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = ClockColors.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
       child: Column(
@@ -214,8 +218,8 @@ class _Setting extends StatelessWidget {
             children: [
               Text(
                 name,
-                style: const TextStyle(
-                  color: ClockTheme.text,
+                style: TextStyle(
+                  color: colors.onSurface,
                   fontSize: 17,
                   fontWeight: FontWeight.w600,
                 ),
@@ -223,17 +227,16 @@ class _Setting extends StatelessWidget {
               Text(
                 value,
                 style: const TextStyle(
-                  color: ClockTheme.text,
                   fontSize: 17,
                   fontFeatures: [FontFeature.tabularFigures()],
-                ),
+                ).copyWith(color: colors.onSurface),
               ),
             ],
           ),
           Text(
             hint,
             style: TextStyle(
-              color: ClockTheme.text.withValues(alpha: 0.55),
+              color: colors.onSurface.withValues(alpha: 0.55),
               fontSize: 13,
             ),
           ),

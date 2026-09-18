@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'clock_colors.dart';
 import 'clock_theme.dart';
 
 /// Un control redondo y discreto, el de las operaciones que acompañan al
@@ -31,16 +32,17 @@ class AdvancedControl extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = ClockColors.of(context);
     return Semantics(
       button: true,
       label: label,
       child: Material(
         color: isHighlighted
-            ? ClockTheme.paused
-            : ClockTheme.text.withValues(
+            ? colors.paused
+            : colors.onSurface.withValues(
                 alpha: isAlone
-                    ? ClockTheme.advancedAloneFillAlpha
-                    : ClockTheme.advancedFillAlpha,
+                    ? colors.advancedAloneFillAlpha
+                    : colors.advancedFillAlpha,
               ),
         shape: const CircleBorder(),
         child: InkWell(
@@ -52,11 +54,11 @@ class AdvancedControl extends StatelessWidget {
               icon,
               size: ClockTheme.advancedIconSize,
               color: isHighlighted
-                  ? ClockTheme.text
-                  : ClockTheme.text.withValues(
+                  ? colors.text
+                  : colors.onSurface.withValues(
                       alpha: isAlone
-                          ? ClockTheme.advancedAloneIconAlpha
-                          : ClockTheme.advancedIconAlpha,
+                          ? colors.advancedAloneIconAlpha
+                          : colors.advancedIconAlpha,
                     ),
             ),
           ),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../l10n/app_localizations.dart';
-import 'clock_theme.dart';
+import 'clock_colors.dart';
 
 /// Pide el nombre nuevo de un jugador. Devuelve lo escrito, o nulo si se
 /// cancela: borrar el campo entero devuelve la cadena vacía, que para quien
@@ -41,22 +41,23 @@ class _RenameDialogState extends State<_RenameDialog> {
   @override
   Widget build(BuildContext context) {
     final strings = AppLocalizations.of(context)!;
+    final colors = ClockColors.of(context);
     return AlertDialog(
-      backgroundColor: ClockTheme.inactive,
-      title: Text(strings.rename, style: const TextStyle(color: ClockTheme.text)),
+      backgroundColor: colors.dialogSurface,
+      title: Text(strings.rename, style: TextStyle(color: colors.onSurface)),
       content: TextField(
         controller: _field,
         autofocus: true,
         textCapitalization: TextCapitalization.words,
         textInputAction: TextInputAction.done,
         maxLength: maxNameLength,
-        style: const TextStyle(color: ClockTheme.text),
+        style: TextStyle(color: colors.onSurface),
         decoration: InputDecoration(
           hintText: strings.renameHint,
-          hintStyle: TextStyle(color: ClockTheme.text.withValues(alpha: 0.4)),
+          hintStyle: TextStyle(color: colors.onSurface.withValues(alpha: 0.4)),
           counterText: '',
-          focusedBorder: const UnderlineInputBorder(
-            borderSide: BorderSide(color: ClockTheme.active),
+          focusedBorder: UnderlineInputBorder(
+            borderSide: BorderSide(color: colors.active),
           ),
         ),
         onSubmitted: (_) => _submit(),

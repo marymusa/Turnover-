@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import 'clock_colors.dart';
 import 'clock_theme.dart';
 import 'logo_outline.dart';
 
@@ -92,6 +93,7 @@ class _RevealedLogoState extends State<_RevealedLogo> {
                   outline: outline,
                   progress: widget.trace.value,
                   fade: widget.settle.value,
+                  color: ClockColors.of(context).onSurface,
                 ),
               ),
             ],
@@ -113,11 +115,16 @@ class _OutlinePainter extends CustomPainter {
     required this.outline,
     required this.progress,
     required this.fade,
+    required this.color,
   });
 
   final LogoOutline outline;
   final double progress;
   final double fade;
+
+  /// El color del trazo, que es el de la letra del marco: el cometa se dibuja
+  /// sobre el fondo de la pantalla, no sobre una tarjeta.
+  final Color color;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -149,7 +156,7 @@ class _OutlinePainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = ClockTheme.logoRevealTrailWidth
       ..strokeCap = StrokeCap.round
-      ..color = ClockTheme.logoRevealColor.withValues(
+      ..color = color.withValues(
         alpha: ClockTheme.logoRevealTrailAlpha * opacity,
       );
     canvas.drawPath(metric.extractPath(0, tailStart), trail);
@@ -158,13 +165,13 @@ class _OutlinePainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = ClockTheme.logoRevealHeadWidth
       ..strokeCap = StrokeCap.round
-      ..color = ClockTheme.logoRevealColor.withValues(alpha: opacity);
+      ..color = color.withValues(alpha: opacity);
     canvas.drawPath(metric.extractPath(tailStart, head), comet);
   }
 
   @override
   bool shouldRepaint(_OutlinePainter old) =>
-      old.progress != progress || old.fade != fade;
+      old.progress != progress || old.fade != fade || old.color != color;
 }
 
 /// El escudo de la liga en el centro del campo, donde la línea central parte

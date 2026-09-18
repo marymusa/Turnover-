@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../l10n/app_localizations.dart';
-import 'clock_theme.dart';
+import 'clock_colors.dart';
 
 /// Pide confirmación antes de reiniciar. Devuelve `true` solo si se confirma:
 /// cerrar el diálogo por cualquier otro camino es no reiniciar.
@@ -22,15 +22,16 @@ class _ResetDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final strings = AppLocalizations.of(context)!;
+    final colors = ClockColors.of(context);
     return AlertDialog(
-      backgroundColor: ClockTheme.inactive,
+      backgroundColor: colors.dialogSurface,
       title: Text(
         strings.resetTitle,
-        style: const TextStyle(color: ClockTheme.text),
+        style: TextStyle(color: colors.onSurface),
       ),
       content: Text(
         strings.resetBody,
-        style: TextStyle(color: ClockTheme.text.withValues(alpha: 0.75)),
+        style: TextStyle(color: colors.onSurface.withValues(alpha: 0.75)),
       ),
       actions: [
         TextButton(

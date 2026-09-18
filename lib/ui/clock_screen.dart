@@ -10,6 +10,7 @@ import '../domain/match_clock.dart';
 import '../domain/match_ticker.dart';
 import '../domain/player_names.dart';
 import '../l10n/app_localizations.dart';
+import 'clock_colors.dart';
 import 'clock_theme.dart';
 import 'league_crest.dart';
 import 'leave_dialog.dart';
@@ -206,7 +207,7 @@ class _ClockScreenState extends State<ClockScreen>
           canPop: clock.state == MatchState.notStarted,
           onPopInvokedWithResult: (didPop, _) => unawaited(_leave(didPop)),
           child: Scaffold(
-            backgroundColor: ClockTheme.background,
+            backgroundColor: ClockColors.of(context).background,
             body: SafeArea(
               child: Stack(
                 children: [
@@ -339,8 +340,8 @@ class _Half extends StatelessWidget {
         remainingFraction: clock.remainingFractionOf(player),
         isActive: clock.activePlayer == player,
         activeColor: player == Player.one
-            ? ClockTheme.active
-            : ClockTheme.activeOpponent,
+            ? ClockColors.of(context).active
+            : ClockColors.of(context).activeOpponent,
         isStarted: clock.state != MatchState.notStarted,
         isUpsideDown: isUpsideDown,
         isRevealed: isRevealed,

@@ -1,34 +1,11 @@
-import 'package:flutter/material.dart';
-
-/// Los colores y las medidas que fijó el prototipo B2. Viven juntos y en un
-/// solo sitio porque la pantalla es una sola y todas se eligieron a la vez,
-/// mirándolas en un móvil de verdad.
+/// Las medidas que fijó el prototipo B2. Viven juntas y en un solo sitio
+/// porque la pantalla es una sola y todas se eligieron a la vez, mirándolas en
+/// un móvil de verdad.
+///
+/// Solo medidas y tiempos: lo que mide un dedo mide igual de día que de noche.
+/// Los colores se fueron a [ClockColors] cuando la aplicación pasó a seguir el
+/// modo claro del aparato, porque de esos hay dos juegos y de estos uno.
 abstract final class ClockTheme {
-  static const background = Color(0xFF0B0F19);
-  static const inactive = Color(0xFF161B26);
-  static const active = Color(0xFF1D4ED8);
-  static const text = Color(0xFFF8FAFC);
-
-  /// El azul del turno activo, para la mitad de abajo, y su complementario
-  /// para la de arriba: cada jugador tiene su color y no hay que mirar dos
-  /// veces para saber de quién es el turno.
-  ///
-  /// El naranja va quemado y no vivo. Con un naranja de los que salen en las
-  /// paletas junto a este azul, la letra blanca se queda en 2:1 y no se lee;
-  /// bajado hasta aquí llega a 7:1, parecido al 6,4:1 que tiene sobre el azul,
-  /// y las dos mitades se leen igual de bien.
-  static const activeOpponent = Color(0xFF9A3412);
-
-  /// El turno agotado, sobre el reloj de reserva y su barra. Amarillo y no
-  /// naranja desde que la mitad del rival es naranja: sobre ella, un naranja
-  /// sobre otro dejaba de avisar de nada. Es el único color que pasa de 5:1
-  /// sobre las dos mitades.
-  static const reserve = Color(0xFFFDE047);
-
-  /// Solo la lleva el control de pausa mientras está pausado, que es el único
-  /// sitio donde hace falta decir "esto está detenido a propósito".
-  static const paused = Color(0xFF16A34A);
-
   /// El turno encoge y la reserva crece al agotarse el turno. Ninguno de los
   /// dos se mueve de sitio: solo cambian de tamaño y de color.
   static const turnSize = 96.0;
@@ -60,19 +37,6 @@ abstract final class ClockTheme {
   static const advancedSize = 56.0;
   static const advancedIconSize = 21.0;
 
-  /// Lo apagado que va un control avanzado. En la costura son tres en fila y
-  /// se explican entre ellos, así que pueden quedarse atrás: lo que manda allí
-  /// es pasar turno.
-  static const advancedFillAlpha = 0.07;
-  static const advancedIconAlpha = 0.55;
-
-  /// Lo mismo cuando el control va suelto, que es el caso de los ajustes antes
-  /// de empezar. Sin nadie al lado que lo sitúe, a los valores de la costura se
-  /// leía como un botón deshabilitado, y al lado del escudo, que va a plena
-  /// opacidad, todavía más.
-  static const advancedAloneFillAlpha = 0.12;
-  static const advancedAloneIconAlpha = 0.85;
-
   /// Lo que separa los tres controles de la costura.
   static const seamGap = 26.0;
 
@@ -87,10 +51,6 @@ abstract final class ClockTheme {
   static const settingsOffset =
       leagueLogoSize / 2 + advancedSize / 2 + seamGap;
 
-  /// El jugador inactivo no se apaga del todo: se sigue leyendo desde el otro
-  /// lado de la mesa.
-  static const inactiveOpacity = 0.3;
-
   /// La mitad no llega hasta el borde: el color vive dentro de una tarjeta, y
   /// el fondo de la pantalla se ve alrededor. Lo que se aparta es poco a
   /// propósito, que el alto de la pantalla ya va justo con los dos relojes.
@@ -100,11 +60,7 @@ abstract final class ClockTheme {
   static const halfCardInset = 12.0;
   static const halfCardRadius = 20.0;
   static const halfCardBorderWidth = 1.0;
-  static const halfCardBorderAlpha = 0.14;
 
-  /// El velo de pausa deja ver los relojes por debajo: se pausa para hablar de
-  /// la jugada, y el tiempo se sigue leyendo mientras se habla.
-  static const veilOpacity = 0.82;
   static const veilTextSize = 19.0;
 
   /// Lo que el aviso del velo se aparta del centro, para no caer encima de la
@@ -177,7 +133,6 @@ abstract final class ClockTheme {
   /// al abrir la pantalla.
   ///
   /// El cometa manda: hasta que no cierra la silueta no entra el escudo.
-  static const logoRevealColor = text;
   static const logoTraceDuration = Duration(milliseconds: 1500);
   static const logoSettleDuration = Duration(milliseconds: 700);
 

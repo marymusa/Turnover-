@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../domain/clock_format.dart';
 import '../l10n/app_localizations.dart';
+import 'clock_colors.dart';
 import 'clock_theme.dart';
 
 /// La mitad de un jugador: su nombre, el turno grande, la reserva debajo y la
@@ -73,6 +74,9 @@ class PlayerHalf extends StatelessWidget {
     // el RotatedBox del final, que ya la deja leyéndose de frente desde su
     // lado de la mesa: invertir aquí además la dejaría del revés.
     final strings = AppLocalizations.of(context)!;
+    // La tarjeta es oscura en las dos paletas, así que lo que se pinta dentro
+    // va siempre con la letra clara. Lo que cambia con la luz es el marco.
+    final colors = ClockColors.of(context);
     final rows = <Widget>[
       // La pista de renombrar va en la misma fila que el nombre y no en una
       // propia: así aparecer y desaparecer no cambia la altura de la mitad, y
@@ -117,7 +121,7 @@ class PlayerHalf extends StatelessWidget {
         size: _isTurnSpent
             ? ClockTheme.reserveSizeSpent
             : ClockTheme.reserveSize,
-        color: _isTurnSpent ? ClockTheme.reserve : null,
+        color: _isTurnSpent ? colors.reserve : null,
       ),
       // La invitación cierra el bloque, debajo de los dos relojes, y late para
       // que se vea que la mitad espera un toque. Reserva su hueco también con
@@ -130,7 +134,7 @@ class PlayerHalf extends StatelessWidget {
 
     final half = AnimatedOpacity(
       duration: const Duration(milliseconds: 200),
-      opacity: !isStarted || isActive ? 1 : ClockTheme.inactiveOpacity,
+      opacity: !isStarted || isActive ? 1 : colors.inactiveOpacity,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         // El color vive aquí dentro y no en la mitad entera: lo que se ve es
@@ -138,11 +142,11 @@ class PlayerHalf extends StatelessWidget {
         // recorta el toque, que lo coge el GestureDetector de fuera.
         margin: const EdgeInsets.all(ClockTheme.halfCardInset),
         decoration: BoxDecoration(
-          color: isActive ? activeColor : ClockTheme.inactive,
+          color: isActive ? activeColor : colors.inactive,
           borderRadius: BorderRadius.circular(ClockTheme.halfCardRadius),
           border: Border.all(
-            color: ClockTheme.text.withValues(
-              alpha: ClockTheme.halfCardBorderAlpha,
+            color: colors.text.withValues(
+              alpha: colors.halfCardBorderAlpha,
             ),
             width: ClockTheme.halfCardBorderWidth,
           ),
@@ -194,6 +198,7 @@ class _Name extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = ClockColors.of(context);
     final label = Flexible(
       child: Text(
         text,
@@ -202,7 +207,7 @@ class _Name extends StatelessWidget {
         style: TextStyle(
           fontSize: ClockTheme.nameSize,
           fontWeight: FontWeight.w600,
-          color: ClockTheme.text.withValues(alpha: 0.75),
+          color: colors.text.withValues(alpha: 0.75),
         ),
       ),
     );
@@ -228,7 +233,7 @@ class _Name extends StatelessWidget {
                   Icon(
                     Icons.edit_outlined,
                     size: ClockTheme.renameIconSize,
-                    color: ClockTheme.text.withValues(alpha: 0.4),
+                    color: colors.text.withValues(alpha: 0.4),
                   ),
                   const SizedBox(width: 4),
                   Text(
@@ -237,7 +242,7 @@ class _Name extends StatelessWidget {
                     style: TextStyle(
                       fontSize: ClockTheme.renameHintSize,
                       fontWeight: FontWeight.w500,
-                      color: ClockTheme.text.withValues(alpha: 0.4),
+                      color: colors.text.withValues(alpha: 0.4),
                     ),
                   ),
                 ],
@@ -308,6 +313,7 @@ class _StartHintState extends State<_StartHint>
 
   @override
   Widget build(BuildContext context) {
+    final colors = ClockColors.of(context);
     final label = Text(
       widget.text,
       style: TextStyle(
@@ -315,8 +321,8 @@ class _StartHintState extends State<_StartHint>
         fontWeight: FontWeight.w600,
         letterSpacing: 1.5,
         color: widget.isVisible
-            ? ClockTheme.text
-            : ClockTheme.text.withValues(alpha: 0),
+            ? colors.text
+            : colors.text.withValues(alpha: 0),
       ),
     );
 
@@ -342,6 +348,7 @@ class _ClockText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = ClockColors.of(context);
     return AnimatedDefaultTextStyle(
       duration: const Duration(milliseconds: 200),
       style: TextStyle(
@@ -349,7 +356,7 @@ class _ClockText extends StatelessWidget {
         fontWeight: FontWeight.w700,
         height: 0.95,
         letterSpacing: -0.03 * size,
-        color: color ?? ClockTheme.text,
+        color: color ?? colors.text,
         fontFeatures: const [FontFeature.tabularFigures()],
       ),
       child: Text(text),
@@ -373,13 +380,14 @@ class _ClockLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     final text = this.text;
     if (text == null) return const SizedBox.shrink();
+    final colors = ClockColors.of(context);
     return Text(
       text,
       style: TextStyle(
         fontSize: ClockTheme.clockLabelSize,
         fontWeight: FontWeight.w600,
         letterSpacing: 1.2,
-        color: ClockTheme.text.withValues(alpha: 0.45),
+        color: colors.text.withValues(alpha: 0.45),
       ),
     );
   }
@@ -398,12 +406,13 @@ class _ProgressBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = ClockColors.of(context);
     return FractionallySizedBox(
       widthFactor: ClockTheme.barWidthFactor,
       child: Container(
         height: ClockTheme.barHeight,
         decoration: BoxDecoration(
-          color: ClockTheme.text.withValues(alpha: 0.14),
+          color: colors.text.withValues(alpha: 0.14),
           borderRadius: BorderRadius.circular(ClockTheme.barHeight / 2),
         ),
         child: FractionallySizedBox(
@@ -411,7 +420,7 @@ class _ProgressBar extends StatelessWidget {
           widthFactor: remainingFraction ?? 0,
           child: DecoratedBox(
             decoration: BoxDecoration(
-              color: isReserve ? ClockTheme.reserve : ClockTheme.text,
+              color: isReserve ? colors.reserve : colors.text,
               borderRadius: BorderRadius.circular(ClockTheme.barHeight / 2),
             ),
             // Sin recortar: el halo tiene que salirse de la barra, que es lo
@@ -420,7 +429,7 @@ class _ProgressBar extends StatelessWidget {
             child: Align(
               alignment: Alignment.centerRight,
               child: _BarGlow(
-                color: isReserve ? ClockTheme.reserve : ClockTheme.text,
+                color: isReserve ? colors.reserve : colors.text,
               ),
             ),
           ),

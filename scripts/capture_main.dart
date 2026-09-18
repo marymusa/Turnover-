@@ -29,8 +29,8 @@ import 'package:turnover/domain/match_clock.dart';
 import 'package:turnover/domain/match_settings.dart';
 import 'package:turnover/domain/player_names.dart';
 import 'package:turnover/l10n/app_localizations.dart';
+import 'package:turnover/ui/clock_colors.dart';
 import 'package:turnover/ui/clock_screen.dart';
-import 'package:turnover/ui/clock_theme.dart';
 import 'package:turnover/ui/settings_screen.dart';
 
 Future<void> main() async {
@@ -184,22 +184,12 @@ class _CaptureAppState extends State<_CaptureApp> {
       locale: const Locale('es'),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: ClockTheme.active,
-          brightness: Brightness.dark,
-          surface: ClockTheme.background,
-        ),
-        scaffoldBackgroundColor: ClockTheme.background,
-        sliderTheme: const SliderThemeData(
-          valueIndicatorColor: ClockTheme.active,
-          valueIndicatorTextStyle: TextStyle(
-            color: ClockTheme.text,
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ),
+      // Los dos temas y que mande el aparato, igual que la aplicacion de
+      // verdad: es lo que permite ver las dos paletas cambiando el ajuste del
+      // sistema con las capturas abiertas.
+      theme: ClockColors.light.toTheme(),
+      darkTheme: ClockColors.dark.toTheme(),
+      themeMode: ThemeMode.system,
       // La banda va aqui, envolviendo el `home`, y no dentro de un `Stack` de
       // la pantalla: por debajo de las mitades el toque no le llegaba nunca.
       builder: (context, child) => Stack(

@@ -12,8 +12,8 @@ import 'l10n/app_localizations.dart';
 import 'platform/platform_alert_device.dart';
 import 'platform/platform_screen.dart';
 import 'platform/platform_settings_store.dart';
+import 'ui/clock_colors.dart';
 import 'ui/clock_screen.dart';
-import 'ui/clock_theme.dart';
 import 'ui/settings_screen.dart';
 
 Future<void> main() async {
@@ -94,30 +94,13 @@ class _TurnoverAppState extends State<TurnoverApp> {
     return MaterialApp(
       // `of` es nulo solo si falta el delegate, y se registra aquí mismo.
       onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
-      // La aplicación es oscura siempre, así que lo dice en vez de dejar el
-      // tema de la luz que Material trae por defecto. Los dos Scaffold ya
-      // ponían su fondo a mano, de modo que esto no cambia lo que se ve: lo
-      // que arregla es lo que saldría de cualquier superficie que resuelva
-      // del esquema y que hoy nadie pinta.
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: ClockTheme.active,
-          brightness: Brightness.dark,
-          surface: ClockTheme.background,
-        ),
-        scaffoldBackgroundColor: ClockTheme.background,
-        // El globo que sale al arrastrar un deslizador va en el azul activo,
-        // y su letra la resolvía el esquema en un gris que encima de ese azul
-        // no se leía. Va aquí y no en cada deslizador: es cosa del tema.
-        sliderTheme: const SliderThemeData(
-          valueIndicatorColor: ClockTheme.active,
-          valueIndicatorTextStyle: TextStyle(
-            color: ClockTheme.text,
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ),
+      // Los dos temas, y que elija el aparato: sin selector propio, la
+      // aplicación se muestra en claro o en oscuro según lo que diga el
+      // sistema. Cada uno se arma con su paleta, que es de donde salen los
+      // colores medidos.
+      theme: ClockColors.light.toTheme(),
+      darkTheme: ClockColors.dark.toTheme(),
+      themeMode: ThemeMode.system,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       // El Builder da un context por debajo del MaterialApp, que es donde vive

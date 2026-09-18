@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -10,6 +11,7 @@ import 'package:turnover/domain/match_alerts.dart';
 import 'package:turnover/domain/match_clock.dart';
 import 'package:turnover/domain/match_settings.dart';
 import 'package:turnover/main.dart';
+import 'package:turnover/ui/clock_colors.dart';
 import 'package:turnover/ui/clock_screen.dart';
 import 'package:turnover/ui/clock_theme.dart';
 import 'package:turnover/ui/player_half.dart';
@@ -299,22 +301,38 @@ void main() {
     // superficie de Flutter, y desde aquí no se ve: este banco de pruebas no
     // tiene ventana de Android. Lo que se ve aquí es solo lo que pinta
     // Flutter, y por eso esta comprobación pasaba con el móvil destellando.
-    testWidgets('abrir los ajustes no da un destello claro', (tester) async {
-      await tester.pumpWidget(_app(store: MemorySettingsStore()));
-      await _settle(tester);
+    // Una vez por paleta: el destello es de la transición, no del modo, y en
+    // claro también hay que vigilarlo. El techo sale de la propia paleta en
+    // vez de ir a mano, que es lo que ataba esta prueba a la oscura: lo que se
+    // comprueba es que la transición no se aclara por encima de los dos
+    // fondos entre los que ocurre, sean los que sean.
+    for (final palette in [ClockColors.dark, ClockColors.light]) {
+      final isLight = palette.brightness == Brightness.light;
+      final name = isLight ? 'clara' : 'oscura';
 
-      await tester.tap(find.bySemanticsLabel('Settings'));
+      testWidgets('abrir los ajustes no da un destello claro ($name)', (
+        tester,
+      ) async {
+        tester.platformDispatcher.platformBrightnessTestValue =
+            palette.brightness;
+        addTearDown(tester.platformDispatcher.clearPlatformBrightnessTestValue);
 
-      final background = <int>[];
-      for (var frame = 0; frame < 20; frame++) {
-        await tester.pump(const Duration(milliseconds: 16));
-        background.add(await _dominantLuma(tester));
-      }
+        await tester.pumpWidget(_app(store: MemorySettingsStore()));
+        await _settle(tester);
 
-      // El fondo del cronómetro está en luma 29 y el de los ajustes en 17, así
-      // que la transición entre ambos no tiene por qué aclararse nunca.
-      expect(background, everyElement(lessThanOrEqualTo(29)));
-    });
+        await tester.tap(find.bySemanticsLabel('Settings'));
+
+        final background = <int>[];
+        for (var frame = 0; frame < 20; frame++) {
+          await tester.pump(const Duration(milliseconds: 16));
+          background.add(await _dominantLuma(tester));
+        }
+
+        // Las dos pantallas comparten fondo, así que el techo es ese mismo
+        // color: por encima de él la transición se estaría aclarando.
+        expect(background, everyElement(lessThanOrEqualTo(_transitionCeiling(palette))));
+      });
+    }
   });
 
   group('los controles de la costura', () {
@@ -665,6 +683,19 @@ Future<void> _confirmReset(WidgetTester tester) async {
 /// El luma del color que más se repite en la escena ya compuesta, que es el
 /// del fondo. Un destello es una superficie entera que se aclara, así que la
 /// moda lo ve y una media la escondería entre los textos.
+/// La luma de un color en la misma escala que [_dominantLuma]: la media de los
+/// tres canales.
+int _lumaOf(Color color) =>
+    ((color.r + color.g + color.b) * 255 / 3).round();
+
+/// El techo de la prueba del destello: el más claro de los dos colores que
+/// pueden dominar la pantalla durante la transición. Los ajustes son fondo
+/// entero, y en el cronómetro lo que más se repite son las dos tarjetas, que
+/// ocupan casi todo. Por encima de ese techo la transición se estaría
+/// aclarando, que es justo lo que se vigila.
+int _transitionCeiling(ClockColors colors) =>
+    math.max(_lumaOf(colors.background), _lumaOf(colors.inactive));
+
 Future<int> _dominantLuma(WidgetTester tester) async {
   final layer = tester.binding.rootElement!.renderObject!.debugLayer!
       as OffsetLayer;

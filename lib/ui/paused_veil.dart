@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../l10n/app_localizations.dart';
+import 'clock_colors.dart';
 import 'clock_theme.dart';
 
 /// El velo que cubre la pantalla con el partido pausado. Tocarlo en cualquier
@@ -17,6 +18,7 @@ class PausedVeil extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final strings = AppLocalizations.of(context)!;
+    final colors = ClockColors.of(context);
     return Semantics(
       button: true,
       label: strings.resume,
@@ -28,7 +30,7 @@ class PausedVeil extends StatelessWidget {
         child: ColoredBox(
           // Translúcido, no opaco: los dos relojes se siguen leyendo mientras
           // se habla de la jugada, que es para lo que se pausa.
-          color: ClockTheme.background.withValues(alpha: ClockTheme.veilOpacity),
+          color: colors.background.withValues(alpha: colors.veilOpacity),
           // El aviso baja para no caer sobre la costura, y se lee derecho
           // desde el lado del jugador uno: es el que tiene el móvil de cara.
           child: Align(
@@ -38,8 +40,8 @@ class PausedVeil extends StatelessWidget {
               child: Text(
                 strings.pausedHint,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: ClockTheme.text,
+                style: TextStyle(
+                  color: colors.veilText,
                   fontSize: ClockTheme.veilTextSize,
                   fontWeight: FontWeight.w600,
                   letterSpacing: 0.5,
