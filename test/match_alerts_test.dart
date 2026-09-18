@@ -28,10 +28,7 @@ void main() {
       expect(alertFor(Horn.turnWarning).vibration, VibrationLevel.soft);
       expect(alertFor(Horn.reserveWarning).vibration, VibrationLevel.soft);
       expect(alertFor(Horn.turnExpired).vibration, VibrationLevel.strong);
-      expect(
-        alertFor(Horn.reserveExpired).vibration,
-        VibrationLevel.strongest,
-      );
+      expect(alertFor(Horn.reserveExpired).vibration, VibrationLevel.strongest);
     });
 
     // La vibración acompaña a la bocina en la misma intensidad: no hay aviso

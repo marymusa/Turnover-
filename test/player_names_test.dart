@@ -45,16 +45,19 @@ void main() {
       expect(names.nameOf(Player.two), isNull);
     });
 
-    test('reiniciar devuelve el del jugador dos a su valor por defecto', () async {
-      final names = PlayerNames(MemorySettingsStore());
-      await names.rename(Player.one, 'Ivan');
-      await names.rename(Player.two, 'Nurgle');
+    test(
+      'reiniciar devuelve el del jugador dos a su valor por defecto',
+      () async {
+        final names = PlayerNames(MemorySettingsStore());
+        await names.rename(Player.one, 'Ivan');
+        await names.rename(Player.two, 'Nurgle');
 
-      names.resetOpponent();
+        names.resetOpponent();
 
-      expect(names.nameOf(Player.one), 'Ivan');
-      expect(names.nameOf(Player.two), isNull);
-    });
+        expect(names.nameOf(Player.one), 'Ivan');
+        expect(names.nameOf(Player.two), isNull);
+      },
+    );
 
     test('un nombre en blanco devuelve al valor por defecto', () async {
       final store = MemorySettingsStore();

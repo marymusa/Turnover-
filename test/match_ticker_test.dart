@@ -11,7 +11,10 @@ void main() {
       ticker.tick(at(0));
       ticker.tick(at(3));
 
-      expect(ticker.clock.turnOf(Player.one), const Duration(minutes: 4) - at(3));
+      expect(
+        ticker.clock.turnOf(Player.one),
+        const Duration(minutes: 4) - at(3),
+      );
     });
 
     // El primer toque solo fija el origen: lo que pasó antes de empezar a mirar
@@ -33,7 +36,10 @@ void main() {
       ticker.tick(at(11));
       ticker.tick(at(14));
 
-      expect(ticker.clock.turnOf(Player.one), const Duration(minutes: 4) - at(4));
+      expect(
+        ticker.clock.turnOf(Player.one),
+        const Duration(minutes: 4) - at(4),
+      );
     });
 
     // El origen se rehace al reanudar; si no, el rato pausado se le cobraría
@@ -49,7 +55,10 @@ void main() {
       ticker.tick(at(30));
       ticker.tick(at(32));
 
-      expect(ticker.clock.turnOf(Player.one), const Duration(minutes: 4) - at(2));
+      expect(
+        ticker.clock.turnOf(Player.one),
+        const Duration(minutes: 4) - at(2),
+      );
     });
 
     test('devuelve las bocinas que emite el reloj', () {
@@ -76,7 +85,10 @@ void main() {
       ticker.refresh();
 
       expect(notified, 1);
-      expect(ticker.clock.turnOf(Player.one), const Duration(minutes: 4) - at(5));
+      expect(
+        ticker.clock.turnOf(Player.one),
+        const Duration(minutes: 4) - at(5),
+      );
     });
 
     // Pasar turno rehace el origen: si no, lo que tarde el jugador en tocar se

@@ -69,6 +69,7 @@ const _minTurnMinutes = 1.0;
 const _maxTurnMinutes = 10.0;
 const _minReserveMinutes = 1.0;
 const _maxReserveMinutes = 30.0;
+
 /// Los avisos previos sí llegan a cero, que es apagarlos: el turno se acaba sin
 /// avisar antes. Son los únicos que se pueden desactivar, porque los otros dos
 /// son el tiempo del partido y sin ellos no hay nada que medir.

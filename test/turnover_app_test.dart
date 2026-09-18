@@ -330,7 +330,10 @@ void main() {
 
         // Las dos pantallas comparten fondo, así que el techo es ese mismo
         // color: por encima de él la transición se estaría aclarando.
-        expect(background, everyElement(lessThanOrEqualTo(_transitionCeiling(palette))));
+        expect(
+          background,
+          everyElement(lessThanOrEqualTo(_transitionCeiling(palette))),
+        );
       });
     }
   });
@@ -369,7 +372,9 @@ void main() {
       for (final label in ['Pause', 'Reset timer']) {
         expect(
           passTurn.shortestSide,
-          greaterThan(tester.getSize(find.bySemanticsLabel(label)).shortestSide),
+          greaterThan(
+            tester.getSize(find.bySemanticsLabel(label)).shortestSide,
+          ),
         );
       }
     });
@@ -685,8 +690,7 @@ Future<void> _confirmReset(WidgetTester tester) async {
 /// moda lo ve y una media la escondería entre los textos.
 /// La luma de un color en la misma escala que [_dominantLuma]: la media de los
 /// tres canales.
-int _lumaOf(Color color) =>
-    ((color.r + color.g + color.b) * 255 / 3).round();
+int _lumaOf(Color color) => ((color.r + color.g + color.b) * 255 / 3).round();
 
 /// El techo de la prueba del destello: el más claro de los dos colores que
 /// pueden dominar la pantalla durante la transición. Los ajustes son fondo
@@ -697,8 +701,8 @@ int _transitionCeiling(ClockColors colors) =>
     math.max(_lumaOf(colors.background), _lumaOf(colors.inactive));
 
 Future<int> _dominantLuma(WidgetTester tester) async {
-  final layer = tester.binding.rootElement!.renderObject!.debugLayer!
-      as OffsetLayer;
+  final layer =
+      tester.binding.rootElement!.renderObject!.debugLayer! as OffsetLayer;
 
   late int dominant;
   await tester.runAsync(() async {

@@ -262,4 +262,3 @@ class _LeagueCrestState extends State<LeagueCrest>
     if (mounted) widget.onRevealed();
   }
 }
-

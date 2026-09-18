@@ -74,8 +74,9 @@ class PlayerHalf extends StatelessWidget {
     // el RotatedBox del final, que ya la deja leyéndose de frente desde su
     // lado de la mesa: invertir aquí además la dejaría del revés.
     final strings = AppLocalizations.of(context)!;
-    // La tarjeta es oscura en las dos paletas, así que lo que se pinta dentro
-    // va siempre con la letra clara. Lo que cambia con la luz es el marco.
+    // Las dos mitades no comparten fondo: la activa lleva el color de su turno
+    // en las dos paletas y la que espera se aclara con la luz. Por eso lo que
+    // se pinta dentro elige letra y aviso según `isActive`.
     final colors = ClockColors.of(context);
     final rows = <Widget>[
       // La pista de renombrar va en la misma fila que el nombre y no en una
@@ -86,19 +87,24 @@ class PlayerHalf extends StatelessWidget {
         canRename: onRename != null,
         hint: strings.renameHintShort,
         hintLong: strings.renameHintInline,
+        isActive: isActive,
       ),
       // Encima del turno, y vacío con el partido empezado: el hueco se queda
       // igual, que es lo que impide que empezar mueva los relojes de sitio.
       SizedBox(
         height: ClockTheme.labelSlotHeight,
         child: Center(
-          child: _ClockLabel(isStarted ? null : strings.turnTimeLabel),
+          child: _ClockLabel(
+            isStarted ? null : strings.turnTimeLabel,
+            isActive: isActive,
+          ),
         ),
       ),
       const SizedBox(height: ClockTheme.labelToClockGap),
       _ClockText(
         formatClock(turn),
         size: _isTurnSpent ? ClockTheme.turnSizeSpent : ClockTheme.turnSize,
+        isActive: isActive,
       ),
       const SizedBox(height: ClockTheme.clockToSlotGap),
       // El mismo hueco para los dos: la barra con el partido en marcha y el
@@ -111,8 +117,9 @@ class PlayerHalf extends StatelessWidget {
               ? _ProgressBar(
                   remainingFraction: remainingFraction,
                   isReserve: _isTurnSpent,
+                  isActive: isActive,
                 )
-              : _ClockLabel(strings.extraTimeLabel),
+              : _ClockLabel(strings.extraTimeLabel, isActive: isActive),
         ),
       ),
       const SizedBox(height: ClockTheme.labelToClockGap),
@@ -121,7 +128,10 @@ class PlayerHalf extends StatelessWidget {
         size: _isTurnSpent
             ? ClockTheme.reserveSizeSpent
             : ClockTheme.reserveSize,
-        color: _isTurnSpent ? colors.reserve : null,
+        color: _isTurnSpent
+            ? (isActive ? colors.reserve : colors.inactiveReserve)
+            : null,
+        isActive: isActive,
       ),
       // La invitación cierra el bloque, debajo de los dos relojes, y late para
       // que se vea que la mitad espera un toque. Reserva su hueco también con
@@ -129,43 +139,34 @@ class PlayerHalf extends StatelessWidget {
       _StartHint(
         text: strings.startHint,
         isVisible: !isStarted && isRevealed,
+        isActive: isActive,
       ),
     ];
 
-    final half = AnimatedOpacity(
+    // Sin velo de opacidad encima: al jugador que espera ya lo distingue su
+    // color, que ahora es el suyo y no el de la mitad activa apagada.
+    final half = AnimatedContainer(
       duration: const Duration(milliseconds: 200),
-      opacity: !isStarted || isActive ? 1 : colors.inactiveOpacity,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        // El color vive aquí dentro y no en la mitad entera: lo que se ve es
-        // una tarjeta con el fondo de la pantalla alrededor. El margen no
-        // recorta el toque, que lo coge el GestureDetector de fuera.
-        margin: const EdgeInsets.all(ClockTheme.halfCardInset),
-        decoration: BoxDecoration(
-          color: isActive ? activeColor : colors.inactive,
-          borderRadius: BorderRadius.circular(ClockTheme.halfCardRadius),
-          border: Border.all(
-            color: colors.text.withValues(
-              alpha: colors.halfCardBorderAlpha,
-            ),
-            width: ClockTheme.halfCardBorderWidth,
-          ),
+      margin: const EdgeInsets.all(ClockTheme.halfCardInset),
+      decoration: BoxDecoration(
+        color: isActive ? activeColor : colors.inactive,
+        borderRadius: BorderRadius.circular(ClockTheme.halfCardRadius),
+        border: Border.all(
+          color: colors.text.withValues(alpha: colors.halfCardBorderAlpha),
+          width: ClockTheme.halfCardBorderWidth,
         ),
-        // Ancho completo: la mitad es tocable entera, no solo donde hay números.
-        width: double.infinity,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: rows,
-        ),
+      ),
+      width: double.infinity,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: rows,
       ),
     );
 
     return GestureDetector(
       onTap: onTap,
       onLongPress: onRename == null ? null : _renameWithFeedback,
-      // El fondo del contenedor ya es opaco, pero el gesto tiene que cubrir
-      // la mitad entera y no solo lo que ocupan los números.
       behavior: HitTestBehavior.opaque,
       child: isUpsideDown ? RotatedBox(quarterTurns: 2, child: half) : half,
     );
@@ -181,6 +182,7 @@ class _Name extends StatelessWidget {
     required this.canRename,
     required this.hint,
     required this.hintLong,
+    required this.isActive,
   });
 
   final String text;
@@ -196,9 +198,13 @@ class _Name extends StatelessWidget {
   /// el lápiz que tiene al lado, y sin verlo no se entiende sola.
   final String hintLong;
 
+  final bool isActive;
+
   @override
   Widget build(BuildContext context) {
     final colors = ClockColors.of(context);
+    final textColor = isActive ? colors.activeText : colors.text;
+
     final label = Flexible(
       child: Text(
         text,
@@ -207,7 +213,7 @@ class _Name extends StatelessWidget {
         style: TextStyle(
           fontSize: ClockTheme.nameSize,
           fontWeight: FontWeight.w600,
-          color: colors.text.withValues(alpha: 0.75),
+          color: textColor.withValues(alpha: 0.75),
         ),
       ),
     );
@@ -216,15 +222,11 @@ class _Name extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
-        // La fila se ciñe al nombre en vez de ocupar el ancho entero: así el
-        // lápiz queda pegado a él y no en el borde de la pantalla.
         mainAxisSize: MainAxisSize.min,
         children: [
           label,
           if (canRename) ...[
             const SizedBox(width: 8),
-            // El lápiz y la pista se leen juntos, y de una vez: por separado
-            // un lector de pantalla diría dos cosas para un solo gesto.
             Semantics(
               label: hintLong,
               child: Row(
@@ -233,7 +235,7 @@ class _Name extends StatelessWidget {
                   Icon(
                     Icons.edit_outlined,
                     size: ClockTheme.renameIconSize,
-                    color: colors.text.withValues(alpha: 0.4),
+                    color: textColor.withValues(alpha: 0.4),
                   ),
                   const SizedBox(width: 4),
                   Text(
@@ -242,7 +244,7 @@ class _Name extends StatelessWidget {
                     style: TextStyle(
                       fontSize: ClockTheme.renameHintSize,
                       fontWeight: FontWeight.w500,
-                      color: colors.text.withValues(alpha: 0.4),
+                      color: textColor.withValues(alpha: 0.4),
                     ),
                   ),
                 ],
@@ -256,19 +258,16 @@ class _Name extends StatelessWidget {
 }
 
 /// La invitación a empezar, latiendo despacio debajo de los relojes.
-///
-/// Late con [ScaleTransition] y no cambiando el cuerpo de la letra: escalar
-/// solo repinta, mientras que agrandar el texto rehace la medida y empujaría a
-/// los relojes en cada fotograma.
-///
-/// Con el partido empezado no se pinta, pero su hueco se queda: el texto se
-/// sustituye por uno transparente del mismo tamaño, de modo que la mitad mide
-/// igual antes y después y empezar no mueve nada de sitio.
 class _StartHint extends StatefulWidget {
-  const _StartHint({required this.text, required this.isVisible});
+  const _StartHint({
+    required this.text,
+    required this.isVisible,
+    required this.isActive,
+  });
 
   final String text;
   final bool isVisible;
+  final bool isActive;
 
   @override
   State<_StartHint> createState() => _StartHintState();
@@ -281,9 +280,10 @@ class _StartHintState extends State<_StartHint>
     duration: const Duration(milliseconds: 900),
   );
 
-  late final Animation<double> _scale = Tween(begin: 1.0, end: 1.12).animate(
-    CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-  );
+  late final Animation<double> _scale = Tween(
+    begin: 1.0,
+    end: 1.12,
+  ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
 
   @override
   void initState() {
@@ -291,8 +291,6 @@ class _StartHintState extends State<_StartHint>
     if (widget.isVisible) _controller.repeat(reverse: true);
   }
 
-  /// El latido solo corre mientras se ve. Parado, el controlador no despierta
-  /// a nadie en cada fotograma.
   @override
   void didUpdateWidget(_StartHint old) {
     super.didUpdateWidget(old);
@@ -314,21 +312,18 @@ class _StartHintState extends State<_StartHint>
   @override
   Widget build(BuildContext context) {
     final colors = ClockColors.of(context);
+    final textColor = widget.isActive ? colors.activeText : colors.text;
+
     final label = Text(
       widget.text,
       style: TextStyle(
         fontSize: ClockTheme.startHintSize,
         fontWeight: FontWeight.w600,
         letterSpacing: 1.5,
-        color: widget.isVisible
-            ? colors.text
-            : colors.text.withValues(alpha: 0),
+        color: widget.isVisible ? textColor : textColor.withValues(alpha: 0),
       ),
     );
 
-    // Simétrico y no solo por arriba: la mitad de arriba va girada, y un
-    // margen de un solo lado le queda del lado contrario, pegando el texto al
-    // reloj de reserva. El hueco que deja el escalado entra en esta medida.
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 14),
       child: widget.isVisible
@@ -338,17 +333,24 @@ class _StartHintState extends State<_StartHint>
   }
 }
 
-
 class _ClockText extends StatelessWidget {
-  const _ClockText(this.text, {required this.size, this.color});
+  const _ClockText(
+    this.text, {
+    required this.size,
+    required this.isActive,
+    this.color,
+  });
 
   final String text;
   final double size;
+  final bool isActive;
   final Color? color;
 
   @override
   Widget build(BuildContext context) {
     final colors = ClockColors.of(context);
+    final textColor = isActive ? colors.activeText : colors.text;
+
     return AnimatedDefaultTextStyle(
       duration: const Duration(milliseconds: 200),
       style: TextStyle(
@@ -356,7 +358,7 @@ class _ClockText extends StatelessWidget {
         fontWeight: FontWeight.w700,
         height: 0.95,
         letterSpacing: -0.03 * size,
-        color: color ?? colors.text,
+        color: color ?? textColor,
         fontFeatures: const [FontFeature.tabularFigures()],
       ),
       child: Text(text),
@@ -364,55 +366,57 @@ class _ClockText extends StatelessWidget {
   }
 }
 
-/// Nombra el reloj que tiene al lado mientras el partido no ha empezado, que
-/// es cuando hay tiempo de leerlo. Empezado, el nombre sobra y el hueco se
-/// queda vacío: quien juega ya sabe qué mira, y la mitad no puede cambiar de
-/// altura por eso.
-///
-/// Con [text] nulo no pinta nada y solo ocupa su sitio, que es como se reserva
-/// el hueco sin decir nada.
+/// Nombra el reloj que tiene al lado mientras el partido no ha empezado.
 class _ClockLabel extends StatelessWidget {
-  const _ClockLabel(this.text);
+  const _ClockLabel(this.text, {required this.isActive});
 
   final String? text;
+  final bool isActive;
 
   @override
   Widget build(BuildContext context) {
     final text = this.text;
     if (text == null) return const SizedBox.shrink();
     final colors = ClockColors.of(context);
+    final textColor = isActive ? colors.activeText : colors.text;
+
     return Text(
       text,
       style: TextStyle(
         fontSize: ClockTheme.clockLabelSize,
         fontWeight: FontWeight.w600,
         letterSpacing: 1.2,
-        color: colors.text.withValues(alpha: 0.45),
+        color: textColor.withValues(alpha: 0.45),
       ),
     );
   }
 }
 
-/// Una sola barra por mitad, la del reloj que está corriendo. Antes de empezar
-/// no la pinta nadie: en su hueco va [_ExtraTimeLabel].
+/// Una sola barra por mitad, la del reloj que está corriendo.
 class _ProgressBar extends StatelessWidget {
   const _ProgressBar({
     required this.remainingFraction,
     required this.isReserve,
+    required this.isActive,
   });
 
   final double? remainingFraction;
   final bool isReserve;
+  final bool isActive;
 
   @override
   Widget build(BuildContext context) {
     final colors = ClockColors.of(context);
+    final barColor = isActive ? colors.activeText : colors.text;
+    // El aviso del turno agotado tiene su color por mitad, igual que la letra:
+    // las dos dejaron de compartir fondo.
+    final reserveColor = isActive ? colors.reserve : colors.inactiveReserve;
     return FractionallySizedBox(
       widthFactor: ClockTheme.barWidthFactor,
       child: Container(
         height: ClockTheme.barHeight,
         decoration: BoxDecoration(
-          color: colors.text.withValues(alpha: 0.14),
+          color: barColor.withValues(alpha: 0.14),
           borderRadius: BorderRadius.circular(ClockTheme.barHeight / 2),
         ),
         child: FractionallySizedBox(
@@ -420,17 +424,12 @@ class _ProgressBar extends StatelessWidget {
           widthFactor: remainingFraction ?? 0,
           child: DecoratedBox(
             decoration: BoxDecoration(
-              color: isReserve ? colors.reserve : colors.text,
+              color: isReserve ? reserveColor : barColor,
               borderRadius: BorderRadius.circular(ClockTheme.barHeight / 2),
             ),
-            // Sin recortar: el halo tiene que salirse de la barra, que es lo
-            // único que lo hace visible. Dentro no se vería, porque la barra
-            // de turno ya es del mismo blanco que el brillo.
             child: Align(
               alignment: Alignment.centerRight,
-              child: _BarGlow(
-                color: isReserve ? colors.reserve : colors.text,
-              ),
+              child: _BarGlow(color: isReserve ? reserveColor : barColor),
             ),
           ),
         ),
@@ -439,24 +438,10 @@ class _ProgressBar extends StatelessWidget {
   }
 }
 
-/// La brasa que va en la cabeza de la barra mientras el reloj corre: la barra
-/// es una mecha que se consume, y esto es el punto por donde arde.
-///
-/// Se derrama fuera de la barra, y no es una mancha más clara encima. Aclarar
-/// por dentro no valía: la barra de turno ya es del mismo blanco que el
-/// brillo, y el primer intento salió con un 1% de diferencia, invisible en el
-/// móvil. Contra el fondo oscuro, en cambio, sí se lee.
-///
-/// Arde cambiando de opacidad y no de tamaño: el tamaño lo manda la barra, que
-/// se encoge sola, y hacerlo crecer aquí pelearía con ella.
-///
-/// Solo lo pinta [_ProgressBar], que ya sabe si el reloj corre: pausado no hay
-/// barra, así que la brasa no se queda despertando a nadie por detrás.
+/// La brasa que va en la cabeza de la barra mientras el reloj corre.
 class _BarGlow extends StatefulWidget {
   const _BarGlow({required this.color});
 
-  /// El color de la barra a la que acompaña: el halo es del color de lo que
-  /// brilla, de modo que el de reserva sale amarillo como su barra.
   final Color color;
 
   @override
@@ -470,13 +455,10 @@ class _BarGlowState extends State<_BarGlow>
     duration: ClockTheme.barGlowDuration,
   )..repeat(reverse: true);
 
-  late final Animation<double> _glow =
-      Tween(
-        begin: ClockTheme.barGlowMinAlpha,
-        end: ClockTheme.barGlowMaxAlpha,
-      ).animate(
-        CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-      );
+  late final Animation<double> _glow = Tween(
+    begin: ClockTheme.barGlowMinAlpha,
+    end: ClockTheme.barGlowMaxAlpha,
+  ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
 
   @override
   void dispose() {
@@ -486,8 +468,6 @@ class _BarGlowState extends State<_BarGlow>
 
   @override
   Widget build(BuildContext context) {
-    // Cuadrado y del alto de la barra: un halo redondo centrado en la cabeza,
-    // que se derrama por igual hacia los dos lados y por arriba y por abajo.
     return SizedBox.square(
       dimension: ClockTheme.barHeight,
       child: AnimatedBuilder(

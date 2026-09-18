@@ -6,15 +6,16 @@ import 'clock_theme.dart';
 /// Un control redondo y discreto, el de las operaciones que acompañan al
 /// partido sin ser el gesto principal: pausar, reiniciar, abrir los ajustes.
 ///
-/// Va apagado a propósito. Lo que manda en la costura es pasar turno, y estos
-/// se tienen que encontrar sin disputárselo.
+/// Lleva superficie y borde propios, no una tinta sobre el fondo: lo que manda
+/// en la costura es pasar turno, y a estos los distingue el tamaño, no estar
+/// medio borrados. Apagados hasta desaparecer se leían como manchas pegadas
+/// sobre la pantalla, sobre todo en la paleta clara.
 class AdvancedControl extends StatelessWidget {
   const AdvancedControl({
     required this.icon,
     required this.label,
     required this.onPressed,
     this.isHighlighted = false,
-    this.isAlone = false,
     super.key,
   });
 
@@ -25,11 +26,6 @@ class AdvancedControl extends StatelessWidget {
   /// Solo lo enciende el control de pausa mientras está pausado.
   final bool isHighlighted;
 
-  /// Si el control no tiene a nadie al lado. En la costura son tres y se
-  /// explican entre ellos; suelto, apagado se lee como deshabilitado, así que
-  /// sube de tono hasta que se ve que se puede pulsar.
-  final bool isAlone;
-
   @override
   Widget build(BuildContext context) {
     final colors = ClockColors.of(context);
@@ -37,14 +33,8 @@ class AdvancedControl extends StatelessWidget {
       button: true,
       label: label,
       child: Material(
-        color: isHighlighted
-            ? colors.paused
-            : colors.onSurface.withValues(
-                alpha: isAlone
-                    ? colors.advancedAloneFillAlpha
-                    : colors.advancedFillAlpha,
-              ),
-        shape: const CircleBorder(),
+        color: isHighlighted ? colors.paused : colors.controlSurface,
+        shape: CircleBorder(side: BorderSide(color: colors.controlBorder)),
         child: InkWell(
           customBorder: const CircleBorder(),
           onTap: onPressed,
@@ -53,13 +43,7 @@ class AdvancedControl extends StatelessWidget {
             child: Icon(
               icon,
               size: ClockTheme.advancedIconSize,
-              color: isHighlighted
-                  ? colors.text
-                  : colors.onSurface.withValues(
-                      alpha: isAlone
-                          ? colors.advancedAloneIconAlpha
-                          : colors.advancedIconAlpha,
-                    ),
+              color: isHighlighted ? colors.text : colors.onSurface,
             ),
           ),
         ),

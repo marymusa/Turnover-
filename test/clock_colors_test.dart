@@ -23,21 +23,22 @@ double _luminance(Color color) => color.computeLuminance();
 /// Lo que se ve de verdad cuando un color translúcido se pinta encima de otro.
 /// Las alfas de la paleta no se miden solas: lo que lee el jugador es la
 /// mezcla.
-Color _over(Color front, Color back) =>
-    Color.alphaBlend(front, back);
+Color _over(Color front, Color back) => Color.alphaBlend(front, back);
 
 void main() {
   for (final palette in [ClockColors.dark, ClockColors.light]) {
     final name = palette == ClockColors.dark ? 'oscura' : 'clara';
 
     group('paleta $name', () {
+      // La mitad activa lleva su propia letra, [activeText]: la del jugador
+      // que espera no vale ahí, porque las dos mitades ya no comparten fondo.
       test('los relojes se leen sobre las dos mitades activas', () {
         expect(
-          _contrast(palette.text, palette.active),
+          _contrast(palette.activeText, palette.active),
           greaterThanOrEqualTo(4.5),
         );
         expect(
-          _contrast(palette.text, palette.activeOpponent),
+          _contrast(palette.activeText, palette.activeOpponent),
           greaterThanOrEqualTo(4.5),
         );
       });
@@ -69,8 +70,13 @@ void main() {
         );
       });
 
+      // La mitad que espera lleva el suyo, por lo mismo que la letra: las dos
+      // mitades dejaron de compartir fondo.
       test('el tiempo extra agotado avisa sobre la mitad inactiva', () {
-        expect(_contrast(palette.reserve, palette.inactive), greaterThan(5));
+        expect(
+          _contrast(palette.inactiveReserve, palette.inactive),
+          greaterThan(5),
+        );
       });
 
       // El control de pausa encendido lleva la letra del tema encima. Es un
@@ -96,18 +102,24 @@ void main() {
         }
       });
 
-      // Los controles avanzados van apagados a propósito, pero apagado no es
-      // invisible: su icono tiene que despegarse de la mitad que tiene detrás.
-      test('los iconos de la costura se despegan del relleno', () {
-        final fill = _over(
-          palette.onSurface.withValues(alpha: palette.advancedFillAlpha),
-          palette.background,
+      // El icono tiene que leerse sobre la superficie del botón, que ahora es
+      // un color entero y no una tinta sobre el fondo.
+      test('los iconos de la costura se leen sobre su botón', () {
+        expect(
+          _contrast(palette.onSurface, palette.controlSurface),
+          greaterThanOrEqualTo(4.5),
         );
-        final icon = _over(
-          palette.onSurface.withValues(alpha: palette.advancedIconAlpha),
-          fill,
+      });
+
+      // Un botón que no se despega del fondo se lee como una mancha pegada
+      // encima y no como algo que se pueda pulsar. En la paleta clara el canto
+      // lo pone el borde, porque el blanco sobre el gris casi no separa.
+      test('el botón tiene canto contra el fondo', () {
+        final edge = math.max(
+          _contrast(palette.controlSurface, palette.background),
+          _contrast(palette.controlBorder, palette.background),
         );
-        expect(_contrast(icon, fill), greaterThanOrEqualTo(2.5));
+        expect(edge, greaterThan(1.3));
       });
 
       // El borde de la tarjeta separa la mitad del fondo. No es texto, así que
@@ -139,6 +151,35 @@ void main() {
       _hue(ClockColors.light.activeOpponent),
       closeTo(_hue(ClockColors.dark.activeOpponent), 20),
     );
+  });
+
+  // El criterio del ticket es cambiar el ajuste del sistema con la aplicación
+  // abierta. Que la paleta se lea del tema y no del sistema es justo lo que lo
+  // hace posible: `MaterialApp` se entera del cambio y vuelve a pintar.
+  testWidgets('cambiar el ajuste del sistema cambia la paleta', (tester) async {
+    tester.platformDispatcher.platformBrightnessTestValue = Brightness.dark;
+    addTearDown(tester.platformDispatcher.clearPlatformBrightnessTestValue);
+
+    late ClockColors seen;
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ClockColors.light.toTheme(),
+        darkTheme: ClockColors.dark.toTheme(),
+        themeMode: ThemeMode.system,
+        home: Builder(
+          builder: (context) {
+            seen = ClockColors.of(context);
+            return const SizedBox.shrink();
+          },
+        ),
+      ),
+    );
+    expect(seen, ClockColors.dark);
+
+    tester.platformDispatcher.platformBrightnessTestValue = Brightness.light;
+    await tester.pumpAndSettle();
+
+    expect(seen, ClockColors.light);
   });
 
   test('la paleta clara es clara y la oscura oscura', () {

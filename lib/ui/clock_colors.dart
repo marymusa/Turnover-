@@ -20,18 +20,17 @@ class ClockColors {
     required this.active,
     required this.activeOpponent,
     required this.text,
+    required this.activeText,
     required this.onSurface,
     required this.reserve,
+    required this.inactiveReserve,
     required this.paused,
     required this.dialogSurface,
     required this.veilText,
-    required this.advancedFillAlpha,
-    required this.advancedIconAlpha,
-    required this.advancedAloneFillAlpha,
-    required this.advancedAloneIconAlpha,
+    required this.controlSurface,
+    required this.controlBorder,
     required this.halfCardBorderAlpha,
     required this.veilOpacity,
-    required this.inactiveOpacity,
   });
 
   final Brightness brightness;
@@ -39,8 +38,8 @@ class ClockColors {
   /// El fondo de la pantalla, alrededor de las dos tarjetas.
   final Color background;
 
-  /// La tarjeta del jugador que espera. En las dos paletas es oscura, y en la
-  /// clara eso es deliberado: ver [reserve].
+  /// La tarjeta del jugador que espera. Es lo único del cronómetro que cambia
+  /// con la luz: la mitad activa lleva el color de su turno en las dos.
   final Color inactive;
 
   /// El azul del turno activo, para la mitad de abajo, y su complementario
@@ -60,6 +59,11 @@ class ClockColors {
   /// porque las tarjetas son oscuras en las dos.
   final Color text;
 
+  /// La letra de la mitad cuyo turno corre, sobre el azul o el naranja. Es
+  /// clara en las dos paletas, porque esas dos mitades van saturadas en las
+  /// dos: lo que cambia con la luz es [text], la de la mitad que espera.
+  final Color activeText;
+
   /// La letra que va encima del fondo de la pantalla y de los ajustes, que es
   /// lo único que cambia de claro a oscuro. En la paleta oscura coincide con
   /// [text]; en la clara es casi negra.
@@ -69,13 +73,17 @@ class ClockColors {
   /// no naranja desde que la mitad del rival es naranja: sobre ella, un
   /// naranja sobre otro dejaba de avisar de nada.
   ///
-  /// Este es el color que obliga a que la tarjeta inactiva siga siendo oscura
-  /// en la paleta clara. Tiene que pasar de 5:1 sobre las tres superficies
-  /// donde se pinta, y las dos mitades activas van saturadas: eso le exige ser
-  /// claro. Sobre una tarjeta clara le exigiría ser oscuro, y no hay ningún
-  /// color que sea las dos cosas. Se comprobó barriendo el espacio entero: con
-  /// la tarjeta clara no hay solución, ni a 5:1 ni a 4,5:1.
+  /// Este es el de la mitad activa, sobre el azul o el naranja. Sobre ellos,
+  /// que van saturados, solo destaca un color claro. Para la mitad que espera
+  /// está [inactiveReserve]: ningún color pasa de 5:1 sobre las dos cosas a la
+  /// vez, así que son dos y no uno.
   final Color reserve;
+
+  /// Lo mismo, pero sobre la tarjeta del jugador que espera. Va aparte porque
+  /// las dos mitades dejaron de compartir fondo: en la paleta clara la tarjeta
+  /// inactiva es casi blanca, y sobre ella el amarillo se queda en 1,2:1 y no
+  /// avisa de nada. En la oscura las dos siguen siendo el mismo amarillo.
+  final Color inactiveReserve;
 
   /// Solo lo lleva el control de pausa mientras está pausado, que es el único
   /// sitio donde hace falta decir "esto está detenido a propósito".
@@ -93,17 +101,18 @@ class ClockColors {
   /// desaparecería.
   final Color veilText;
 
-  /// Lo apagado que va un control avanzado. Son alfas sobre [onSurface] y no
-  /// valen igual en las dos paletas: las de la oscura, invertidas, dan grises
-  /// sucios en vez del mismo efecto.
-  final double advancedFillAlpha;
-  final double advancedIconAlpha;
+  /// El fondo de los controles redondos de la costura y del de los ajustes.
+  ///
+  /// Es un color entero y no una alfa sobre el fondo. Teñir el fondo con un
+  /// 0,07 dejaba los botones en 1,15:1 contra él, y a esa distancia no se leen
+  /// como botones puestos sobre la pantalla sino como manchas pegadas encima.
+  /// Con superficie propia se apoyan en la pantalla en vez de flotar.
+  final Color controlSurface;
 
-  /// Lo mismo cuando el control va suelto, que es el caso de los ajustes antes
-  /// de empezar. Sin nadie al lado que lo sitúe, a los valores de la costura se
-  /// leía como un botón deshabilitado.
-  final double advancedAloneFillAlpha;
-  final double advancedAloneIconAlpha;
+  /// Lo que los perfila. En la paleta clara es quien hace el trabajo: el
+  /// blanco sobre el gris del fondo se queda en 1,1:1 y solo, sin borde, el
+  /// botón no tendría canto.
+  final Color controlBorder;
 
   /// El borde de la tarjeta, sobre [text]: la tarjeta es oscura en las dos
   /// paletas, así que quien la perfila es la letra clara.
@@ -113,10 +122,6 @@ class ClockColors {
   /// la jugada, y el tiempo se sigue leyendo mientras se habla.
   final double veilOpacity;
 
-  /// El jugador inactivo no se apaga del todo: se sigue leyendo desde el otro
-  /// lado de la mesa.
-  final double inactiveOpacity;
-
   /// La de siempre, la que fijó el prototipo B2.
   static const dark = ClockColors(
     brightness: Brightness.dark,
@@ -125,52 +130,48 @@ class ClockColors {
     active: Color(0xFF1D4ED8),
     activeOpponent: Color(0xFF9A3412),
     text: Color(0xFFF8FAFC),
+    activeText: Color(0xFFF8FAFC),
     onSurface: Color(0xFFF8FAFC),
     reserve: Color(0xFFFDE047),
+    inactiveReserve: Color(0xFFFDE047),
     paused: Color(0xFF16A34A),
     dialogSurface: Color(0xFF161B26),
     veilText: Color(0xFFF8FAFC),
-    advancedFillAlpha: 0.07,
-    advancedIconAlpha: 0.55,
-    advancedAloneFillAlpha: 0.12,
-    advancedAloneIconAlpha: 0.85,
+    controlSurface: Color(0xFF232A38),
+    controlBorder: Color(0xFF394356),
     halfCardBorderAlpha: 0.14,
     veilOpacity: 0.82,
-    inactiveOpacity: 0.3,
   );
 
-  /// La clara. Lo que se aclara es el marco: el fondo de la pantalla, los
-  /// ajustes y los diálogos. Las dos tarjetas siguen siendo oscuras, y no por
-  /// no haberlas tocado: es lo que deja que [reserve] siga avisando.
+  /// La clara. Se aclaran el marco y la mitad del jugador que espera; la del
+  /// turno que corre se queda con su color, que es lo que dice de quién es.
   ///
   /// El azul y el naranja se eligieron de nuevo apuntando a las razones de
   /// contraste que tenía la oscura, no a las máximas posibles: subidos hasta
   /// el tope, las dos mitades se volvían dos bloques casi negros sobre una
   /// página blanca, que es la paleta oscura con los márgenes aclarados.
   ///
-  /// Las alfas se quedan como en la oscura, pero no por copiarlas: se midieron
-  /// otra vez. Lo que las hacía sospechosas era ir sobre [text]; pasadas a
-  /// [onSurface], que en cada paleta es la letra del marco, el mismo 0,07 de
-  /// relleno separa igual del fondo en las dos, 1,15 contra 1,17.
+  /// La mitad que espera sí se aclara, y con ella su letra y su aviso de turno
+  /// agotado: por eso hay [text] y [activeText], y [reserve] e
+  /// [inactiveReserve]. Las dos mitades dejaron de compartir fondo.
   static const light = ClockColors(
     brightness: Brightness.light,
     background: Color(0xFFF1F5F9),
-    inactive: Color(0xFF1E293B),
+    inactive: Color(0xFFF1F5F9),
     active: Color(0xFF234FC7),
     activeOpponent: Color(0xFF973E20),
-    text: Color(0xFFF8FAFC),
+    text: Color(0xFF0F172A),
+    activeText: Color(0xFFF8FAFC),
     onSurface: Color(0xFF0F172A),
     reserve: Color(0xFFFDE047),
+    inactiveReserve: Color(0xFF92400E),
     paused: Color(0xFF15803D),
     dialogSurface: Color(0xFFFFFFFF),
     veilText: Color(0xFF0F172A),
-    advancedFillAlpha: 0.07,
-    advancedIconAlpha: 0.55,
-    advancedAloneFillAlpha: 0.12,
-    advancedAloneIconAlpha: 0.85,
+    controlSurface: Color(0xFFFFFFFF),
+    controlBorder: Color(0xFFCBD5E1),
     halfCardBorderAlpha: 0.14,
     veilOpacity: 0.82,
-    inactiveOpacity: 0.3,
   );
 
   /// La paleta que toca según lo que diga el aparato. Se lee del tema, que es

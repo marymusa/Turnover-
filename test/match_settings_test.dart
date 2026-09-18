@@ -19,16 +19,20 @@ void main() {
       expect(settings.earlyWarning, const Duration(seconds: 55));
     });
 
-    test('el aviso temprano guardado se lee en el arranque siguiente', () async {
-      final store = MemorySettingsStore();
-      await MatchSettings(store).save(earlyWarning: const Duration(minutes: 1));
+    test(
+      'el aviso temprano guardado se lee en el arranque siguiente',
+      () async {
+        final store = MemorySettingsStore();
+        await MatchSettings(store)
+            .save(earlyWarning: const Duration(minutes: 1));
 
-      final settings = MatchSettings(store);
-      await settings.load();
+        final settings = MatchSettings(store);
+        await settings.load();
 
-      expect(settings.earlyWarning, const Duration(minutes: 1));
-      expect(settings.warning, const Duration(seconds: 30));
-    });
+        expect(settings.earlyWarning, const Duration(minutes: 1));
+        expect(settings.warning, const Duration(seconds: 30));
+      },
+    );
 
     test('un aviso temprano llega al partido en curso', () async {
       final settings = MatchSettings(MemorySettingsStore());

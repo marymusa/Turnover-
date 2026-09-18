@@ -36,7 +36,9 @@ class PausedVeil extends StatelessWidget {
           child: Align(
             alignment: Alignment.center,
             child: Padding(
-              padding: const EdgeInsets.only(top: ClockTheme.veilTextOffset * 2),
+              padding: const EdgeInsets.only(
+                top: ClockTheme.veilTextOffset * 2,
+              ),
               child: Text(
                 strings.pausedHint,
                 textAlign: TextAlign.center,

@@ -13,7 +13,9 @@ import '../domain/match_alerts.dart';
 /// de que no sirve para controlarlo con precisión. Además sale por el canal de
 /// las hápticas de la vista, que el móvil apaga con la casilla de la vibración
 /// al tocar la pantalla, y entonces ningún aviso se nota (ADR-0005).
-const _vibrationChannel = MethodChannel('com.ares.bloodbowl.turnover/vibration');
+const _vibrationChannel = MethodChannel(
+  'com.ares.bloodbowl.turnover/vibration',
+);
 
 class PlatformAlertDevice implements AlertDevice {
   /// Un reproductor por bocina, ya cargado: dos avisos seguidos no se pisan y

@@ -113,10 +113,10 @@ pulsaciones: lo que sube con la gravedad es la fuerza del golpe, no cuántos son
   se sale sin más.
 - La pantalla se mantiene encendida mientras un reloj corre, y se libera al pausar.
 - El modo claro u oscuro lo decide el aparato y la aplicación no lo pregunta ni ofrece
-  un selector propio. Lo que cambia con la luz es el marco: el fondo de la pantalla,
-  los ajustes y los diálogos. Las dos mitades siguen siendo oscuras en los dos modos,
-  porque es lo que deja que el amarillo del tiempo extra agotado siga avisando
-  (ADR-0009).
+  un selector propio. Con la luz cambian el marco y la mitad del jugador que espera.
+  La mitad cuyo turno corre se queda con su color en los dos modos, porque el color es
+  lo único que dice de quién es el turno. Eso parte en dos la letra y el aviso de turno
+  agotado, que van cada uno con su mitad (ADR-0009).
 - Los tiempos (turno, tiempo extra y los dos avisos previos) se configuran en una pantalla propia,
   a la que solo se llega antes de empezar: los tiempos se pactan con el partido parado
   (ADR-0006). Los nombres se pactan igual, y por la misma razón: con el partido en marcha

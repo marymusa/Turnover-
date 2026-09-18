@@ -462,15 +462,18 @@ void main() {
       ]);
     });
 
-    test('ampliar la reserva agotada devuelve tiempo y la saca del overtime', () {
-      final clock = newClock();
-      clock.start(Player.one);
-      clock.advance(const Duration(minutes: 21));
+    test(
+      'ampliar la reserva agotada devuelve tiempo y la saca del overtime',
+      () {
+        final clock = newClock();
+        clock.start(Player.one);
+        clock.advance(const Duration(minutes: 21));
 
-      clock.reconfigure(reserve: const Duration(minutes: 20));
+        clock.reconfigure(reserve: const Duration(minutes: 20));
 
-      expect(clock.reserveOf(Player.one), const Duration(minutes: 3));
-    });
+        expect(clock.reserveOf(Player.one), const Duration(minutes: 3));
+      },
+    );
 
     test('la reserva ampliada vuelve a avisar al agotarse otra vez', () {
       final clock = newClock();
@@ -639,15 +642,18 @@ void main() {
   });
 
   group('lo que queda', () {
-    test('es todo antes de gastar nada, y nada cuando no hay reloj corriendo', () {
-      final clock = newClock();
+    test(
+      'es todo antes de gastar nada, y nada cuando no hay reloj corriendo',
+      () {
+        final clock = newClock();
 
-      expect(clock.remainingFractionOf(Player.one), isNull);
+        expect(clock.remainingFractionOf(Player.one), isNull);
 
-      clock.start(Player.one);
-      expect(clock.remainingFractionOf(Player.one), 1);
-      expect(clock.remainingFractionOf(Player.two), isNull);
-    });
+        clock.start(Player.one);
+        expect(clock.remainingFractionOf(Player.one), 1);
+        expect(clock.remainingFractionOf(Player.two), isNull);
+      },
+    );
 
     test('baja con el turno mientras el turno corre', () {
       final clock = newClock();

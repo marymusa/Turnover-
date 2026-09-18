@@ -70,12 +70,9 @@ class _PassTurnControl extends StatelessWidget {
       child: Opacity(
         opacity: onPressed == null ? 0.25 : 1,
         child: Material(
-          color: colors.onSurface.withValues(alpha: 0.16),
+          color: colors.controlSurface,
           shape: CircleBorder(
-            side: BorderSide(
-              color: colors.onSurface.withValues(alpha: 0.22),
-              width: 2,
-            ),
+            side: BorderSide(color: colors.controlBorder, width: 2),
           ),
           child: InkWell(
             customBorder: const CircleBorder(),

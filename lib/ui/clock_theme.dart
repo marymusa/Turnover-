@@ -48,8 +48,7 @@ abstract final class ClockTheme {
   /// El hueco va entero y no a la mitad: con la mitad el botón quedaba rozando
   /// la mandíbula del escudo. El escudo llena su caja casi hasta el borde, así
   /// que lo que separa a los dos es esto y nada más.
-  static const settingsOffset =
-      leagueLogoSize / 2 + advancedSize / 2 + seamGap;
+  static const settingsOffset = leagueLogoSize / 2 + advancedSize / 2 + seamGap;
 
   /// La mitad no llega hasta el borde: el color vive dentro de una tarjeta, y
   /// el fondo de la pantalla se ve alrededor. Lo que se aparta es poco a
@@ -121,7 +120,6 @@ abstract final class ClockTheme {
   /// de renombrar: es lo único que hay que hacer en esta pantalla, y con su
   /// tamaño no se distinguía de una etiqueta más.
   static const startHintSize = 14.0;
-
 
   /// El escudo de la liga, en el centro del campo y solo antes de empezar. Va
   /// a plena opacidad: sus colores son los suyos, y apagarlos no lo vuelve

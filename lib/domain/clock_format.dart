@@ -14,6 +14,9 @@ String formatClock(Duration left) {
       : (left.inMilliseconds / Duration.millisecondsPerSecond).ceil();
   final absolute = seconds.abs();
   final minutes = absolute ~/ Duration.secondsPerMinute;
-  final rest = (absolute % Duration.secondsPerMinute).toString().padLeft(2, '0');
+  final rest = (absolute % Duration.secondsPerMinute).toString().padLeft(
+    2,
+    '0',
+  );
   return '${seconds < 0 ? '-' : ''}$minutes:$rest';
 }

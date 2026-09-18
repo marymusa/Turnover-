@@ -25,7 +25,6 @@ class SettingsButton extends StatelessWidget {
       icon: Icons.settings,
       label: strings.settings,
       onPressed: onPressed,
-      isAlone: true,
     );
   }
 }
