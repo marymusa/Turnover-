@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../domain/match_clock.dart' show Player;
+
 /// Los colores de la pantalla, en dos paletas: la oscura de siempre y una
 /// clara para quien lleva el aparato en modo claro. No hay selector propio, la
 /// elige el sistema.
@@ -178,6 +180,13 @@ class ClockColors {
     halfCardBorder: Color(0xFFCBD5E1),
     veilOpacity: 0.82,
   );
+
+  /// El color que le toca a la mitad de un jugador mientras es su turno: el
+  /// azul al uno y el naranja al dos. Va aquí y no en quien pinta porque es la
+  /// paleta la que sabe de qué par se trata, y porque el reparto se preguntaba
+  /// desde dos sitios.
+  Color activeOf(Player player) =>
+      player == Player.one ? active : activeOpponent;
 
   /// La paleta que toca según lo que diga el aparato. Se lee del tema, que es
   /// quien ya sabe en qué modo está: así nadie tiene que consultar el sistema

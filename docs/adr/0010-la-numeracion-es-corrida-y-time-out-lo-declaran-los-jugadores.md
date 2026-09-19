@@ -49,6 +49,11 @@ cualquier otro caso ambos avanzan uno. Sin topes.
 **Se llama Time-Out**, que es su nombre en el reglamento, y no "Tiempo Muerto". Es el
 resultado de una tabla, como "drive", y los nombres del reglamento no se traducen.
 
+> **Revisado al implementarlo (ADR-0011).** Esto vale para el código y para estos
+> documentos, donde el término sigue siendo Time-Out. En la interfaz en castellano no:
+> allí se lee "Tiempo muerto". El botón del velo se vio en el móvil y el nombre en
+> inglés no se sostenía solo.
+
 ### Los casos
 
 | caso | antes | activo | pateador | tablero | resultado |

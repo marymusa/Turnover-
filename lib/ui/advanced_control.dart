@@ -49,7 +49,11 @@ class AdvancedControl extends StatelessWidget {
             child: Icon(
               icon,
               size: ClockTheme.advancedIconSize,
-              color: isHighlighted ? colors.text : colors.onSurface,
+              // Encendido, el icono va sobre el verde de pausado, que es el
+              // mismo en las dos paletas: su color tampoco cambia con la luz.
+              // Con [text] salía casi negro sobre el verde en la paleta clara,
+              // que es donde esa letra se oscurece.
+              color: isHighlighted ? colors.activeText : colors.onSurface,
             ),
           ),
         ),

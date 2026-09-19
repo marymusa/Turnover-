@@ -74,11 +74,94 @@ abstract final class ClockTheme {
   static const halfCardRadius = 20.0;
   static const halfCardBorderWidth = 1.0;
 
+  /// La cuenta de turnos, al pie de cada tarjeta. Una casilla es más ancha que
+  /// alta porque en la segunda parte los números son de dos cifras: el ancho lo
+  /// fija el 16, y las dos partes miden igual para que la fila no cambie de
+  /// forma al pasar de una a otra.
+  ///
+  /// Por debajo del objetivo táctil mínimo de Material, que son 48, y a
+  /// propósito: las casillas no se pulsan una a una, son un indicador.
+  static const turnBoxWidth = 30.0;
+  static const turnBoxHeight = 26.0;
+
+  /// Lo que separa una casilla de la siguiente, a cada lado.
+  static const turnBoxGap = 3.0;
+
+  /// El radio `small` de las formas de Material, que es el que llevan los
+  /// contenedores de este tamaño.
+  static const turnBoxRadius = 8.0;
+
+  /// Lo que la fila se despega de la pared interior de la tarjeta, igual por
+  /// los tres lados. Se suma al margen de la propia tarjeta, que no es el mismo
+  /// a los lados que abajo: sin sumarlo, la fila se quedaba rozando la pared
+  /// por dentro, porque vive dentro de la tarjeta y no fuera.
+  ///
+  /// Cubre de sobra el radio de la esquina, que a 20 pide unos 6 para que una
+  /// casilla no se meta debajo del arco.
+  static const turnCountInset = 16.0;
+
+  /// Lo que se apaga un turno ya jugado o todavía por jugar. Es lo que los
+  /// distingue del que corre, que va entero.
+  ///
+  /// Apagado no es borrado: el 38% que Material da para lo deshabilitado se
+  /// queda en 2,2:1 sobre el azul y sobre el naranja, y una fila que hay que
+  /// contar de un vistazo no se cuenta a esa distancia. El 55% es el primer
+  /// valor que pasa el 3:1 de los elementos gráficos sobre las tres tarjetas y
+  /// en las dos paletas, que es lo que mide `test/clock_colors_test.dart`.
+  static const dimmedContentOpacity = 0.55;
+
+  /// Lo que se rellena la casilla de un turno ya jugado, que es lo que lo
+  /// separa del que está por jugar sin darle el peso del que corre.
+  ///
+  /// El 12% de Material vale sobre la mitad activa, donde la tinta es clara
+  /// sobre un color saturado. Sobre la que espera no: ahí la tinta es oscura
+  /// sobre una tarjeta que en la paleta clara es casi blanca, y al 12%
+  /// desaparecía, de modo que la fila entera se quedaba en blanco sobre
+  /// blanco.
+  ///
+  /// Es el mismo motivo por el que hay [ClockColors.reserve] y
+  /// [ClockColors.inactiveReserve]: las dos mitades dejaron de compartir fondo.
+  static const playedFillOpacity = 0.12;
+  static const waitingPlayedFillOpacity = 0.22;
+
+  /// Solo la casilla del turno en curso se levanta. En Material la elevación
+  /// dice cuál manda, y aquí manda el turno que se está jugando.
+  static const turnBoxElevation = 2.0;
+
   static const veilTextSize = 19.0;
 
-  /// Lo que el aviso del velo se aparta del centro, para no caer encima de la
-  /// costura, que se sigue pudiendo pulsar por debajo.
-  static const veilTextOffset = 86.0;
+  /// El botón de Time-Out, debajo del aviso del velo. Su alto sale del texto y
+  /// del relleno, que juntos pasan de los 48 del objetivo táctil mínimo: este
+  /// sí se pulsa, al revés que las casillas de la cuenta.
+  static const veilButtonGap = 20.0;
+
+  /// Lo que encabeza el botón, diciendo de qué tabla sale. Menor que el aviso
+  /// del velo y que el propio botón: acompaña, no encabeza la pantalla.
+  static const veilLabelSize = 12.0;
+  static const veilLabelGap = 8.0;
+
+  /// La ficha con el resultado de la tabla que va dentro del botón, delante del
+  /// nombre. Cuadrada como las casillas de la cuenta y con su mismo radio: en
+  /// esta pantalla un número en un cuadrado ya significa una casilla.
+  static const veilBadgeSize = 24.0;
+  static const veilBadgeTextSize = 14.0;
+  static const veilBadgeGap = 10.0;
+
+  /// Lo que se tiñe la ficha sobre la superficie del botón. Poco: lo que tiene
+  /// que destacar es el número, y la ficha solo lo encuadra.
+  static const veilBadgeFillOpacity = 0.1;
+  static const veilButtonTextSize = 16.0;
+  static const veilButtonHorizontalPadding = 28.0;
+  static const veilButtonVerticalPadding = 15.0;
+
+  /// Lo que el contenido del velo baja desde el centro, que es donde está la
+  /// costura: media altura del control de pasar turno, que es el más grande de
+  /// los tres, y un respiro por debajo de su sombra.
+  ///
+  /// Se mide desde el centro y no desde el borde de la pantalla porque lo que
+  /// tiene que esquivar es la costura, que está en el centro pase lo que pase
+  /// con el alto del aparato.
+  static const veilContentTop = passTurnSize / 2 + 24;
 
   static const barHeight = 6.0;
   static const barWidthFactor = 0.74;

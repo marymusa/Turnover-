@@ -61,6 +61,12 @@ caso, ambos avanzan uno. Se aplica sin topes.
 Se llama por su nombre del reglamento en inglés, como "drive": es el resultado de una
 tabla, no una descripción. Antes figuraba aquí como "Tiempo Muerto" (ADR-0010).
 
+En la interfaz en castellano sí se traduce, y allí se lee "Tiempo muerto" (ADR-0011).
+El código, este glosario y los ADR lo siguen llamando Time-Out: es la misma separación
+que hay entre `reserveClock` y el tiempo extra, donde el nombre interno y el visible no
+coinciden. El botón del velo se vio en el móvil y el nombre en inglés se leía como otra
+forma de decir "pausado", que es lo que el velo ya dice.
+
 La aplicación no lo detecta: lo declaran los jugadores con un botón en el velo de
 pausa, que al pulsarlo quita la pausa y aplica la regla (ADR-0010). La tirada es
 posterior al despliegue, y los jugadores ya paran para desplegar.
@@ -113,10 +119,17 @@ vibración, no cuántas son (ADR-0005).
   ningún indicador aparte (ADR-0010). El turno de tablero, que es el que está en la
   mesa y el que leen las reglas, se recupera con `((mostrado - 1) % 8) + 1`.
 - Time-Out mueve la cuenta según su regla, sin topes: una parte puede durar siete
-  turnos o nueve, como en la mesa. Lo que la aplicación no ve, como un turno que nadie
-  pasó, se corrige a mano con una pulsación larga sobre el número.
-- El velo de pausa lleva el botón de Time-Out. Pulsarlo quita la pausa y aplica la
-  regla (ADR-0010).
+  turnos o nueve, como en la mesa.
+- La corrección a mano, para lo que la aplicación no ve como un turno que nadie pasó,
+  todavía no existe. El ADR-0008 la reservaba como una pulsación larga sobre el número,
+  y al implementar la cuenta se vio que ese gesto no se sostiene: no lo anuncia nada y
+  hace lo mismo que Time-Out con la dirección elegida a mano. Se decidirá en su propio
+  ticket, y cuando llegue moverá las dos cuentas a la vez, que es como se corrige en la
+  mesa: nunca la de un jugador suelto.
+- El velo de pausa lleva el botón de Time-Out. Pulsarlo pregunta antes, porque mueve
+  las dos cuentas y no se deshace, y la pregunta dice hacia dónde van a moverse, que es
+  lo que se comprueba contra la ficha. Al confirmar quita la pausa y aplica la regla
+  (ADR-0010).
 - La aplicación solo cuenta el tiempo en primer plano. Si se cierra o pasa a
   segundo plano, el tiempo se pausa. El compromiso es no tocar el móvil mientras
   corre el reloj.

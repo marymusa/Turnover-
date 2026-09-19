@@ -207,12 +207,20 @@ class MatchClock {
 
   /// La única acción del jugador activo. Funciona también con la reserva
   /// consumiéndose: lo único que lo impide es que esté pausado.
-  void passTurn() {
+  ///
+  /// [next] dice a quién le toca. Por defecto al oponente, que es lo que pasa
+  /// dentro de una parte. Al cambiar de parte no: el orden se invierte, así que
+  /// quien cierra una la abre también y juega dos turnos seguidos. El reloj no
+  /// conoce las partes, y quien las conoce, [TurnCount], se lo dice aquí.
+  void passTurn({Player? next}) {
     final active = _active;
     if (active == null || _state != MatchState.running) return;
     _turnClock[active] = _turn;
     _emittedThisTurn.clear();
-    _active = active == Player.one ? Player.two : Player.one;
+    _active = next ?? (active == Player.one ? Player.two : Player.one);
+    // El que entra estrena turno aunque sea el mismo que salía: lo que reinicia
+    // el reloj es entrar, no cambiar de jugador.
+    _turnClock[_active!] = _turn;
   }
 
   /// Redimensiona, no reinicia: lo gastado se conserva. Ampliar la reserva de
