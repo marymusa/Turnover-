@@ -9,6 +9,7 @@ import '../domain/awake_guard.dart';
 import '../domain/match_clock.dart';
 import '../domain/match_ticker.dart';
 import '../domain/player_names.dart';
+import '../domain/turn_count.dart';
 import '../l10n/app_localizations.dart';
 import 'clock_colors.dart';
 import 'clock_theme.dart';
@@ -20,6 +21,8 @@ import 'rename_dialog.dart';
 import 'reset_dialog.dart';
 import 'settings_button.dart';
 import 'seam_controls.dart';
+import 'time_out_dialog.dart';
+import 'turn_count_row.dart';
 
 /// La cara del cronómetro. Lo único que hace es pintar lo que dice
 /// [MatchClock] y devolverle los toques: aquí no vive ninguna regla.
@@ -30,10 +33,16 @@ class ClockScreen extends StatefulWidget {
     required this.alerts,
     required this.screen,
     required this.onOpenSettings,
+    this.count,
     super.key,
   });
 
   final MatchClock clock;
+
+  /// La cuenta de turnos. Entra desde fuera por lo mismo que el reloj: las
+  /// capturas la siembran para llegar a un turno cualquiera sin pasar dieciséis
+  /// veces por la pantalla. Nula es la de un partido que empieza.
+  final TurnCount? count;
 
   /// Los nombres de los dos jugadores. Se cambian desde aquí en cualquier
   /// momento, también con el partido empezado.
@@ -65,6 +74,12 @@ class _ClockScreenState extends State<ClockScreen>
   late final MatchTicker _ticker = MatchTicker(widget.clock);
   late final Ticker _frames = createTicker(_onFrame);
   late final AwakeGuard _awake = AwakeGuard(widget.clock, widget.screen);
+
+  /// La cuenta de turnos, que va a la par del reloj: el reloj mide el tiempo y
+  /// esto cuenta los turnos, y las dos se mueven con las mismas acciones de la
+  /// mesa. No es un reloj, así que no pasa por el ticker: quien la repinta es
+  /// el `setState` de cada acción.
+  late final TurnCount _count = widget.count ?? TurnCount();
 
   /// Si la presentación del escudo ya ha terminado. La invitación a empezar
   /// espera a que lo haga: mientras se dibuja la costura, la pantalla está
@@ -127,8 +142,9 @@ class _ClockScreenState extends State<ClockScreen>
     switch (clock.state) {
       case MatchState.notStarted:
         clock.start(player);
+        _count.start(player);
       case MatchState.running:
-        clock.passTurn();
+        _passTurnOnBoth();
       case MatchState.paused:
         return;
     }
@@ -146,7 +162,43 @@ class _ClockScreenState extends State<ClockScreen>
   }
 
   void _passTurn() {
-    _clock.passTurn();
+    _passTurnOnBoth();
+    _ticker.refresh();
+  }
+
+  /// Pasa turno en los dos a la vez, que es la única forma de que no se
+  /// separen. Quien dice a quién le toca es la cuenta, porque es la que conoce
+  /// las partes: al cerrar una, quien la cierra la abre también y juega dos
+  /// turnos seguidos, y el reloj por su cuenta habría alternado.
+  ///
+  /// El orden importa: la cuenta se lee antes de moverla, porque después ya ha
+  /// entrado el siguiente.
+  void _passTurnOnBoth() {
+    _clock.passTurn(next: _count.playerAfterPassing);
+    _count.passTurn();
+  }
+
+  /// El Time-Out que declaran los jugadores desde el velo: quita la pausa y
+  /// aplica la regla (ADR-0010). La aplicación no conoce la tirada, la recoge.
+  ///
+  /// Se pregunta antes porque mueve las dos cuentas y no hay forma de
+  /// deshacerlo, igual que reiniciar. Mientras se decide el partido sigue
+  /// pausado, que es como llegó: el velo solo se va si se confirma.
+  ///
+  /// El `setState` es lo que repinta la cuenta: reanudar devuelve el ticker a
+  /// su latido, pero el primer pintado de vuelta tiene que traer ya el número
+  /// nuevo.
+  Future<void> _timeOut() async {
+    // La dirección se lee antes de preguntar y sale de la cuenta, que es quien
+    // luego la aplica: deducirla aquí sería una segunda lectura de la regla, y
+    // dos lecturas pueden acabar diciendo cosas distintas.
+    final retreats = _count.timeOutRetreats;
+    if (retreats == null) return;
+    if (!await askToApplyTimeOut(context, retreats: retreats)) return;
+    setState(() {
+      _count.timeOut();
+      _clock.resume();
+    });
     _ticker.refresh();
   }
 
@@ -170,6 +222,7 @@ class _ClockScreenState extends State<ClockScreen>
   Future<void> _reset() async {
     if (!await askToReset(context)) return;
     _clock.reset();
+    _count.reset();
     widget.names.resetOpponent();
     // Reiniciar devuelve la pantalla a antes de empezar, y la costura se
     // presenta otra vez: la invitación vuelve a esperar a que termine, como
@@ -246,11 +299,32 @@ class _ClockScreenState extends State<ClockScreen>
                       ],
                     ),
                   ),
+                  // Las dos cuentas, cada una al pie de su tarjeta. Van encima
+                  // de las mitades y no dentro de su columna: dentro habría que
+                  // contarlas en `ClockTheme.naturalHalfHeight`, y apretarían
+                  // los relojes en una pantalla corta a cambio de nada, porque
+                  // el sitio que ocupan está vacío.
+                  //
+                  // Sin toque propio: la fila es un indicador, y lo que se
+                  // pulsa debajo de ella es la mitad, que pasa turno.
+                  Positioned.fill(
+                    child: IgnorePointer(
+                      child: _TurnCounts(
+                        count: _count,
+                        isStarted: clock.state != MatchState.notStarted,
+                      ),
+                    ),
+                  ),
                   // El velo tapa las dos mitades, para que el toque no les llegue,
                   // pero queda por debajo de la costura: el botón de pausa y el de
                   // reinicio se siguen pudiendo pulsar con el partido pausado.
                   if (clock.state == MatchState.paused)
-                    Positioned.fill(child: PausedVeil(onResume: _togglePause)),
+                    Positioned.fill(
+                      child: PausedVeil(
+                        onResume: _togglePause,
+                        onTimeOut: _timeOut,
+                      ),
+                    ),
                   // Antes de empezar la costura está vacía, y el escudo de la
                   // liga la ocupa. Se va en cuanto arranca el partido, que es
                   // cuando los controles la necesitan.
@@ -308,6 +382,89 @@ class _ClockScreenState extends State<ClockScreen>
           Player.one => strings.playerOne,
           Player.two => strings.playerTwo,
         };
+  }
+}
+
+/// Las dos cuentas, cada una al pie de la tarjeta de su jugador.
+///
+/// El reparto va con dos [Expanded], que es el mismo que hace la pantalla con
+/// las mitades: así cada fila cae justo donde acaba su tarjeta. El pie de cada
+/// jugador es el que ve él, no el de la pantalla, de modo que la de arriba va
+/// girada con su mitad y el suyo cae contra el borde superior.
+class _TurnCounts extends StatelessWidget {
+  const _TurnCounts({required this.count, required this.isStarted});
+
+  final TurnCount count;
+  final bool isStarted;
+
+  @override
+  Widget build(BuildContext context) {
+    // El mismo margen vertical que la pantalla le pone a las tarjetas: es lo
+    // que hace que los dos [Expanded] caigan justo donde caen las dos mitades,
+    // y con ellos las filas al pie de cada tarjeta y no al de la pantalla.
+    //
+    // El de la tarjeta lo pone la propia fila, que es quien sabe lo que se
+    // despega de la pared por dentro. Aquí solo se reparte el alto.
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        vertical: ClockTheme.halfCardVerticalInset,
+      ),
+      child: Column(
+        children: [
+          Expanded(
+            child: RotatedBox(
+              quarterTurns: 2,
+              child: _CountFor(
+                count: count,
+                player: Player.two,
+                isStarted: isStarted,
+              ),
+            ),
+          ),
+          Expanded(
+            child: _CountFor(
+              count: count,
+              player: Player.one,
+              isStarted: isStarted,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Lee de la cuenta lo que le toca a un jugador y se lo pasa a [TurnCountRow],
+/// que es lo mismo que hace [_Half] con el reloj.
+class _CountFor extends StatelessWidget {
+  const _CountFor({
+    required this.count,
+    required this.player,
+    required this.isStarted,
+  });
+
+  final TurnCount count;
+  final Player player;
+  final bool isStarted;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = ClockColors.of(context);
+    final isActive = count.activePlayer == player;
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: TurnCountRow(
+        turn: count.of(player),
+        half: count.half,
+        isActive: isActive,
+        // El fondo real de la mitad, que es con el que se recorta el número de
+        // la casilla en curso. La mitad que espera comparte el suyo.
+        surface: isActive
+            ? colors.activeOf(player)
+            : colors.inactive,
+        isStarted: isStarted,
+      ),
+    );
   }
 }
 

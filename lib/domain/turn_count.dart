@@ -48,6 +48,19 @@ class TurnCount {
   /// El mostrado 9 es el tablero 1 y el 16 el tablero 8 (ADR-0010).
   int boardTurnOf(Player player) => ((of(player) - 1) % turnsPerHalf) + 1;
 
+  /// A quién le tocará al pasar turno. Dentro de una parte es el oponente; al
+  /// cerrarla, quien la cierra, porque el orden se invierte y juega dos turnos
+  /// seguidos (ADR-0008).
+  ///
+  /// Existe para el reloj, que no conoce las partes y alternaba por su cuenta:
+  /// desde el cambio de parte quedaban en jugadores distintos, y cada mitad de
+  /// la pantalla acababa llevando la cuenta de la otra. Nulo antes de empezar.
+  Player? get playerAfterPassing {
+    final active = _active;
+    if (active == null) return null;
+    return _endsHalf(active) ? active : _opponentOf(active);
+  }
+
   /// El toque inicial: empieza el jugador que recibe la patada inicial.
   void start(Player receiver) {
     if (_active != null) return;
@@ -105,12 +118,23 @@ class TurnCount {
   /// jugador inactivo, y si su turno de tablero es 6, 7 u 8 ambos retroceden
   /// un espacio; en cualquier otro caso ambos avanzan uno. Sin topes: una
   /// parte puede durar siete turnos o nueve, como en la mesa.
-  void timeOut() {
+  /// Si un Time-Out declarado ahora haría retroceder, en vez de avanzar. Nulo
+  /// antes de empezar, que es cuando todavía no hay pateador.
+  ///
+  /// Existe para poder anunciarlo antes de aplicarlo: el diálogo que lo
+  /// confirma dice hacia dónde se va a mover. Sale de aquí y no de una cuenta
+  /// aparte en la pantalla, porque una lectura repetida es una lectura que
+  /// puede decir lo contrario que la regla.
+  bool? get timeOutRetreats {
     final active = _active;
-    if (active == null) return;
+    if (active == null) return null;
+    return _retreatingTurns.contains(boardTurnOf(_opponentOf(active)));
+  }
 
-    final kicker = _opponentOf(active);
-    final step = _retreatingTurns.contains(boardTurnOf(kicker)) ? -1 : 1;
+  void timeOut() {
+    if (_active == null) return;
+
+    final step = timeOutRetreats! ? -1 : 1;
     for (final player in Player.values) {
       _shown[player] = of(player) + step;
     }
@@ -118,6 +142,11 @@ class TurnCount {
 
   /// La corrección a mano, que es la salida para lo que la aplicación no ve,
   /// como un turno que nadie pasó (ADR-0008).
+  ///
+  /// Todavía no la usa ninguna pantalla: el gesto se quedó sin decidir y es de
+  /// su propio ticket. Cuando llegue moverá las dos cuentas a la vez, que es
+  /// como se corrige en la mesa, así que esta firma por jugador se quedará
+  /// corta y habrá que rehacerla antes de colgarle nada.
   void adjust(Player player, int delta) {
     _shown[player] = of(player) + delta;
   }

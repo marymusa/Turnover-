@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:turnover/ui/clock_colors.dart';
+import 'package:turnover/ui/clock_theme.dart';
 
 /// La razón de contraste entre dos colores opacos, como la define WCAG 2.
 ///
@@ -79,11 +80,15 @@ void main() {
         );
       });
 
-      // El control de pausa encendido lleva la letra del tema encima. Es un
-      // icono y no texto, así que se le pide el 3:1 de los elementos gráficos
-      // y no el 4,5:1 de lectura.
+      // El control de pausa encendido lleva encima la letra de las mitades
+      // activas, que es clara en las dos paletas como lo es el verde sobre el
+      // que va. Es un icono y no texto, así que se le pide el 3:1 de los
+      // elementos gráficos y no el 4,5:1 de lectura.
+      //
+      // Con [text] la paleta clara lo dejaba casi negro sobre el verde: esa
+      // letra se oscurece con la luz y este fondo no.
       test('el icono del control pausado se ve', () {
-        expect(_contrast(palette.text, palette.paused), greaterThan(3));
+        expect(_contrast(palette.activeText, palette.paused), greaterThan(3));
       });
 
       // El velo deja ver los relojes por debajo, pero su aviso se lee sobre lo
@@ -130,6 +135,51 @@ void main() {
           _contrast(palette.halfCardBorder, palette.inactive),
           greaterThan(1.3),
         );
+      });
+
+      // La cuenta de turnos, sobre las tres tarjetas en que se pinta: el azul,
+      // el naranja y la del jugador que espera. Es el criterio del ticket
+      // "se lee en claro y en oscuro, y sobre el azul y sobre el naranja",
+      // medido en vez de mirado.
+      //
+      // El número del turno en curso invierte: va con el fondo de la mitad
+      // recortado sobre la tinta, así que se mide al revés que los demás.
+      test('el turno en curso se lee en su casilla', () {
+        for (final (under, ink) in [
+          (palette.active, palette.activeText),
+          (palette.activeOpponent, palette.activeText),
+          (palette.inactive, palette.text),
+        ]) {
+          expect(
+            _contrast(under, ink),
+            greaterThanOrEqualTo(4.5),
+            reason: 'el número recortado sobre $under',
+          );
+        }
+      });
+
+      // Los turnos jugados y los que faltan van apagados, que es lo que los
+      // distingue del que corre. Apagados, no borrados: se les pide el 3:1 de
+      // los elementos gráficos, porque lo que tienen que hacer es contarse.
+      //
+      // Es lo que fija el valor: el 38% que Material da para lo deshabilitado
+      // se queda en 2,2:1 sobre el azul y sobre el naranja, que es donde la
+      // fila más se resiste a contarse.
+      test('los turnos apagados se cuentan en las tres tarjetas', () {
+        for (final (under, ink) in [
+          (palette.active, palette.activeText),
+          (palette.activeOpponent, palette.activeText),
+          (palette.inactive, palette.text),
+        ]) {
+          final dimmed = ink.withValues(
+            alpha: ClockTheme.dimmedContentOpacity,
+          );
+          expect(
+            _contrast(_over(dimmed, under), under),
+            greaterThanOrEqualTo(3),
+            reason: 'el número apagado sobre $under',
+          );
+        }
       });
     });
   }

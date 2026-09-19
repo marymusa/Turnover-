@@ -689,6 +689,41 @@ void main() {
       expect(clock.remainingFractionOf(Player.one), isNull);
     });
   });
+
+  // Al cambiar de parte el turno no alterna: quien cierra una la abre también,
+  // porque el orden se invierte y juega dos turnos seguidos. El reloj no conoce
+  // las partes, así que se lo tiene que decir quien sí las conoce, que es
+  // [TurnCount]. Sin esto el reloj alternaba por su cuenta y a partir de la
+  // segunda parte cada mitad de la pantalla llevaba la cuenta de la otra.
+  group('a quién le toca', () {
+    test('por defecto pasa al oponente', () {
+      final clock = newClock();
+      clock.start(Player.one);
+      clock.passTurn();
+
+      expect(clock.activePlayer, Player.two);
+    });
+
+    test('puede quedarse en el mismo jugador al cambiar de parte', () {
+      final clock = newClock();
+      clock.start(Player.one);
+      clock.passTurn();
+      clock.passTurn(next: Player.two);
+
+      expect(clock.activePlayer, Player.two);
+    });
+
+    test('el turno del que entra vuelve a su valor inicial también cuando '
+        'repite', () {
+      final clock = newClock();
+      clock.start(Player.one);
+      clock.passTurn();
+      clock.advance(const Duration(minutes: 3));
+      clock.passTurn(next: Player.two);
+
+      expect(clock.turnOf(Player.two), const Duration(minutes: 4));
+    });
+  });
 }
 
 MatchClock newClock({Duration earlyWarning = Duration.zero}) => MatchClock(

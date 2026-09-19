@@ -36,6 +36,38 @@
   "@pausedHint": {
     "description": "Velo que cubre la pantalla con el partido pausado"
   },
+  "kickOffEvent": "Kick-off event",
+  "@kickOffEvent": {
+    "description": "Encabeza el botón de Time-Out en el velo de pausa. Dice de qué tabla sale el botón: sin él, 'Time-Out' se lee como pausar, que es lo que el velo ya es"
+  },
+  "timeOut": "Time-Out",
+  "@timeOut": {
+    "description": "Botón del velo de pausa que declara un Time-Out. Es el nombre del reglamento y no se traduce (ADR-0010)"
+  },
+  "timeOutTitle": "Apply Time-Out?",
+  "@timeOutTitle": {
+    "description": "Título del diálogo que confirma el Time-Out declarado desde el velo"
+  },
+  "timeOutForwardBody": "Both teams will move one turn forward. This cannot be undone.",
+  "@timeOutForwardBody": {
+    "description": "Consecuencia del Time-Out cuando el turno de tablero del pateador no es 6, 7 ni 8, que es cuando ambos avanzan (ADR-0010)"
+  },
+  "timeOutBackBody": "Both teams will move one turn back. This cannot be undone.",
+  "@timeOutBackBody": {
+    "description": "Consecuencia del Time-Out cuando el turno de tablero del pateador es 6, 7 u 8, que es cuando ambos retroceden (ADR-0010)"
+  },
+  "timeOutConfirm": "Confirm",
+  "@timeOutConfirm": {
+    "description": "Botón que confirma el Time-Out en el diálogo"
+  },
+  "turnCount": "Turn {number} of {total}",
+  "@turnCount": {
+    "description": "Lo que un lector de pantalla dice de la cuenta de turnos de un jugador. El número es el corrido, de 1 a 16 (ADR-0010)",
+    "placeholders": {
+      "number": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
   "settings": "Settings",
   "@settings": {
     "description": "Etiqueta de accesibilidad del acceso a los ajustes y título de su pantalla"

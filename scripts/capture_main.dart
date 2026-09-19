@@ -28,6 +28,7 @@ import 'package:turnover/domain/match_alerts.dart';
 import 'package:turnover/domain/match_clock.dart';
 import 'package:turnover/domain/match_settings.dart';
 import 'package:turnover/domain/player_names.dart';
+import 'package:turnover/domain/turn_count.dart';
 import 'package:turnover/l10n/app_localizations.dart';
 import 'package:turnover/ui/clock_colors.dart';
 import 'package:turnover/ui/clock_screen.dart';
@@ -51,6 +52,7 @@ class _Shot {
   const _Shot({
     required this.name,
     required this.seed,
+    this.seedCount,
     this.playerOne,
     this.playerTwo,
     this.isSettings = false,
@@ -62,12 +64,33 @@ class _Shot {
   /// Deja el reloj en el estado que la captura enseña.
   final void Function(MatchClock clock) seed;
 
+  /// Deja la cuenta de turnos donde la quiere la captura. Va aparte del reloj
+  /// porque son dos cosas: el reloj mide el tiempo y esto cuenta los turnos, y
+  /// una captura puede querer el turno 14 con el reloj recién empezado.
+  ///
+  /// Nulo deja la cuenta al principio, que es lo que enseña un turno 1.
+  final void Function(TurnCount count)? seedCount;
+
   final String? playerOne;
   final String? playerTwo;
 
   /// Los ajustes son otra pantalla, no otro estado del reloj.
   final bool isSettings;
 }
+
+/// Deja la cuenta en el turno que pide la captura, pasando turno las veces que
+/// haga falta desde el toque inicial. Se pasa turno de verdad en vez de empujar
+/// el número: así el desfase entre los dos jugadores sale solo, que es lo que
+/// hay que mirar en la fila.
+void Function(TurnCount) _countAt({
+  required Player receiver,
+  required int passes,
+}) => (count) {
+  count.start(receiver);
+  for (var i = 0; i < passes; i++) {
+    count.passTurn();
+  }
+};
 
 final _shots = <_Shot>[
   _Shot(name: '01-antes-de-empezar', seed: (_) {}),
@@ -77,6 +100,9 @@ final _shots = <_Shot>[
       clock.start(Player.one);
       clock.advance(const Duration(seconds: 47));
     },
+    // A media cuenta, que es donde la fila enseña los tres estados de casilla a
+    // la vez: los jugados, el que corre y los que faltan.
+    seedCount: _countAt(receiver: Player.one, passes: 4),
   ),
   _Shot(
     name: '03-aviso-previo',
@@ -84,6 +110,7 @@ final _shots = <_Shot>[
       clock.start(Player.one);
       clock.advance(_turn - const Duration(seconds: 8));
     },
+    seedCount: _countAt(receiver: Player.one, passes: 4),
   ),
   _Shot(
     name: '04-tiempo-extra-consumiendose',
@@ -91,6 +118,7 @@ final _shots = <_Shot>[
       clock.start(Player.one);
       clock.advance(_turn + const Duration(minutes: 2, seconds: 12));
     },
+    seedCount: _countAt(receiver: Player.one, passes: 6),
   ),
   _Shot(
     name: '05-overtime',
@@ -98,6 +126,7 @@ final _shots = <_Shot>[
       clock.start(Player.one);
       clock.advance(_turn + _reserve + const Duration(seconds: 34));
     },
+    seedCount: _countAt(receiver: Player.one, passes: 10),
   ),
   _Shot(
     name: '06-pausado',
@@ -106,6 +135,7 @@ final _shots = <_Shot>[
       clock.advance(const Duration(minutes: 1, seconds: 3));
       clock.pause();
     },
+    seedCount: _countAt(receiver: Player.one, passes: 6),
   ),
   _Shot(
     name: '07-nombres',
@@ -113,6 +143,7 @@ final _shots = <_Shot>[
       clock.start(Player.two);
       clock.advance(const Duration(seconds: 25));
     },
+    seedCount: _countAt(receiver: Player.two, passes: 3),
     playerOne: 'Luke',
     playerTwo: 'Nuffle',
   ),
@@ -126,6 +157,30 @@ final _shots = <_Shot>[
       clock.start(Player.two);
       clock.advance(_turn + const Duration(minutes: 2, seconds: 12));
     },
+    seedCount: _countAt(receiver: Player.two, passes: 7),
+  ),
+  // La segunda parte avanzada: la fila va de 9 a 16 y casi toda ella lleva dos
+  // cifras, que es donde se ve si las casillas se estrechan al cambiar de
+  // parte. Es tambien donde se lee si la parte se distingue sola en el numero.
+  _Shot(
+    name: '10-segunda-parte',
+    seed: (clock) {
+      clock.start(Player.one);
+      clock.advance(const Duration(minutes: 2, seconds: 30));
+    },
+    seedCount: _countAt(receiver: Player.one, passes: 21),
+  ),
+  // El velo con el boton de Time-Out, que es lo que hay que mirar de cerca: que
+  // el boton se lee como un evento de la patada inicial y no como pausar, y que
+  // convive con el aviso sin taparle el sitio a la costura.
+  _Shot(
+    name: '11-pausado-con-time-out',
+    seed: (clock) {
+      clock.start(Player.two);
+      clock.advance(const Duration(minutes: 2, seconds: 41));
+      clock.pause();
+    },
+    seedCount: _countAt(receiver: Player.two, passes: 9),
   ),
 ];
 
@@ -144,6 +199,7 @@ class _CaptureAppState extends State<_CaptureApp> {
   /// Un reloj nuevo por captura: sembrar sobre el anterior arrastraría lo ya
   /// gastado y el estado no sería el que dice la lista.
   late MatchClock _clock;
+  late TurnCount _count;
   late PlayerNames _names;
   late MatchSettings _settings;
 
@@ -162,6 +218,11 @@ class _CaptureAppState extends State<_CaptureApp> {
       warning: const Duration(seconds: 30),
     );
     _shot.seed(_clock);
+
+    // La cuenta se siembra aparte del reloj: llegar al turno 14 pasando turno
+    // catorce veces no enseña nada que no enseñe ponerlo a mano.
+    _count = TurnCount();
+    _shot.seedCount?.call(_count);
 
     _names = PlayerNames(_store);
     final one = _shot.playerOne;
@@ -215,6 +276,7 @@ class _CaptureAppState extends State<_CaptureApp> {
           : ClockScreen(
               key: ValueKey(_index),
               clock: _clock,
+              count: _count,
               names: _names,
               alerts: const AlertPlayer(_SilentDevice()),
               screen: const _IgnoredScreen(),

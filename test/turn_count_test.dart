@@ -169,6 +169,103 @@ void main() {
     });
   });
 
+  // El reloj no conoce las partes y alterna por su cuenta, así que en el
+  // cambio de parte se iba a otro jugador que la cuenta: a partir de ahí cada
+  // mitad de la pantalla llevaba la cuenta de la otra. Quien sabe a quién le
+  // toca es esto, y por eso lo dice.
+  group('a quién le toca después de pasar', () {
+    test('dentro de una parte es el oponente', () {
+      final count = TurnCount()..start(Player.one);
+
+      expect(count.playerAfterPassing, Player.two);
+    });
+
+    test('al cerrar una parte repite quien la cierra', () {
+      final count = TurnCount()..start(Player.one);
+      for (var i = 0; i < 15; i++) {
+        count.passTurn();
+      }
+      expect(count.activePlayer, Player.two);
+
+      expect(count.playerAfterPassing, Player.two);
+    });
+
+    test('coincide con quien queda activo tras pasar, reciba quien reciba', () {
+      for (final receiver in Player.values) {
+        final count = TurnCount()..start(receiver);
+        for (var pass = 0; pass < 20; pass++) {
+          final expected = count.playerAfterPassing;
+          count.passTurn();
+          expect(
+            count.activePlayer,
+            expected,
+            reason: 'pase $pass recibiendo $receiver',
+          );
+        }
+      }
+    });
+  });
+
+  // Lo que el diálogo de confirmación tiene que decir antes de aplicar nada.
+  // Es la misma lectura que hace [timeOut], expuesta para poder anunciarla: si
+  // se dedujera aparte, el aviso y la regla podrían no coincidir.
+  group('hacia dónde mueve un Time-Out', () {
+    test('avanza desde un turno de tablero que no es 6, 7 ni 8', () {
+      final count = _seeded(one: 5, two: 4, active: Player.one);
+
+      expect(count.boardTurnOf(Player.two), 4);
+      expect(count.timeOutRetreats, isFalse);
+    });
+
+    test('retrocede desde los turnos de tablero 6, 7 y 8', () {
+      for (final kickerTurn in [6, 7, 8]) {
+        final count = _seeded(
+          one: kickerTurn + 1,
+          two: kickerTurn,
+          active: Player.one,
+        );
+
+        expect(count.timeOutRetreats, isTrue, reason: 'tablero $kickerTurn');
+      }
+    });
+
+    // El mostrado 9 es el tablero 1, así que avanza: es lo que distingue leer
+    // el turno de tablero de leer el número de la pantalla (ADR-0010).
+    test('desde el mostrado 9 avanza, porque es el tablero 1', () {
+      final count = _seeded(one: 9, two: 9, active: Player.two);
+
+      expect(count.timeOutRetreats, isFalse);
+    });
+
+    // Lee al pateador y no al activo, que es lo único que UC7 distingue.
+    test('lee al pateador y no al jugador activo', () {
+      final count = _seeded(one: 6, two: 5, active: Player.one);
+
+      expect(count.boardTurnOf(Player.one), 6);
+      expect(count.boardTurnOf(Player.two), 5);
+      expect(count.timeOutRetreats, isFalse);
+    });
+
+    test('coincide siempre con lo que hace timeOut', () {
+      for (var turn = 1; turn <= 16; turn++) {
+        final count = _seeded(one: turn, two: turn, active: Player.one);
+        final retreats = count.timeOutRetreats!;
+        final before = count.of(Player.one);
+        count.timeOut();
+
+        expect(
+          count.of(Player.one) - before,
+          retreats ? -1 : 1,
+          reason: 'mostrado $turn',
+        );
+      }
+    });
+
+    test('nulo antes de empezar, que es cuando no hay pateador', () {
+      expect(TurnCount().timeOutRetreats, isNull);
+    });
+  });
+
   group('Time-Out', () {
     // Los siete casos del ADR-0010, que son su tabla de la verdad. UC7 es el
     // único que distingue leer al pateador de leer al jugador activo.
