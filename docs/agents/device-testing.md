@@ -49,6 +49,35 @@ lista, se añade allí: es lo que hace que la siguiente vez tampoco cueste.
 Al terminar, el teléfono se queda con la compilación de capturas, que no es la
 aplicación de verdad. Conviene decirlo.
 
+## Probar la vibración
+
+`scripts/capture_main.dart` no sirve: usa un `AlertDevice` mudo a propósito,
+porque es para capturas. Para la vibración está
+`scripts/vibration_main.dart`, con tres botones a pantalla completa, uno por
+intensidad, que disparan bocina y vibración por `PlatformAlertDevice`, que es el
+adaptador de verdad.
+
+```bash
+flutter build apk --debug -t scripts/vibration_main.dart
+adb -s <serie> install -r build/app/outputs/flutter-apk/app-debug.apk
+```
+
+Antes de dar por malo nada, mirar la configuración del propio teléfono: la
+vibración sale por `USAGE_NOTIFICATION` y el sistema la silencia si el jugador la
+tiene apagada (ADR-0005). No hace falta que las hápticas al tocar estén
+encendidas, y de hecho en este Mi 9 están apagadas.
+
+```bash
+adb -s <serie> shell settings get system vibrate_when_ringing
+```
+
+La latencia de la salida de audio del aparato, que es lo que obliga a retrasar la
+vibración para que las dos salgan juntas, se lee así:
+
+```bash
+adb -s <serie> shell dumpsys media.audio_flinger | grep -i latency
+```
+
 ## Las rutas de `/sdcard/` desde Git Bash
 
 Git Bash traduce `/sdcard/foo.png` a una ruta de Windows y `adb` escribe donde

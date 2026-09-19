@@ -4,18 +4,36 @@ import UIKit
 
 private let vibrationChannelName = "com.ares.bloodbowl.turnover/vibration"
 
+/// Lo que espera la vibracion antes de arrancar, para salir a la vez que la
+/// bocina y no antes.
+///
+/// `AlertPlayer` lanza las dos a la vez, pero eso es a la vez en el codigo, no
+/// en el oido: la vibracion arranca al momento y el sonido pasa por la salida
+/// de audio, que tarda. En Android se noto y se corrigio midiendo el aparato;
+/// aqui se pone el mismo orden de magnitud, mas corto porque la salida de audio
+/// de iOS es bastante mas rapida.
+///
+/// Sin comprobar en un iPhone de verdad: no hay ninguno a mano. Es lo primero
+/// que hay que mirar cuando lo haya.
+private let audioLeadIn: TimeInterval = 0.03
+
 /// Las tres intensidades del dominio traducidas a lo que entiende el Taptic
 /// Engine. En iOS no hay acceso publico al motor: Core Haptics es la via, y su
 /// intensidad va de 0 a 1. La dureza sube con ella para que el aviso mas grave
-/// se note seco y no como un zumbido largo.
+/// se note seco y no como un zumbido plano.
 ///
-/// Un solo golpe por aviso, al principio y nada mas, por lo mismo que en
-/// Android: seguir la forma de la bocina obliga a elegir entre vibrar cuatro
-/// segundos y medio o quedarse desincronizado, y ninguna de las dos sirve. Lo
-/// que coincide es la entrada.
+/// Los dos ejes suben juntos, igual que en Android: segundo y medio, tres
+/// segundos y cuatro y medio, con intensidad 0,4, 0,7 y 1,0. La version
+/// anterior daba golpes de 70, 150 y 300 milisegundos y los probadores decian
+/// todos lo mismo, que la vibracion no acompanaba a la bocina ni en lo que
+/// duraba ni en la fuerza (ADR-0005).
+///
+/// El paso de segundo y medio entre niveles es a proposito y es igual entre los
+/// tres: lo que tiene que quedar claro al notarla es cual de los tres avisos
+/// es. La duracion de la bocina no entra en la cuenta.
 ///
 /// Aqui el motor es lineal y responde a la intensidad tal cual se pide, asi que
-/// no hacen falta las amplitudes altas que necesita un motor de masa giratoria.
+/// no hace falta el suelo de amplitud que necesita un motor de masa giratoria.
 private enum VibrationLevel: String {
   case soft
   case strong
@@ -37,13 +55,13 @@ private enum VibrationLevel: String {
     }
   }
 
-  /// Lo que dura el golpe, en segundos. Es lo que distingue un nivel de otro
+  /// Lo que dura el aviso, en segundos. Es lo que distingue un nivel de otro
   /// junto con la intensidad.
   var duration: TimeInterval {
     switch self {
-    case .soft: return 0.07
-    case .strong: return 0.15
-    case .strongest: return 0.30
+    case .soft: return 1.5
+    case .strong: return 3.0
+    case .strongest: return 4.5
     }
   }
 
@@ -111,7 +129,7 @@ private enum VibrationLevel: String {
           CHHapticEventParameter(parameterID: .hapticIntensity, value: level.intensity),
           CHHapticEventParameter(parameterID: .hapticSharpness, value: level.sharpness),
         ],
-        relativeTime: 0,
+        relativeTime: audioLeadIn,
         duration: level.duration
       )
       let pattern = try CHHapticPattern(events: [event], parameters: [])
