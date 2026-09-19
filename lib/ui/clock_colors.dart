@@ -202,10 +202,13 @@ class ClockColors {
       // El globo que sale al arrastrar un deslizador va en el azul activo, y
       // su letra la resolvía el esquema en un gris que encima de ese azul no
       // se leía. Va aquí y no en cada deslizador: es cosa del tema.
+      //
+      // La letra es [activeText] y no [text]: el globo va sobre el azul
+      // saturado, como la mitad del turno que corre, y no sobre el marco.
       sliderTheme: SliderThemeData(
         valueIndicatorColor: active,
         valueIndicatorTextStyle: TextStyle(
-          color: text,
+          color: activeText,
           fontSize: 15,
           fontWeight: FontWeight.w600,
         ),
