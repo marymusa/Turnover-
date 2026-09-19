@@ -54,16 +54,30 @@ final de la parte. No se traduce: es el término del reglamento.
 **despliegue**: el parón al comienzo de cada drive, mientras los jugadores colocan las
 miniaturas. El reloj no corre y ese tiempo no es de nadie.
 
-**Tiempo Muerto**: el resultado 3 de la patada inicial. Si la ficha del equipo pateador
+**Time-Out**: el resultado 3 de la patada inicial. Si la ficha del equipo pateador
 está en el turno 6, 7 u 8, ambos entrenadores retroceden un espacio; en cualquier otro
-caso, ambos avanzan uno. Se tira después de desplegar, así que la aplicación lo ofrece
-al continuar, no al parar.
+caso, ambos avanzan uno. Se aplica sin topes.
+
+Se llama por su nombre del reglamento en inglés, como "drive": es el resultado de una
+tabla, no una descripción. Antes figuraba aquí como "Tiempo Muerto" (ADR-0010).
+
+La aplicación no lo detecta: lo declaran los jugadores con un botón en el velo de
+pausa, que al pulsarlo quita la pausa y aplica la regla (ADR-0010). La tirada es
+posterior al despliegue, y los jugadores ya paran para desplegar.
+
+La regla lee el **turno de tablero**, de 1 a 8, y no el número que se muestra, que en
+la segunda parte va de 9 a 16: `turnoTablero = ((mostrado - 1) % 8) + 1`. Y lee la
+ficha del equipo pateador, que es el jugador inactivo en ese momento.
 
 **anotación**: el tanto que termina un drive. Nunca "gol", que es de otro juego. Lo
 apunta quien anota al pulsar, porque después hay que desplegar otra vez.
 
-**acta**: la pantalla que cierra el partido. Muestra el resultado, el tiempo de juego
-total, el que ha jugado cada uno y el que ha estado parado. No se guarda (ADR-0003).
+**acta**: la pantalla que cierra el partido, al pasar el turno 16 del segundo jugador.
+Muestra el tiempo de juego total, el que ha jugado cada uno y el que ha estado parado,
+que es el de las pausas. No se guarda (ADR-0003).
+
+No muestra resultado: la anotación queda fuera de esta versión, así que no hay
+marcador que enseñar.
 
 **bocina**: cada uno de los tres sonidos, de menor a mayor intensidad: queda un
 aviso previo, se agota el turno, se agota el tiempo extra. Son tres bocinas para
@@ -89,21 +103,20 @@ vibración, no cuántas son (ADR-0005).
 - El partido empieza al tocar al jugador que recibe la patada inicial. No hay botón
   de comenzar. La invitación de cada mitad dice "Pulsa para comenzar" y no de quién
   es la patada: el reloj no reparte el saque, lo reparte el dado antes de tocar
-  nada, y la pantalla solo recoge lo que los jugadores ya han acordado. Ese toque no
-  arranca el reloj, abre el despliegue del primer drive: primero se colocan las
-  miniaturas y se tira la patada inicial, y solo después corre el tiempo.
+  nada, y la pantalla solo recoge lo que los jugadores ya han acordado. Ese toque
+  arranca el reloj del jugador que recibe.
 - La segunda parte no se toca para elegir lado. El orden lo fijan las reglas y la
   aplicación no reparte nada: quien recibe en la primera parte juega primero en ella,
   y en la segunda patea y juega segundo.
-- Cada drive empieza con el reloj parado. El despliegue se acaba tocando en cualquier
-  sitio, igual que se reanuda una pausa, y al continuar se ofrece Tiempo Muerto, que se
-  ignora sin más si la patada inicial no lo ha sacado.
-- La cuenta de turnos es de cada jugador, de 1 a 8, y es la del tablero. Tiempo Muerto
-  la mueve según su regla, sin topes: una parte puede durar siete turnos o nueve, como
-  en la mesa. Lo que la aplicación no ve, como un turno que nadie pasó, se corrige a
-  mano con una pulsación larga sobre el número.
-- Anotar pasa turno y abre el drive siguiente. Si con ese pase se agotan los turnos de
-  la parte, lo que se abre es la parte siguiente, y la aplicación lo sabe sin preguntar.
+- La cuenta de turnos es de cada jugador. La primera parte va de 1 a 8 y la segunda de
+  9 a 16: la numeración es corrida, y así la parte se lee en el propio número sin
+  ningún indicador aparte (ADR-0010). El turno de tablero, que es el que está en la
+  mesa y el que leen las reglas, se recupera con `((mostrado - 1) % 8) + 1`.
+- Time-Out mueve la cuenta según su regla, sin topes: una parte puede durar siete
+  turnos o nueve, como en la mesa. Lo que la aplicación no ve, como un turno que nadie
+  pasó, se corrige a mano con una pulsación larga sobre el número.
+- El velo de pausa lleva el botón de Time-Out. Pulsarlo quita la pausa y aplica la
+  regla (ADR-0010).
 - La aplicación solo cuenta el tiempo en primer plano. Si se cierra o pasa a
   segundo plano, el tiempo se pausa. El compromiso es no tocar el móvil mientras
   corre el reloj.
@@ -137,8 +150,13 @@ vibración, no cuántas son (ADR-0005).
 
 ## Fuera del alcance
 
-Sin prórroga. El acta la nombra cuando hay empate, para que se sepa que la aplicación
-no la ignora, y se implementará cuando alguna liga la juegue de verdad (ADR-0008).
+Sin drives y sin anotación, de momento. La aplicación conoce los turnos y las partes,
+pero no las entradas en que se divide una parte: no hay velo de despliegue, no hay
+botón de anotar y no hay marcador. El glosario conserva los términos, que son del
+juego y no de la aplicación, y se retomarán con sus tickets.
+
+Sin prórroga. Seguía fuera (ADR-0008), y sin marcador tampoco hay empate que nombrar,
+así que el acta ni la menciona.
 
 Los ocho turnos por parte no se configuran. Es la regla de Blood Bowl, y un ajuste
 devolvería la aplicación al terreno genérico.

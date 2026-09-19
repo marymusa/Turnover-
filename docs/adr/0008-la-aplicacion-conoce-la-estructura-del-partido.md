@@ -1,9 +1,15 @@
 # 0008 - La aplicación conoce la estructura del partido
 
 Fecha: 2026-09-17
-Estado: aceptado
+Estado: aceptado, modificado en parte por el ADR-0010
 
 Supersede al ADR-0002.
+
+El ADR-0010 cambia tres cosas de aquí: la numeración pasa a ser corrida, de 1 a 16 y
+no de 1 a 8 por parte; Time-Out lo declaran los jugadores desde el velo de pausa en
+vez de ofrecerse al continuar; y se le llama por su nombre del reglamento, Time-Out y
+no "Tiempo Muerto". Lo demás sigue vigente, incluida la regla en sí y que lee la ficha
+del equipo pateador.
 
 ## Contexto
 
