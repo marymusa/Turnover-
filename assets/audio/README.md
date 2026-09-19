@@ -45,24 +45,39 @@ original suave era un mp3, y el silbato venía en 96 kHz, ocho canales y 32 bits
 catorce megas de máster de estudio que en el altavoz de un móvil no se distinguen de
 los cien kilos que ocupa ahora.
 
-Ninguno se recorta. Los tres duran lo que dura su original, tres segundos, un segundo
-y seis, y cuatro y seis. El silbato son tres pitidos seguidos con silencio en medio, y
+Ninguno se recorta. Los tres duran lo que dura su original, tres segundos, cuatro, y
+cuatro y seis. El silbato son tres pitidos seguidos con silencio en medio, y
 así se queda: tres pitidos es justo como se cierra un partido.
 
+Los tres se nivelan en escalones de dos LU y medio, de menor a mayor intensidad: -19,
+-16,5 y -14 LUFS, con el techo de pico en -1,5 dB. La jerarquía de la tabla se oye
+igual, pero sin el salto de nueve LU que había entre el suave y el más fuerte.
+
+`loudnorm` va en dos pasadas y no en una. En una sola pasada estima la corrección sobre
+una ventana móvil, y en clips de tres o cuatro segundos se equivoca por varios LU: llegó
+a dejar el fuerte más bajo que el suave. Primero se mide, después se aplica lo medido.
+
 ```sh
-ffmpeg -y -i 194812__funnyman850__epic-angry-boatinception-sound-effect.mp3 \
-  -ac 1 -ar 44100 -c:a pcm_s16le -af "loudnorm=I=-16:TP=-1.5:LRA=11" \
-  horn_soft.wav
+# Pasada 1: medir. Devuelve input_i, input_tp, input_lra e input_thresh.
+ffmpeg -i <original> -af "loudnorm=I=<objetivo>:TP=-1.5:LRA=11:print_format=json" -f null -
 
-ffmpeg -y -i 414208__jacksonacademyashmore__airhorn.wav \
-  -ac 1 -ar 44100 -c:a pcm_s16le -af "loudnorm=I=-16:TP=-1.5:LRA=11" \
-  horn_strong.wav
-
-ffmpeg -y -i 455491__affreftony__whistle-end0012.wav \
-  -ac 1 -ar 44100 -c:a pcm_s16le \
-  horn_strongest.wav
+# Pasada 2: aplicar, con los valores de la pasada 1 y linear=true.
+ffmpeg -y -i <original> -ac 1 -ar 44100 -c:a pcm_s16le \
+  -af "loudnorm=I=<objetivo>:TP=-1.5:LRA=11:measured_I=...:measured_TP=...:\
+measured_LRA=...:measured_thresh=...:linear=true" \
+  <destino>.wav
 ```
 
-El silbato no lleva `loudnorm` porque ya venía alto: da un pico de -2,6 dB y cualquier
-subida lo satura. Los picos quedan en -8,3, -5,5 y -2,6 dB, que es el orden de
-intensidad que pide la tabla sin tocarle la duración a ninguno.
+El fuerte necesita un paso más. El original viene saturado, con el pico real en +0,02 dB,
+así que no queda hueco para subirlo: `loudnorm` detecta que pasaría del techo, se pasa a
+modo dinámico y se queda corto. Antes de nivelarlo hay que subirlo y limitarlo, y aun así
+se queda en -17 LUFS en vez de -16,5, pegado al techo de -1,5. Apretarlo más solo aplasta
+el golpe de la bocina.
+
+```sh
+ffmpeg -y -i 414208__jacksonacademyashmore__airhorn.wav -ac 1 -ar 44100 -c:a pcm_s16le \
+  -af "volume=5dB,alimiter=level_in=1:level_out=1:limit=0.84:attack=1:release=50:level=disabled" \
+  horn_strong_limitado.wav
+```
+
+Quedan en -18,9, -17,0 y -14,6 LUFS, con picos de -8,0, -1,5 y -7,4 dB.
