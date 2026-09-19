@@ -78,7 +78,12 @@ class PlayerHalf extends StatelessWidget {
     // en las dos paletas y la que espera se aclara con la luz. Por eso lo que
     // se pinta dentro elige letra y aviso según `isActive`.
     final colors = ClockColors.of(context);
-    final rows = <Widget>[
+    // Las medidas salen de la caja que le toca a esta mitad, no de una
+    // constante: en una pantalla corta la columna no cabía y los dos relojes
+    // de tiempo extra se iban fuera. El LayoutBuilder mide por dentro de la
+    // tarjeta, que es donde se reparte lo que queda ya descontados los
+    // márgenes.
+    List<Widget> rowsFor(ClockMetrics metrics) => [
       // La pista de renombrar va en la misma fila que el nombre y no en una
       // propia: así aparecer y desaparecer no cambia la altura de la mitad, y
       // empezar el partido no mueve los relojes de sitio.
@@ -88,46 +93,51 @@ class PlayerHalf extends StatelessWidget {
         hint: strings.renameHintShort,
         hintLong: strings.renameHintInline,
         isActive: isActive,
+        metrics: metrics,
       ),
       // Encima del turno, y vacío con el partido empezado: el hueco se queda
       // igual, que es lo que impide que empezar mueva los relojes de sitio.
       SizedBox(
-        height: ClockTheme.labelSlotHeight,
+        height: metrics.labelSlotHeight,
         child: Center(
           child: _ClockLabel(
             isStarted ? null : strings.turnTimeLabel,
             isActive: isActive,
+            metrics: metrics,
           ),
         ),
       ),
-      const SizedBox(height: ClockTheme.labelToClockGap),
+      SizedBox(height: metrics.labelToClockGap),
       _ClockText(
         formatClock(turn),
-        size: _isTurnSpent ? ClockTheme.turnSizeSpent : ClockTheme.turnSize,
+        size: _isTurnSpent ? metrics.turnSizeSpent : metrics.turnSize,
         isActive: isActive,
       ),
-      const SizedBox(height: ClockTheme.clockToSlotGap),
+      SizedBox(height: metrics.clockToSlotGap),
       // El mismo hueco para los dos: la barra con el partido en marcha y el
       // nombre del reloj antes de empezar. Fijar la altura aquí es lo que
       // hace que empezar no mueva los relojes de sitio.
       SizedBox(
-        height: ClockTheme.barSlotHeight,
+        height: metrics.barSlotHeight,
         child: Center(
           child: isStarted
               ? _ProgressBar(
                   remainingFraction: remainingFraction,
                   isReserve: _isTurnSpent,
                   isActive: isActive,
+                  metrics: metrics,
                 )
-              : _ClockLabel(strings.extraTimeLabel, isActive: isActive),
+              : _ClockLabel(
+                  strings.extraTimeLabel,
+                  isActive: isActive,
+                  metrics: metrics,
+                ),
         ),
       ),
-      const SizedBox(height: ClockTheme.labelToClockGap),
+      SizedBox(height: metrics.labelToClockGap),
       _ClockText(
         formatClock(reserve),
-        size: _isTurnSpent
-            ? ClockTheme.reserveSizeSpent
-            : ClockTheme.reserveSize,
+        size: _isTurnSpent ? metrics.reserveSizeSpent : metrics.reserveSize,
         color: _isTurnSpent
             ? (isActive ? colors.reserve : colors.inactiveReserve)
             : null,
@@ -140,6 +150,7 @@ class PlayerHalf extends StatelessWidget {
         text: strings.startHint,
         isVisible: !isStarted && isRevealed,
         isActive: isActive,
+        metrics: metrics,
       ),
     ];
 
@@ -162,10 +173,12 @@ class PlayerHalf extends StatelessWidget {
         ),
       ),
       width: double.infinity,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: rows,
+      child: LayoutBuilder(
+        builder: (context, constraints) => Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: rowsFor(ClockTheme.metricsFor(constraints.biggest)),
+        ),
       ),
     );
 
@@ -188,6 +201,7 @@ class _Name extends StatelessWidget {
     required this.hint,
     required this.hintLong,
     required this.isActive,
+    required this.metrics,
   });
 
   final String text;
@@ -204,6 +218,7 @@ class _Name extends StatelessWidget {
   final String hintLong;
 
   final bool isActive;
+  final ClockMetrics metrics;
 
   @override
   Widget build(BuildContext context) {
@@ -216,7 +231,7 @@ class _Name extends StatelessWidget {
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
         style: TextStyle(
-          fontSize: ClockTheme.nameSize,
+          fontSize: metrics.nameSize,
           fontWeight: FontWeight.w600,
           color: textColor.withValues(alpha: 0.75),
         ),
@@ -224,7 +239,10 @@ class _Name extends StatelessWidget {
     );
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+      padding: EdgeInsets.symmetric(
+        horizontal: metrics.nameHorizontalPadding,
+        vertical: metrics.nameVerticalPadding,
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,
@@ -239,7 +257,7 @@ class _Name extends StatelessWidget {
                 children: [
                   Icon(
                     Icons.edit_outlined,
-                    size: ClockTheme.renameIconSize,
+                    size: metrics.renameIconSize,
                     color: textColor.withValues(alpha: 0.4),
                   ),
                   const SizedBox(width: 4),
@@ -247,7 +265,7 @@ class _Name extends StatelessWidget {
                     hint,
                     maxLines: 1,
                     style: TextStyle(
-                      fontSize: ClockTheme.renameHintSize,
+                      fontSize: metrics.renameHintSize,
                       fontWeight: FontWeight.w500,
                       color: textColor.withValues(alpha: 0.4),
                     ),
@@ -268,11 +286,13 @@ class _StartHint extends StatefulWidget {
     required this.text,
     required this.isVisible,
     required this.isActive,
+    required this.metrics,
   });
 
   final String text;
   final bool isVisible;
   final bool isActive;
+  final ClockMetrics metrics;
 
   @override
   State<_StartHint> createState() => _StartHintState();
@@ -322,7 +342,7 @@ class _StartHintState extends State<_StartHint>
     final label = Text(
       widget.text,
       style: TextStyle(
-        fontSize: ClockTheme.startHintSize,
+        fontSize: widget.metrics.startHintSize,
         fontWeight: FontWeight.w600,
         letterSpacing: 1.5,
         color: widget.isVisible ? textColor : textColor.withValues(alpha: 0),
@@ -330,7 +350,9 @@ class _StartHintState extends State<_StartHint>
     );
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 14),
+      padding: EdgeInsets.symmetric(
+        vertical: widget.metrics.startHintVerticalPadding,
+      ),
       child: widget.isVisible
           ? ScaleTransition(scale: _scale, child: label)
           : label,
@@ -366,17 +388,35 @@ class _ClockText extends StatelessWidget {
         color: color ?? textColor,
         fontFeatures: const [FontFeature.tabularFigures()],
       ),
-      child: Text(text),
+      // Una sola línea siempre, y si aun así no cabe de ancho, encoge hasta
+      // caber. Sin esto, en una pantalla estrecha el reloj de turno partía
+      // "04:00" en dos y la columna medía el doble de alto, que era lo que se
+      // desbordaba por abajo.
+      //
+      // El FittedBox mide los glifos de verdad, y por eso es la red que cubre
+      // lo que [ClockTheme.naturalHalfWidth] solo estima: el ancho de una
+      // cifra depende de la fuente del aparato, y donde la estimación se quede
+      // corta esto encoge en vez de comerse un dígito. Un reloj al que le
+      // falta una cifra no se nota, y es justo lo que mide la aplicación.
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Text(text, maxLines: 1, softWrap: false),
+      ),
     );
   }
 }
 
 /// Nombra el reloj que tiene al lado mientras el partido no ha empezado.
 class _ClockLabel extends StatelessWidget {
-  const _ClockLabel(this.text, {required this.isActive});
+  const _ClockLabel(
+    this.text, {
+    required this.isActive,
+    required this.metrics,
+  });
 
   final String? text;
   final bool isActive;
+  final ClockMetrics metrics;
 
   @override
   Widget build(BuildContext context) {
@@ -388,7 +428,7 @@ class _ClockLabel extends StatelessWidget {
     return Text(
       text,
       style: TextStyle(
-        fontSize: ClockTheme.clockLabelSize,
+        fontSize: metrics.clockLabelSize,
         fontWeight: FontWeight.w600,
         letterSpacing: 1.2,
         color: textColor.withValues(alpha: 0.45),
@@ -403,11 +443,13 @@ class _ProgressBar extends StatelessWidget {
     required this.remainingFraction,
     required this.isReserve,
     required this.isActive,
+    required this.metrics,
   });
 
   final double? remainingFraction;
   final bool isReserve;
   final bool isActive;
+  final ClockMetrics metrics;
 
   @override
   Widget build(BuildContext context) {
@@ -419,10 +461,10 @@ class _ProgressBar extends StatelessWidget {
     return FractionallySizedBox(
       widthFactor: ClockTheme.barWidthFactor,
       child: Container(
-        height: ClockTheme.barHeight,
+        height: metrics.barHeight,
         decoration: BoxDecoration(
           color: barColor.withValues(alpha: 0.14),
-          borderRadius: BorderRadius.circular(ClockTheme.barHeight / 2),
+          borderRadius: BorderRadius.circular(metrics.barHeight / 2),
         ),
         child: FractionallySizedBox(
           alignment: Alignment.centerLeft,
@@ -430,11 +472,14 @@ class _ProgressBar extends StatelessWidget {
           child: DecoratedBox(
             decoration: BoxDecoration(
               color: isReserve ? reserveColor : barColor,
-              borderRadius: BorderRadius.circular(ClockTheme.barHeight / 2),
+              borderRadius: BorderRadius.circular(metrics.barHeight / 2),
             ),
             child: Align(
               alignment: Alignment.centerRight,
-              child: _BarGlow(color: isReserve ? reserveColor : barColor),
+              child: _BarGlow(
+                color: isReserve ? reserveColor : barColor,
+                size: metrics.barHeight,
+              ),
             ),
           ),
         ),
@@ -445,9 +490,13 @@ class _ProgressBar extends StatelessWidget {
 
 /// La brasa que va en la cabeza de la barra mientras el reloj corre.
 class _BarGlow extends StatefulWidget {
-  const _BarGlow({required this.color});
+  const _BarGlow({required this.color, required this.size});
 
   final Color color;
+
+  /// El grosor de la barra que encabeza, que en una pantalla corta no es el
+  /// de [ClockTheme.barHeight].
+  final double size;
 
   @override
   State<_BarGlow> createState() => _BarGlowState();
@@ -474,7 +523,7 @@ class _BarGlowState extends State<_BarGlow>
   @override
   Widget build(BuildContext context) {
     return SizedBox.square(
-      dimension: ClockTheme.barHeight,
+      dimension: widget.size,
       child: AnimatedBuilder(
         animation: _glow,
         builder: (context, child) {
@@ -485,8 +534,8 @@ class _BarGlowState extends State<_BarGlow>
               boxShadow: [
                 BoxShadow(
                   color: widget.color.withValues(alpha: _glow.value),
-                  blurRadius: ClockTheme.barGlowBlur,
-                  spreadRadius: ClockTheme.barGlowSpread,
+                  blurRadius: widget.size * ClockTheme.barGlowBlurFactor,
+                  spreadRadius: widget.size * ClockTheme.barGlowSpreadFactor,
                 ),
               ],
             ),

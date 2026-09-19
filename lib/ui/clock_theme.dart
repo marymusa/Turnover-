@@ -1,3 +1,6 @@
+import 'dart:math' as math;
+import 'dart:ui' show Size;
+
 /// Las medidas que fijó el prototipo B2. Viven juntas y en un solo sitio
 /// porque la pantalla es una sola y todas se eligieron a la vez, mirándolas en
 /// un móvil de verdad.
@@ -101,8 +104,11 @@ abstract final class ClockTheme {
   /// que se veía era un intermitente.
   static const barGlowMinAlpha = 0.65;
   static const barGlowMaxAlpha = 1.0;
-  static const barGlowBlur = barHeight * 0.9;
-  static const barGlowSpread = barHeight * 0.1;
+
+  /// En veces el grosor de la barra, y no en píxeles: en una pantalla corta la
+  /// barra encoge, y una brasa a medida fija se derramaría fuera de ella.
+  static const barGlowBlurFactor = 0.9;
+  static const barGlowSpreadFactor = 0.1;
 
   /// El hueco que comparten la barra y el nombre del reloj de tiempo extra.
   /// Lo manda el texto, que es el más alto de los dos: con la altura de la
@@ -151,4 +157,105 @@ abstract final class ClockTheme {
   static const logoRevealHeadWidth = 2.5;
   static const logoRevealTrailWidth = 1.5;
   static const logoRevealTrailAlpha = 0.55;
+
+  /// Lo que un reloj ocupa de alto con un cuerpo de letra dado. Las cifras se
+  /// piden con 0,95, y la fuente redondea esa caja hacia arriba: contarla
+  /// justa deja la columna unos pocos píxeles por encima de lo que cabe.
+  static const _clockLineHeight = 1.05;
+
+  /// Lo que ocupa de alto una línea de texto normal, en veces su cuerpo.
+  /// Generoso a propósito: aquí no se mide una fuente, se reparte una pantalla,
+  /// y pasarse de largo solo encoge un poco de más.
+  static const _textLineHeight = 1.4;
+
+  /// Lo que el reloj de turno ocupa de ancho, en veces su cuerpo de letra. Son
+  /// los cinco caracteres de "04:00" a la anchura que Roboto le da a cada uno,
+  /// menos lo que les quita el espaciado negativo entre letras.
+  ///
+  /// El ancho cuenta tanto como el alto: en una pantalla estrecha el reloj no
+  /// cabía de largo. Aquí es una estimación, y solo sirve para encoger a
+  /// tiempo: lo que garantiza que la cifra cabe es el FittedBox que la envuelve,
+  /// porque la anchura real depende de la fuente que ponga cada aparato.
+  static const _clockWidthFactor = 3.0;
+
+  /// Lo que la mitad pide de alto si nadie la aprieta. Se calcula con el turno
+  /// entero, que es el estado alto: con el turno agotado el reloj de arriba
+  /// encoge más de lo que crece el de abajo.
+  ///
+  /// La suma repite, en el mismo orden, lo que `PlayerHalf` apila en su
+  /// columna. Quien añada una fila allí tiene que añadirla también aquí, o la
+  /// mitad pedirá menos alto del que ocupa. Es una estimación y no una medida:
+  /// lo que la respalda es el FittedBox de los relojes, que encoge de verdad
+  /// cuando esta cuenta se queda corta.
+  static const naturalHalfHeight =
+      nameSize * _textLineHeight +
+      _nameVerticalPadding * 2 +
+      labelSlotHeight +
+      labelToClockGap +
+      turnSize * _clockLineHeight +
+      clockToSlotGap +
+      barSlotHeight +
+      labelToClockGap +
+      reserveSize * _clockLineHeight +
+      startHintSize * _textLineHeight +
+      _startHintVerticalPadding * 2;
+
+  /// Lo que la mitad pide de ancho: el reloj de turno, que es el más largo.
+  ///
+  /// Las dos medidas son de puertas adentro de la tarjeta, que es donde mide
+  /// el LayoutBuilder: los márgenes ya se han descontado antes de llegar aquí.
+  static const naturalHalfWidth = turnSize * _clockWidthFactor;
+
+  static const _nameVerticalPadding = 8.0;
+  static const _nameHorizontalPadding = 24.0;
+  static const _startHintVerticalPadding = 14.0;
+
+  /// Las medidas de la mitad para la caja que le ha tocado. Con sitio de sobra
+  /// devuelve las de siempre; apretada, todas encogen a la vez y en la misma
+  /// proporción, de modo que la mitad se lee igual y solo cabe más pequeña.
+  ///
+  /// Encoge todo junto y no los huecos primero: apretar los huecos deja los
+  /// números pegados unos a otros, y lo que hace legible un cronómetro de
+  /// reojo es tanto el tamaño de la cifra como el aire que la rodea.
+  static ClockMetrics metricsFor(Size available) {
+    final factor = math.min(
+      available.height / naturalHalfHeight,
+      available.width / naturalHalfWidth,
+    );
+    if (factor >= 1) return const ClockMetrics._full();
+    return ClockMetrics._scaled(factor);
+  }
+}
+
+/// Las medidas de una mitad, ya resueltas para la caja que tiene. Existe para
+/// que la mitad no tenga que saber si la pantalla la está apretando: pide sus
+/// medidas y pinta con ellas.
+class ClockMetrics {
+  const ClockMetrics._full() : scale = 1;
+
+  const ClockMetrics._scaled(this.scale);
+
+  /// Lo que se ha encogido, entre cero y uno. Uno es la pantalla normal.
+  final double scale;
+
+  double get turnSize => ClockTheme.turnSize * scale;
+  double get turnSizeSpent => ClockTheme.turnSizeSpent * scale;
+  double get reserveSize => ClockTheme.reserveSize * scale;
+  double get reserveSizeSpent => ClockTheme.reserveSizeSpent * scale;
+  double get nameSize => ClockTheme.nameSize * scale;
+  double get renameIconSize => ClockTheme.renameIconSize * scale;
+  double get renameHintSize => ClockTheme.renameHintSize * scale;
+  double get clockLabelSize => ClockTheme.clockLabelSize * scale;
+  double get startHintSize => ClockTheme.startHintSize * scale;
+  double get barHeight => ClockTheme.barHeight * scale;
+  double get labelSlotHeight => ClockTheme.labelSlotHeight * scale;
+  double get barSlotHeight => ClockTheme.barSlotHeight * scale;
+  double get labelToClockGap => ClockTheme.labelToClockGap * scale;
+  double get clockToSlotGap => ClockTheme.clockToSlotGap * scale;
+
+  double get nameVerticalPadding => ClockTheme._nameVerticalPadding * scale;
+  double get nameHorizontalPadding =>
+      ClockTheme._nameHorizontalPadding * scale;
+  double get startHintVerticalPadding =>
+      ClockTheme._startHintVerticalPadding * scale;
 }

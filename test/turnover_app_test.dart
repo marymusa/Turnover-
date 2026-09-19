@@ -7,6 +7,7 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:turnover/domain/alert_player.dart';
 import 'package:turnover/domain/awake_guard.dart';
+import 'package:turnover/domain/clock_format.dart';
 import 'package:turnover/domain/match_alerts.dart';
 import 'package:turnover/domain/match_clock.dart';
 import 'package:turnover/domain/match_settings.dart';
@@ -583,6 +584,53 @@ void main() {
       expect(find.text('Nurgle'), findsNothing);
     });
   });
+
+  group('la mitad en una pantalla corta', () {
+    // 320x568 es el móvil pequeño de referencia. Con las medidas fijas la
+    // columna se desbordaba por abajo y los dos relojes de tiempo extra se
+    // iban fuera de la pantalla, uno por arriba y otro por abajo.
+    testWidgets('los dos relojes de tiempo extra caben dentro', (tester) async {
+      await _withSurface(tester, const Size(320, 568), () async {
+        await tester.pumpWidget(_app(store: MemorySettingsStore()));
+        await _settle(tester);
+
+        for (final half in tester.widgetList<PlayerHalf>(
+          find.byType(PlayerHalf),
+        )) {
+          final rect = tester.getRect(
+            find.descendant(
+              of: find.byWidget(half),
+              matching: find.text(formatClock(half.reserve)),
+            ),
+          );
+          expect(rect.top, greaterThanOrEqualTo(0));
+          expect(rect.bottom, lessThanOrEqualTo(568));
+        }
+      });
+    });
+
+    // Lo que se encoge son las medidas, no el reparto: la pantalla normal
+    // tiene que quedarse exactamente igual que antes.
+    test('a tamaño normal no encoge nada', () {
+      final metrics = ClockTheme.metricsFor(const Size(2000, 2000));
+
+      expect(metrics.turnSize, ClockTheme.turnSize);
+      expect(metrics.reserveSizeSpent, ClockTheme.reserveSizeSpent);
+      expect(metrics.clockToSlotGap, ClockTheme.clockToSlotGap);
+    });
+  });
+}
+
+/// Corre el cuerpo con la pantalla a la medida dada y la devuelve a la suya al
+/// terminar, pase lo que pase.
+Future<void> _withSurface(
+  WidgetTester tester,
+  Size size,
+  Future<void> Function() body,
+) async {
+  await tester.binding.setSurfaceSize(size);
+  addTearDown(() => tester.binding.setSurfaceSize(null));
+  await body();
 }
 
 Widget _app({required SettingsStore store, Key? key}) => TurnoverApp(
