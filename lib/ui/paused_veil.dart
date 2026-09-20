@@ -4,8 +4,9 @@ import '../l10n/app_localizations.dart';
 import 'clock_colors.dart';
 import 'clock_theme.dart';
 
-/// El velo que cubre la pantalla con el partido pausado. Tocarlo en cualquier
-/// sitio reanuda, y lleva además el botón que declara un Time-Out.
+/// El velo que cubre la pantalla con el partido pausado. Dice por qué está
+/// puesto y cómo se quita, tocarlo en cualquier sitio reanuda, y lleva además
+/// el botón que declara un Time-Out.
 ///
 /// Va por delante de las dos mitades a propósito: así el toque no les llega y
 /// reanudar no se confunde nunca con pasar turno, que es el mismo gesto sobre
@@ -14,6 +15,7 @@ class PausedVeil extends StatelessWidget {
   const PausedVeil({
     required this.onResume,
     required this.onTimeOut,
+    this.status,
     super.key,
   });
 
@@ -24,15 +26,47 @@ class PausedVeil extends StatelessWidget {
   /// de la patada inicial es posterior (ADR-0010).
   final VoidCallback onTimeOut;
 
+  /// Por qué está puesto el velo, ya traducido. Nulo es la pausa a secas, que
+  /// es la que se pide a mano desde la costura.
+  ///
+  /// Lo pone quien pausa y no se deduce aquí: el velo no conoce la cuenta, y
+  /// desde ella el parón del cambio de parte no se distingue de una pausa
+  /// cualquiera hecha a media jugada del turno 9.
+  final String? status;
+
   @override
   Widget build(BuildContext context) {
     final strings = AppLocalizations.of(context)!;
     final colors = ClockColors.of(context);
+    final statusText = status ?? strings.paused;
+    // Las dos filas se escriben igual: son la misma frase partida en dos, y lo
+    // que las separa es el hueco, no el tamaño.
+    final textStyle = TextStyle(
+      color: colors.veilText,
+      fontSize: ClockTheme.veilTextSize,
+      fontWeight: FontWeight.w600,
+      letterSpacing: 0.5,
+    );
     return Semantics(
       button: true,
-      label: strings.resume,
+      // El estado por delante: quien no ve el velo tiene que oír lo mismo que
+      // se lee en él, primero por qué está puesto y después qué hace tocarlo.
+      label: '$statusText. ${strings.resume}',
+      // Con nodo propio y los de dentro aparte. Sin esto, la etiqueta se traga
+      // todo lo que el velo escribe y se anuncia como "Segunda parte.
+      // Reanudar. Segunda parte. Pulsa en cualquier sitio para continuar.
+      // Evento de patada inicial", que es la frase entera dos veces y el
+      // encabezado del botón suelto en medio. El botón de Time-Out y lo que lo
+      // encabeza se quedan donde estaban, cada uno con su nodo.
+      explicitChildNodes: true,
+      // La acción la declara el velo y no el gesto: cerrado el nodo, el
+      // `GestureDetector` se hacía uno suyo, se llevaba el toque fuera del
+      // botón anunciado y de paso se quedaba con el encabezado del Time-Out
+      // de etiqueta.
+      onTap: onResume,
       child: GestureDetector(
         onTap: onResume,
+        excludeFromSemantics: true,
         // Opaco al toque también donde el velo es transparente: lo que cubre
         // lo cubre entero.
         behavior: HitTestBehavior.opaque,
@@ -60,14 +94,29 @@ class PausedVeil extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    strings.pausedHint,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: colors.veilText,
-                      fontSize: ClockTheme.veilTextSize,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.5,
+                  // Dos filas y no una frase: arriba por qué el reloj no
+                  // corre, que cambia, y debajo qué hacer con el velo, que es
+                  // siempre lo mismo.
+                  //
+                  // Fuera de la semántica las dos: es lo mismo que ya dice la
+                  // etiqueta del velo, que es el nodo sobre el que se cae, y
+                  // repetido serían tres nodos para una frase.
+                  ExcludeSemantics(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          statusText,
+                          textAlign: TextAlign.center,
+                          style: textStyle,
+                        ),
+                        const SizedBox(height: ClockTheme.veilStatusGap),
+                        Text(
+                          strings.continueHint,
+                          textAlign: TextAlign.center,
+                          style: textStyle,
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(height: ClockTheme.veilButtonGap),

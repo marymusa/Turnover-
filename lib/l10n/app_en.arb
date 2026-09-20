@@ -32,9 +32,17 @@
   "@resume": {
     "description": "Etiqueta de accesibilidad del control de pausa, ya pausado"
   },
-  "pausedHint": "Paused. Tap anywhere to resume",
-  "@pausedHint": {
-    "description": "Velo que cubre la pantalla con el partido pausado"
+  "paused": "Paused",
+  "@paused": {
+    "description": "Fila de estado del velo de pausa: por qué el reloj no corre. La de por defecto, pausado a mano"
+  },
+  "secondHalf": "Second half",
+  "@secondHalf": {
+    "description": "Fila de estado del velo en el parón del cambio de parte, que es un despliegue: dice la parte que va a empezar, que es lo que explica el salto del 8 al 9 que se lee por detrás"
+  },
+  "continueHint": "Tap anywhere to continue",
+  "@continueHint": {
+    "description": "Llamada a la acción del velo de pausa, siempre debajo del estado. El verbo es el de startHint: 'Pulsa' y 'Toca' eran dos formas del mismo dedo"
   },
   "kickOffEvent": "Kick-off event",
   "@kickOffEvent": {

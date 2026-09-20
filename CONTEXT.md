@@ -150,6 +150,12 @@ vibración, no cuántas son (ADR-0005).
 - La segunda parte no se toca para elegir lado. El orden lo fijan las reglas y la
   aplicación no reparte nada: quien recibe en la primera parte juega primero en ella,
   y en la segunda patea y juega segundo.
+- El cambio de parte no es un pase de turno más: el pase que cierra la primera parte
+  entrega el turno a quien abre la segunda y acto seguido pausa, en vez de arrancarle
+  el reloj en el mismo pase. Es un despliegue, con sus lados que se cambian y su
+  patada inicial, y el velo de pausa hace de parón: dice "Segunda parte" en su fila
+  de estado, que es también lo que explica el salto del 8 al 9 que se lee por detrás.
+  Lo quita el mismo toque que quita cualquier pausa.
 - La cuenta de turnos es de cada jugador. La primera parte va de 1 a 8 y la segunda de
   9 a 16: la numeración es corrida, y así la parte se lee en el propio número sin
   ningún indicador aparte (ADR-0010). El turno de tablero, que es el que está en la
@@ -200,9 +206,15 @@ vibración, no cuántas son (ADR-0005).
 ## Fuera del alcance
 
 Sin drives y sin anotación, de momento. La aplicación conoce los turnos y las partes,
-pero no las entradas en que se divide una parte: no hay velo de despliegue, no hay
-botón de anotar y no hay marcador. El glosario conserva los términos, que son del
-juego y no de la aplicación, y se retomarán con sus tickets.
+pero no las entradas en que se divide una parte: no hay botón de anotar y no hay
+marcador. El glosario conserva los términos, que son del juego y no de la aplicación,
+y se retomarán con sus tickets.
+
+De los despliegues, el único que la aplicación sabe localizar es el del cambio de
+parte, que es el que para con el velo de pausa. Los demás empiezan con una anotación,
+que la aplicación no ve, así que no hay parón que poner: el velo de despliegue propio
+espera a su ticket, y con él la pregunta que el ADR-0010 dejó abierta, la de si ese
+velo llevaría también el botón de Time-Out.
 
 Sin prórroga. Seguía fuera (ADR-0008), y sin marcador tampoco hay empate que nombrar,
 así que el acta ni la menciona.

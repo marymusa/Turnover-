@@ -130,6 +130,12 @@ abstract final class ClockTheme {
 
   static const veilTextSize = 19.0;
 
+  /// Lo que separa la fila de estado del velo de la que dice cómo continuar.
+  /// Justo lo que hace falta para que se lean como dos frases y no como una
+  /// sola partida en dos: son dos cosas distintas, por qué está puesto y qué
+  /// hacer con él.
+  static const veilStatusGap = 6.0;
+
   /// El botón de Time-Out, debajo del aviso del velo. Su alto sale del texto y
   /// del relleno, que juntos pasan de los 48 del objetivo táctil mínimo: este
   /// sí se pulsa, al revés que las casillas de la cuenta.

@@ -94,6 +94,18 @@ class _ClockScreenState extends State<ClockScreen>
   /// contando otra cosa, y dos animaciones a la vez se estorban.
   bool _isRevealed = false;
 
+  /// Por qué está pausado el partido, ya traducido, o nulo si se pausó a mano.
+  /// Lo enseña el velo en su fila de estado.
+  ///
+  /// Es de la pantalla y no del reloj: el reloj ya dice la regla del dominio
+  /// —el tiempo no corre y no es de nadie— con [MatchState.paused], y lo único
+  /// que falta es el porqué, que es una diferencia de presentación.
+  ///
+  /// Tampoco se deduce de la cuenta. Lo natural sería mirar si la segunda
+  /// parte todavía no tiene segundo jugador, pero eso es verdad durante todo
+  /// el turno 9, así que pausar a media jugada volvería a anunciar el parón.
+  String? _pausedReason;
+
   /// El aviso se dispara y no se espera: lo que tarde el aparato en sonar no
   /// puede retrasar el toque de reloj siguiente.
   ///
@@ -166,11 +178,19 @@ class _ClockScreenState extends State<ClockScreen>
   void _togglePause() {
     final clock = _clock;
     if (clock.state == MatchState.paused) {
-      clock.resume();
+      _resume();
     } else {
       clock.pause();
     }
     _ticker.refresh();
+  }
+
+  /// Quita la pausa y, con ella, el porqué: lo que se anunciaba era este
+  /// parón, no el siguiente. Por aquí pasan las dos formas de reanudar, tocar
+  /// el velo y declarar un Time-Out, para que ninguna se olvide de borrarlo.
+  void _resume() {
+    _clock.resume();
+    _pausedReason = null;
   }
 
   void _passTurn() {
@@ -189,10 +209,26 @@ class _ClockScreenState extends State<ClockScreen>
   /// Y es también la cuenta la que dice que el partido se ha acabado, por lo
   /// mismo: el final es el turno 16 del segundo jugador, que es un número de
   /// turno y no un tiempo. El reloj no lo sabe, se entera aquí.
+  ///
+  /// Y que la parte ha cambiado, que es lo que pone el parón: el pase entrega
+  /// el turno a quien abre la siguiente —quien pateó en la anterior— y acto
+  /// seguido pausa, en vez de arrancarle el reloj en el mismo pase. En la mesa
+  /// ahí se cambian los lados, se despliega y hay patada inicial, con su
+  /// posibilidad de Time-Out, y el velo de pausa hace de parón.
   void _passTurnOnBoth() {
+    final half = _count.half;
     _clock.passTurn(next: _count.playerAfterPassing);
     _count.passTurn();
     if (_count.isOver) _clock.finish();
+    if (_count.half != half) _pauseForNextHalf();
+  }
+
+  /// El parón del cambio de parte. El mensaje se resuelve aquí y no al pintar
+  /// porque lo que el velo enseña es un estado del partido y no una lectura
+  /// de la cuenta.
+  void _pauseForNextHalf() {
+    _pausedReason = AppLocalizations.of(context)!.secondHalf;
+    _clock.pause();
   }
 
   /// El Time-Out que declaran los jugadores desde el velo: quita la pausa y
@@ -214,7 +250,7 @@ class _ClockScreenState extends State<ClockScreen>
     if (!await askToApplyTimeOut(context, retreats: retreats)) return;
     setState(() {
       _count.timeOut();
-      _clock.resume();
+      _resume();
     });
     _ticker.refresh();
   }
@@ -248,6 +284,7 @@ class _ClockScreenState extends State<ClockScreen>
   void _startOver() {
     _clock.reset();
     _count.reset();
+    _pausedReason = null;
     widget.names.resetOpponent();
     // Volver a antes de empezar trae la costura de vuelta, y se presenta otra
     // vez: la invitación vuelve a esperar a que termine, como la primera vez.
@@ -379,7 +416,11 @@ class _ClockScreenState extends State<ClockScreen>
         // se siguen pudiendo pulsar con el partido pausado.
         if (clock.state == MatchState.paused)
           Positioned.fill(
-            child: PausedVeil(onResume: _togglePause, onTimeOut: _timeOut),
+            child: PausedVeil(
+              onResume: _togglePause,
+              onTimeOut: _timeOut,
+              status: _pausedReason,
+            ),
           ),
         // Antes de empezar la costura está vacía, y el escudo de la liga la
         // ocupa. Se va en cuanto arranca el partido, que es cuando los

@@ -18,6 +18,7 @@ import 'package:turnover/ui/clock_colors.dart';
 import 'package:turnover/ui/clock_screen.dart';
 import 'package:turnover/ui/clock_theme.dart';
 import 'package:turnover/ui/match_report.dart';
+import 'package:turnover/ui/paused_veil.dart';
 import 'package:turnover/ui/player_half.dart';
 import 'package:turnover/ui/seam_controls.dart';
 import 'package:turnover/ui/settings_screen.dart';
@@ -545,7 +546,7 @@ void main() {
       await _confirmReset(tester);
 
       expect(_clockOnScreen(tester).state, MatchState.notStarted);
-      expect(find.text('Paused. Tap anywhere to resume'), findsNothing);
+      expect(find.text('Paused'), findsNothing);
     });
 
     testWidgets('conserva la configuración de tiempos', (tester) async {
@@ -589,6 +590,128 @@ void main() {
     });
   });
 
+  group('el velo de pausa', () {
+    // La pausa que se pide a mano no anuncia nada especial: dice que está
+    // pausado y, debajo, lo que hay que hacer para seguir. Las dos filas son
+    // siempre las dos, y lo que se oye es lo que se lee.
+    testWidgets('pausado a mano dice el estado y cómo continuar', (
+      tester,
+    ) async {
+      await tester.pumpWidget(_app(store: MemorySettingsStore()));
+      await _settle(tester);
+      await _startAndSpend(tester);
+
+      await tester.tap(find.bySemanticsLabel('Pause'));
+      await _settle(tester);
+
+      expect(find.text('Paused'), findsOneWidget);
+      expect(find.text('Tap anywhere to continue'), findsOneWidget);
+      expect(find.bySemanticsLabel('Paused. Resume'), findsOneWidget);
+    });
+  });
+
+  // El cambio de parte no es un pase de turno más: se cambian los lados, se
+  // despliega y hay patada inicial. Sin el parón, el reloj del jugador
+  // entrante arrancaba en el mismo pase y el número saltaba del 8 al 9 sin
+  // decir nada, que desde la mesa se lee como un fallo.
+  group('el parón del cambio de parte', () {
+    testWidgets('el pase que cierra la primera parte pausa el partido', (
+      tester,
+    ) async {
+      await tester.pumpWidget(_app(store: MemorySettingsStore()));
+      await _settle(tester);
+
+      await _playFirstHalf(tester);
+
+      expect(_clockOnScreen(tester).state, MatchState.paused);
+    });
+
+    // El velo que ya existe hace de parón; lo único que se le añade es decir
+    // por qué está puesto.
+    testWidgets('el velo dice la parte que va a empezar', (tester) async {
+      await tester.pumpWidget(_app(store: MemorySettingsStore()));
+      await _settle(tester);
+
+      await _playFirstHalf(tester);
+
+      expect(find.text('Second half'), findsOneWidget);
+      expect(find.text('Tap anywhere to continue'), findsOneWidget);
+      expect(find.text('Paused'), findsNothing);
+    });
+
+    // El parón llega con el turno ya entregado: quien pateó en la primera
+    // parte juega primero en la segunda, y su turno 9 espera detrás del velo.
+    testWidgets('el turno ya es de quien abre la segunda parte', (
+      tester,
+    ) async {
+      await tester.pumpWidget(_app(store: MemorySettingsStore()));
+      await _settle(tester);
+
+      await _playFirstHalf(tester);
+
+      // Recibe el jugador uno, así que patea el dos, que es quien abre la
+      // segunda parte y juega dos turnos seguidos.
+      expect(_clockOnScreen(tester).activePlayer, Player.two);
+      // Y la cuenta ya va por la segunda parte: la fila llega al 16, una por
+      // jugador, que en la primera no sale.
+      expect(find.text('16'), findsNWidgets(2));
+    });
+
+    testWidgets('tocar en cualquier sitio arranca la segunda parte', (
+      tester,
+    ) async {
+      await tester.pumpWidget(_app(store: MemorySettingsStore()));
+      await _settle(tester);
+      await _playFirstHalf(tester);
+
+      await _tapVeil(tester);
+
+      expect(_clockOnScreen(tester).state, MatchState.running);
+    });
+
+    // El mensaje es del parón y no de la pausa: pausar a mano después vuelve a
+    // ser una pausa cualquiera. No se deduce de la cuenta, que durante todo el
+    // turno 9 sigue pareciendo el cambio de parte.
+    testWidgets('la pausa siguiente ya no habla de la parte', (tester) async {
+      await tester.pumpWidget(_app(store: MemorySettingsStore()));
+      await _settle(tester);
+      await _playFirstHalf(tester);
+      await _tapVeil(tester);
+
+      await tester.tap(find.bySemanticsLabel('Pause'));
+      await _settle(tester);
+
+      expect(find.text('Paused'), findsOneWidget);
+      expect(find.text('Second half'), findsNothing);
+    });
+
+    testWidgets('reiniciar se lleva el mensaje del parón', (tester) async {
+      await tester.pumpWidget(_app(store: MemorySettingsStore()));
+      await _settle(tester);
+      await _playFirstHalf(tester);
+
+      await _confirmReset(tester);
+      await tester.tap(_halfShowing('Me'));
+      await _settle(tester);
+      await tester.tap(find.bySemanticsLabel('Pause'));
+      await _settle(tester);
+
+      expect(find.text('Paused'), findsOneWidget);
+      expect(find.text('Second half'), findsNothing);
+    });
+
+    // Quien no ve el velo tiene que oír lo mismo que se lee en él: primero por
+    // qué está puesto y después lo que hace tocarlo.
+    testWidgets('se anuncia con el estado por delante', (tester) async {
+      await tester.pumpWidget(_app(store: MemorySettingsStore()));
+      await _settle(tester);
+
+      await _playFirstHalf(tester);
+
+      expect(find.bySemanticsLabel('Second half. Resume'), findsOneWidget);
+    });
+  });
+
   // Se busca por el texto en inglés, que es el idioma al que cae el banco de
   // pruebas, igual que en los nombres.
   group('el acta', () {
@@ -604,8 +727,7 @@ void main() {
       // No hay botón de terminar: el acta llega cuando lo dice la cuenta, y
       // no puede llegar antes del último pase.
       for (var pass = 1; pass < _passesPerMatch; pass++) {
-        await tester.tap(_passTurnControl);
-        await _settle(tester);
+        await _passTurnThroughBreak(tester);
         expect(
           _endMatchButton,
           findsNothing,
@@ -955,14 +1077,47 @@ final _endMatchButton = find.text('End match');
 /// jugador, y en cada parte el segundo jugador cierra con el suyo.
 const _passesPerMatch = 32;
 
+/// Los pases que cierran la primera parte, que es la mitad de los del partido.
+const _passesPerHalf = _passesPerMatch ~/ 2;
+
+/// Toca el velo lejos de la costura, que es lo único que la pantalla deja por
+/// encima de él: en el centro el toque se lo comen los controles, y lo que
+/// quita el velo es tocar en cualquier sitio.
+Future<void> _tapVeil(WidgetTester tester) async {
+  final veil = find.byType(PausedVeil);
+  await tester.tapAt(tester.getTopLeft(veil) + const Offset(24, 24));
+  await _settle(tester);
+}
+
+/// Pasa turno desde la costura y, si ese pase cerró la parte, retira el parón
+/// que deja: el velo se come el toque siguiente y pasar turno está
+/// deshabilitado mientras está puesto, así que sin retirarlo el partido se
+/// queda en el cambio de parte y no llega nunca al acta.
+Future<void> _passTurnThroughBreak(WidgetTester tester) async {
+  await tester.tap(_passTurnControl);
+  await _settle(tester);
+  if (_clockOnScreen(tester).state != MatchState.paused) return;
+  await _tapVeil(tester);
+}
+
+/// Juega la primera parte entera desde el toque inicial y deja el partido en
+/// el parón del cambio de parte, que es donde el pase dieciséis lo deja.
+Future<void> _playFirstHalf(WidgetTester tester) async {
+  await tester.tap(_halfShowing('Me'));
+  await _settle(tester);
+  for (var pass = 0; pass < _passesPerHalf; pass++) {
+    await tester.tap(_passTurnControl);
+    await _settle(tester);
+  }
+}
+
 /// Juega el partido entero desde el toque inicial, que es la única forma de
 /// llegar al acta: no hay botón de terminar.
 Future<void> _playWholeMatch(WidgetTester tester, {bool settle = true}) async {
   await tester.tap(_halfShowing('Me'));
   await _settle(tester);
   for (var pass = 0; pass < _passesPerMatch; pass++) {
-    await tester.tap(_passTurnControl);
-    await _settle(tester);
+    await _passTurnThroughBreak(tester);
   }
   if (settle) await _settleReport(tester);
 }
@@ -999,8 +1154,7 @@ Future<void> _playLopsidedMatch(
           ? const Duration(seconds: 30)
           : const Duration(seconds: 5),
     );
-    await tester.tap(_passTurnControl);
-    await _settle(tester);
+    await _passTurnThroughBreak(tester);
   }
   if (settle) await _settleReport(tester);
 }
