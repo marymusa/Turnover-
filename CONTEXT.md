@@ -205,3 +205,8 @@ bloquea las capturas.
 Sin modo espectador ni modo árbitro. Sin red y sin cuentas. Tampoco se pide copia de
 seguridad en la nube, aunque en iOS los ajustes viajen igualmente en la de iCloud, que
 es algo que no se puede desactivar sin rehacer el almacenamiento (ADR-0003).
+
+Sin publicidad (ADR-0012). No es solo que hoy no la haya: se estudiaron los tres
+momentos en los que ningún reloj corre y se descartó, porque el SDK trae red, permisos
+y consentimiento el primer día a cambio de unos euros al año. El coste recurrente es el
+de iOS y se cubre por el precio, no por los anuncios.
