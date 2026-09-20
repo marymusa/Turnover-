@@ -163,6 +163,94 @@ abstract final class ClockTheme {
   /// con el alto del aparato.
   static const veilContentTop = passTurnSize / 2 + 24;
 
+  /// El acta. No se reparte en dos mitades como el resto de la pantalla: es
+  /// un documento y se lee entera de arriba abajo, en una sola orientación,
+  /// porque lo que se hace con ella es una captura que va al responsable de
+  /// la liga, que la lee como cualquier otra imagen.
+  ///
+  /// Lo ancho va topado para que la etiqueta y su cifra no se vayan a los dos
+  /// bordes de la pantalla, que es donde dejan de leerse como una pareja.
+  static const reportWidth = 300.0;
+
+  /// El rótulo que encabeza el acta y dice que el partido ha terminado.
+  /// Comparte cuerpo con el que encabeza el botón del velo: los dos son la
+  /// misma clase de rótulo, el que nombra lo que viene debajo.
+  static const reportHeadingSize = veilLabelSize;
+  static const reportHeadingGap = 26.0;
+
+  /// Las dos filas de los jugadores, que son lo comparable del acta y por eso
+  /// van por encima de las otras dos y con mayor cuerpo. El nombre no compite
+  /// con su tiempo: es una etiqueta, igual que en la mitad de cada jugador.
+  static const reportPlayerTimeSize = 28.0;
+
+  /// El nombre va bastante por debajo de su tiempo: en esta fila lo que se
+  /// compara son los dos números, y el nombre solo dice de quién es cuál.
+  static const reportPlayerNameSize = 13.0;
+
+  /// La pastilla del color con el que cada jugador ha jugado, delante de su
+  /// nombre. Pequeña a propósito: en un documento el color acompaña al
+  /// nombre, y una fila entera teñida haría que la captura pareciera la
+  /// pantalla de juego en vez de un acta.
+  static const reportAccentSize = 10.0;
+  static const reportAccentGap = 10.0;
+
+  /// El tiempo de juego, que es la cifra que encabeza el acta, y el total
+  /// debajo. La grande va sin cifras tabulares a propósito: las tabulares
+  /// alinean columnas, y a este tamaño y sola lo único que hacen es dejar los
+  /// dígitos sueltos unos de otros.
+  static const reportHeroSize = 42.0;
+  static const reportHeroGap = 6.0;
+  static const reportFigureSize = 15.0;
+
+  /// La barra enfrentada: lo que cada uno consumió, repartido de un borde al
+  /// otro. Delgada, que es lo que la hace una barra de datos y no un bloque
+  /// de color, y con el hueco del fondo entre los dos tramos en vez de un
+  /// borde alrededor de cada uno.
+  static const reportBarHeight = 14.0;
+  static const reportBarRadius = 4.0;
+  static const reportBarGap = 2.0;
+  static const reportBarLabelGap = 10.0;
+
+  /// La gráfica de lo que duró cada turno. El alto no cuenta las etiquetas del
+  /// eje: se suman aparte, porque una caja de alto fijo que no las incluya las
+  /// recorta.
+  static const reportChartHeight = 124.0;
+  static const reportChartAxisBand = 16.0;
+  static const reportChartLabelSize = 10.0;
+  static const reportChartLineWidth = 2.0;
+
+  /// La marca del turno más largo de cada jugador, que es la única que se
+  /// señala: un punto en cada dato sería un número en cada dato.
+  static const reportChartPeakRadius = 4.0;
+  static const reportChartPeakRing = 2.0;
+
+  /// La retícula va por detrás y en un solo tono: line continua y fina, nunca
+  /// discontinua, que se lee como un umbral y aquí no lo hay.
+  static const reportGridWidth = 1.0;
+  static const reportGridOpacity = 0.16;
+  static const reportChartGap = 10.0;
+
+  /// Lo que los botones se apartan del acta: son lo único que se pulsa en una
+  /// pantalla que por lo demás solo se lee, y además quedan fuera de la foto.
+  static const reportButtonGap = 30.0;
+  static const reportActionGap = 12.0;
+  static const reportButtonIconSize = 18.0;
+  static const reportButtonIconGap = 8.0;
+
+  /// Lo que el acta se despega del borde dentro de la foto. La pantalla ya
+  /// tiene su propio margen, pero la foto se recorta por donde acaba el acta
+  /// y sin esto el texto saldría pegado al canto de la imagen.
+  static const reportCaptureInset = 16.0;
+
+  /// A cuántos píxeles por punto se saca la foto del acta. Tres, que es lo
+  /// que da una imagen legible al abrirla en un ordenador en vez de una
+  /// captura del tamaño de un móvil.
+  ///
+  /// Se mide sobre el acta ya dispuesta y no sobre lo que se ve: si la
+  /// pantalla es corta y el acta se encoge para caber, la foto sale igual de
+  /// grande, porque lo que encoge es la pintura y no la disposición.
+  static const reportCapturePixelRatio = 3.0;
+
   static const barHeight = 6.0;
   static const barWidthFactor = 0.74;
 

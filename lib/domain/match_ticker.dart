@@ -16,13 +16,31 @@ class MatchTicker extends ChangeNotifier {
 
   /// Consume lo transcurrido desde el toque anterior y devuelve las bocinas
   /// que salgan. El primer toque solo fija el origen.
+  ///
+  /// Pausado también se mide, aunque no salga ninguna bocina: el partido
+  /// sigue durando y ese rato es el tiempo parado, que el acta nombra. Va por
+  /// [MatchClock.advanceStopped], que lo suma al total sin dárselo a nadie.
+  ///
+  /// El mismo origen sirve para los dos, y puede hacerlo porque cada cambio
+  /// de estado pasa por [refresh]: sin él, el rato de un lado se le cobraría
+  /// al otro al cruzar de pausado a corriendo.
   List<MatchEvent> tick(Duration now) {
-    final origin = _origin;
-    _origin = clock.state == MatchState.running ? now : null;
+    final state = clock.state;
+    final isCounting =
+        state == MatchState.running || state == MatchState.paused;
 
-    final events = origin == null || clock.state != MatchState.running
-        ? const <MatchEvent>[]
-        : clock.advance(now - origin);
+    final origin = _origin;
+    _origin = isCounting ? now : null;
+
+    var events = const <MatchEvent>[];
+    if (origin != null && isCounting) {
+      final elapsed = now - origin;
+      if (state == MatchState.running) {
+        events = clock.advance(elapsed);
+      } else {
+        clock.advanceStopped(elapsed);
+      }
+    }
 
     notifyListeners();
     return events;

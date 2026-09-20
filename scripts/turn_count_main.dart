@@ -27,6 +27,7 @@ import 'package:turnover/domain/match_alerts.dart';
 import 'package:turnover/domain/match_clock.dart';
 import 'package:turnover/domain/match_settings.dart';
 import 'package:turnover/domain/player_names.dart';
+import 'package:turnover/domain/report_sharer.dart';
 import 'package:turnover/l10n/app_localizations.dart';
 import 'package:turnover/ui/clock_colors.dart';
 import 'package:turnover/ui/clock_screen.dart';
@@ -227,6 +228,7 @@ class _PrototypeAppState extends State<_PrototypeApp> {
         names: _names,
         alerts: const AlertPlayer(_SilentDevice()),
         screen: const _IgnoredScreen(),
+        sharer: const _MuteSharer(),
         onOpenSettings: () {},
       ),
     );
@@ -578,4 +580,17 @@ class _IgnoredScreen implements Screen {
 
   @override
   Future<void> keepOn(bool on) async {}
+}
+
+/// El prototipo no comparte nada: el menú del sistema taparía justo lo que se
+/// está mirando.
+class _MuteSharer implements ReportSharer {
+  const _MuteSharer();
+
+  @override
+  Future<void> share(
+    Uint8List png, {
+    required String name,
+    String? text,
+  }) async {}
 }

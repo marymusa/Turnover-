@@ -9,12 +9,14 @@ import '../domain/awake_guard.dart';
 import '../domain/match_clock.dart';
 import '../domain/match_ticker.dart';
 import '../domain/player_names.dart';
+import '../domain/report_sharer.dart';
 import '../domain/turn_count.dart';
 import '../l10n/app_localizations.dart';
 import 'clock_colors.dart';
 import 'clock_theme.dart';
 import 'league_crest.dart';
 import 'leave_dialog.dart';
+import 'match_report.dart';
 import 'paused_veil.dart';
 import 'player_half.dart';
 import 'rename_dialog.dart';
@@ -32,6 +34,7 @@ class ClockScreen extends StatefulWidget {
     required this.names,
     required this.alerts,
     required this.screen,
+    required this.sharer,
     required this.onOpenSettings,
     this.count,
     super.key,
@@ -55,6 +58,11 @@ class ClockScreen extends StatefulWidget {
   /// La pantalla del aparato, que se mantiene encendida mientras un reloj
   /// corre. Quien decide cuándo es [AwakeGuard], no este widget.
   final Screen screen;
+
+  /// Por donde sale la foto del acta, desde fuera y por lo mismo que la
+  /// pantalla: en los tests se sustituye por uno que solo apunta lo que le
+  /// piden, sin abrir el menú del sistema.
+  final ReportSharer sharer;
 
   /// Abre los ajustes. Solo se llega antes de empezar: los tiempos se eligen
   /// con el partido parado, y lo que sí se cambia a media partida son los
@@ -137,6 +145,9 @@ class _ClockScreenState extends State<ClockScreen>
   /// El toque de una mitad: antes de empezar elige quién recibe la patada
   /// inicial, y después pasa turno. Pausado no hace nada, que es lo que
   /// bloquea pasar turno desde las mitades.
+  ///
+  /// Terminado tampoco: el acta tapa las dos mitades, así que este toque no
+  /// llega a darse, pero la regla es del reloj y no de quién lo tape.
   void _tapHalf(Player player) {
     final clock = _clock;
     switch (clock.state) {
@@ -146,6 +157,7 @@ class _ClockScreenState extends State<ClockScreen>
       case MatchState.running:
         _passTurnOnBoth();
       case MatchState.paused:
+      case MatchState.finished:
         return;
     }
     _ticker.refresh();
@@ -173,9 +185,14 @@ class _ClockScreenState extends State<ClockScreen>
   ///
   /// El orden importa: la cuenta se lee antes de moverla, porque después ya ha
   /// entrado el siguiente.
+  ///
+  /// Y es también la cuenta la que dice que el partido se ha acabado, por lo
+  /// mismo: el final es el turno 16 del segundo jugador, que es un número de
+  /// turno y no un tiempo. El reloj no lo sabe, se entera aquí.
   void _passTurnOnBoth() {
     _clock.passTurn(next: _count.playerAfterPassing);
     _count.passTurn();
+    if (_count.isOver) _clock.finish();
   }
 
   /// El Time-Out que declaran los jugadores desde el velo: quita la pausa y
@@ -221,12 +238,19 @@ class _ClockScreenState extends State<ClockScreen>
   /// oponente (ADR-0003).
   Future<void> _reset() async {
     if (!await askToReset(context)) return;
+    _startOver();
+  }
+
+  /// Devuelve la pantalla a antes de empezar. No pregunta nada: quien tenga
+  /// algo que perder pregunta antes de llamar, que es lo que hace [_reset].
+  /// El acta no lo hace, porque el partido ya se ha acabado y de un acta que
+  /// no se guarda no se sale a otro sitio (ADR-0003).
+  void _startOver() {
     _clock.reset();
     _count.reset();
     widget.names.resetOpponent();
-    // Reiniciar devuelve la pantalla a antes de empezar, y la costura se
-    // presenta otra vez: la invitación vuelve a esperar a que termine, como
-    // la primera vez.
+    // Volver a antes de empezar trae la costura de vuelta, y se presenta otra
+    // vez: la invitación vuelve a esperar a que termine, como la primera vez.
     setState(() => _isRevealed = false);
     _ticker.refresh();
   }
@@ -262,114 +286,140 @@ class _ClockScreenState extends State<ClockScreen>
           child: Scaffold(
             backgroundColor: ClockColors.of(context).background,
             body: SafeArea(
-              child: Stack(
-                children: [
-                  // La mitad del margen que a las tarjetas les falta contra el
-                  // borde de la pantalla. Va aquí y no dentro de la mitad
-                  // porque dentro la giraría el `RotatedBox` de la de arriba,
-                  // y acabaría en el lado que no es.
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: ClockTheme.halfCardVerticalInset,
-                    ),
-                    child: Column(
-                      children: [
-                        _Half(
-                          clock: clock,
-                          name: _nameOf(context, Player.two),
-                          player: Player.two,
-                          isUpsideDown: true,
-                          onTap: _tapHalf,
-                          onRename: clock.state == MatchState.notStarted
-                              ? _rename
-                              : null,
-                          isRevealed: _isRevealed,
-                        ),
-                        _Half(
-                          clock: clock,
-                          name: _nameOf(context, Player.one),
-                          player: Player.one,
-                          isUpsideDown: false,
-                          onTap: _tapHalf,
-                          onRename: clock.state == MatchState.notStarted
-                              ? _rename
-                              : null,
-                          isRevealed: _isRevealed,
-                        ),
-                      ],
-                    ),
-                  ),
-                  // Las dos cuentas, cada una al pie de su tarjeta. Van encima
-                  // de las mitades y no dentro de su columna: dentro habría que
-                  // contarlas en `ClockTheme.naturalHalfHeight`, y apretarían
-                  // los relojes en una pantalla corta a cambio de nada, porque
-                  // el sitio que ocupan está vacío.
-                  //
-                  // Sin toque propio: la fila es un indicador, y lo que se
-                  // pulsa debajo de ella es la mitad, que pasa turno.
-                  Positioned.fill(
-                    child: IgnorePointer(
-                      child: _TurnCounts(
-                        count: _count,
-                        isStarted: clock.state != MatchState.notStarted,
-                      ),
-                    ),
-                  ),
-                  // El velo tapa las dos mitades, para que el toque no les llegue,
-                  // pero queda por debajo de la costura: el botón de pausa y el de
-                  // reinicio se siguen pudiendo pulsar con el partido pausado.
-                  if (clock.state == MatchState.paused)
-                    Positioned.fill(
-                      child: PausedVeil(
-                        onResume: _togglePause,
-                        onTimeOut: _timeOut,
-                      ),
-                    ),
-                  // Antes de empezar la costura está vacía, y el escudo de la
-                  // liga la ocupa. Se va en cuanto arranca el partido, que es
-                  // cuando los controles la necesitan.
-                  if (clock.state == MatchState.notStarted)
-                    Positioned.fill(
-                      child: LeagueCrest(
-                        onRevealed: () => setState(() => _isRevealed = true),
-                      ),
-                    ),
-                  // El acceso a los ajustes solo existe antes de empezar: con el
-                  // partido en marcha no hay ningún tiempo que tocar sin querer.
-                  //
-                  // Va en la costura, al lado del escudo, que es el hueco que no
-                  // pertenece a ninguna de las dos mitades: pegado a una esquina
-                  // caía dentro de la tarjeta del rival y parecía suya. El
-                  // escudo se queda centrado y esto se aparta a su derecha.
-                  if (clock.state == MatchState.notStarted)
-                    Positioned.fill(
-                      child: Center(
-                        child: Transform.translate(
-                          offset: const Offset(ClockTheme.settingsOffset, 0),
-                          child: SettingsButton(
-                            onPressed: widget.onOpenSettings,
-                          ),
-                        ),
-                      ),
-                    ),
-                  // La costura solo existe con el partido empezado.
-                  if (clock.state != MatchState.notStarted)
-                    Positioned.fill(
-                      child: Center(
-                        child: SeamControls(
-                          isPaused: clock.state == MatchState.paused,
-                          onPassTurn: _passTurn,
-                          onTogglePause: _togglePause,
-                          onReset: _reset,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
+              child: clock.state == MatchState.finished
+                  ? _report(context, clock)
+                  : _playing(context, clock),
             ),
           ),
         );
       },
+    );
+  }
+
+  /// El acta, que sustituye a la pantalla de juego entera en vez de taparla
+  /// con un velo más. Un velo dejaría debajo las dos mitades y los controles:
+  /// invisibles, pero ahí, de modo que un lector de pantalla los seguiría
+  /// leyendo y seguiría ofreciendo pasar un turno de un partido acabado.
+  ///
+  /// Sustituirla es además lo que la deja pintarse en vertical y de una pieza,
+  /// sin las dos mitades enfrentadas: el acta es un documento del que se hace
+  /// una captura, y no se lee desde los dos lados de la mesa.
+  Widget _report(BuildContext context, MatchClock clock) {
+    return MatchReport(
+      nameOfOne: _nameOf(context, Player.one),
+      nameOfTwo: _nameOf(context, Player.two),
+      playedByOne: clock.playedOf(Player.one),
+      playedByTwo: clock.playedOf(Player.two),
+      turnsOfOne: clock.turnsOf(Player.one),
+      turnsOfTwo: clock.turnsOf(Player.two),
+      total: clock.totalTime,
+      sharer: widget.sharer,
+      onEnd: _startOver,
+    );
+  }
+
+  /// La pantalla de juego: las dos mitades con sus cuentas y lo que ocupe la
+  /// costura, que cambia con el estado del partido.
+  Widget _playing(BuildContext context, MatchClock clock) {
+    return Stack(
+      children: [
+        // La mitad del margen que a las tarjetas les falta contra el borde de
+        // la pantalla. Va aquí y no dentro de la mitad porque dentro la
+        // giraría el `RotatedBox` de la de arriba, y acabaría en el lado que
+        // no es.
+        Padding(
+          padding: const EdgeInsets.symmetric(
+            vertical: ClockTheme.halfCardVerticalInset,
+          ),
+          child: Column(
+            children: [
+              _Half(
+                clock: clock,
+                name: _nameOf(context, Player.two),
+                player: Player.two,
+                isUpsideDown: true,
+                onTap: _tapHalf,
+                onRename: clock.state == MatchState.notStarted
+                    ? _rename
+                    : null,
+                isRevealed: _isRevealed,
+              ),
+              _Half(
+                clock: clock,
+                name: _nameOf(context, Player.one),
+                player: Player.one,
+                isUpsideDown: false,
+                onTap: _tapHalf,
+                onRename: clock.state == MatchState.notStarted
+                    ? _rename
+                    : null,
+                isRevealed: _isRevealed,
+              ),
+            ],
+          ),
+        ),
+        // Las dos cuentas, cada una al pie de su tarjeta. Van encima de las
+        // mitades y no dentro de su columna: dentro habría que contarlas en
+        // `ClockTheme.naturalHalfHeight`, y apretarían los relojes en una
+        // pantalla corta a cambio de nada, porque el sitio que ocupan está
+        // vacío.
+        //
+        // Sin toque propio: la fila es un indicador, y lo que se pulsa debajo
+        // de ella es la mitad, que pasa turno.
+        Positioned.fill(
+          child: IgnorePointer(
+            child: _TurnCounts(
+              count: _count,
+              isStarted: clock.state != MatchState.notStarted,
+            ),
+          ),
+        ),
+        // El velo tapa las dos mitades, para que el toque no les llegue, pero
+        // queda por debajo de la costura: el botón de pausa y el de reinicio
+        // se siguen pudiendo pulsar con el partido pausado.
+        if (clock.state == MatchState.paused)
+          Positioned.fill(
+            child: PausedVeil(onResume: _togglePause, onTimeOut: _timeOut),
+          ),
+        // Antes de empezar la costura está vacía, y el escudo de la liga la
+        // ocupa. Se va en cuanto arranca el partido, que es cuando los
+        // controles la necesitan.
+        if (clock.state == MatchState.notStarted)
+          Positioned.fill(
+            child: LeagueCrest(
+              onRevealed: () => setState(() => _isRevealed = true),
+            ),
+          ),
+        // El acceso a los ajustes solo existe antes de empezar: con el partido
+        // en marcha no hay ningún tiempo que tocar sin querer.
+        //
+        // Va en la costura, al lado del escudo, que es el hueco que no
+        // pertenece a ninguna de las dos mitades: pegado a una esquina caía
+        // dentro de la tarjeta del rival y parecía suya. El escudo se queda
+        // centrado y esto se aparta a su derecha.
+        if (clock.state == MatchState.notStarted)
+          Positioned.fill(
+            child: Center(
+              child: Transform.translate(
+                offset: const Offset(ClockTheme.settingsOffset, 0),
+                child: SettingsButton(onPressed: widget.onOpenSettings),
+              ),
+            ),
+          ),
+        // La costura solo existe con el partido empezado. Terminado tampoco:
+        // el acta ocupa la pantalla entera y este camino no se recorre.
+        if (clock.state != MatchState.notStarted)
+          Positioned.fill(
+            child: Center(
+              child: SeamControls(
+                isPaused: clock.state == MatchState.paused,
+                onPassTurn: _passTurn,
+                onTogglePause: _togglePause,
+                onReset: _reset,
+              ),
+            ),
+          ),
+      ],
     );
   }
 

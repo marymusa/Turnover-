@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -11,10 +12,12 @@ import 'package:turnover/domain/clock_format.dart';
 import 'package:turnover/domain/match_alerts.dart';
 import 'package:turnover/domain/match_clock.dart';
 import 'package:turnover/domain/match_settings.dart';
+import 'package:turnover/domain/report_sharer.dart';
 import 'package:turnover/main.dart';
 import 'package:turnover/ui/clock_colors.dart';
 import 'package:turnover/ui/clock_screen.dart';
 import 'package:turnover/ui/clock_theme.dart';
+import 'package:turnover/ui/match_report.dart';
 import 'package:turnover/ui/player_half.dart';
 import 'package:turnover/ui/seam_controls.dart';
 import 'package:turnover/ui/settings_screen.dart';
@@ -46,6 +49,7 @@ void main() {
           builder: (context, _) => TurnoverApp(
             alerts: const AlertPlayer(_SilentDevice()),
             screen: const _IgnoredScreen(),
+            sharer: const _MuteSharer(),
             store: MemorySettingsStore(),
           ),
         ),
@@ -585,6 +589,244 @@ void main() {
     });
   });
 
+  // Se busca por el texto en inglés, que es el idioma al que cae el banco de
+  // pruebas, igual que en los nombres.
+  group('el acta', () {
+    testWidgets('sale sola al pasar el turno 16 del segundo jugador', (
+      tester,
+    ) async {
+      await tester.pumpWidget(_app(store: MemorySettingsStore()));
+      await _settle(tester);
+
+      await tester.tap(_halfShowing('Me'));
+      await _settle(tester);
+
+      // No hay botón de terminar: el acta llega cuando lo dice la cuenta, y
+      // no puede llegar antes del último pase.
+      for (var pass = 1; pass < _passesPerMatch; pass++) {
+        await tester.tap(_passTurnControl);
+        await _settle(tester);
+        expect(
+          _endMatchButton,
+          findsNothing,
+          reason: 'el acta no puede salir en el pase $pass',
+        );
+      }
+
+      await tester.tap(_passTurnControl);
+      await _settle(tester);
+
+      expect(_clockOnScreen(tester).state, MatchState.finished);
+      expect(_endMatchButton, findsOneWidget);
+    });
+
+    testWidgets('nombra los tiempos y a los dos jugadores', (tester) async {
+      await tester.pumpWidget(_app(store: MemorySettingsStore()));
+      await _settle(tester);
+      await _playWholeMatch(tester);
+
+      // Cada nombre, una vez, al lado de su tramo de la barra.
+      expect(find.text('Me'), findsOneWidget);
+      expect(find.text('My opponent'), findsOneWidget);
+
+      // El tiempo de juego encabeza y el total va debajo. Lo parado no lleva
+      // fila: es la diferencia entre los dos.
+      expect(find.text('Play time'), findsOneWidget);
+      expect(
+        find.textContaining('Total '),
+        findsOneWidget,
+        reason: 'el total va debajo de la cifra grande',
+      );
+    });
+
+    // La barra llegó a estar montada y con las etiquetas bien, pero con los
+    // dos tramos a cero de alto: se veía el hueco y no la barra. Que el
+    // widget exista no prueba que se pinte, así que esto lo mide.
+    testWidgets('la barra se pinta con alto y reparte el ancho', (
+      tester,
+    ) async {
+      await tester.pumpWidget(_app(store: MemorySettingsStore()));
+      await _settle(tester);
+
+      // El jugador uno consume bastante más, para que el reparto no salga a
+      // medias y se note de qué lado cae.
+      await tester.tap(_halfShowing('Me'));
+      await _settle(tester);
+      for (var pass = 0; pass < _passesPerMatch; pass++) {
+        // A quién le toca se le pregunta al reloj y no se deduce del número
+        // de pase: al cambiar de parte el orden se invierte y uno juega dos
+        // turnos seguidos, así que alternando por pares los dos acaban con
+        // el mismo tiempo y la comparación no compara nada.
+        final active = _clockOnScreen(tester).activePlayer;
+        await tester.pump(
+          active == Player.one
+              ? const Duration(seconds: 30)
+              : const Duration(seconds: 5),
+        );
+        await tester.tap(_passTurnControl);
+        await _settle(tester);
+      }
+
+      final one = tester.getSize(find.byKey(MatchReport.barKeyOne));
+      final two = tester.getSize(find.byKey(MatchReport.barKeyTwo));
+
+      expect(one.height, ClockTheme.reportBarHeight);
+      expect(two.height, ClockTheme.reportBarHeight);
+      expect(
+        one.width,
+        greaterThan(two.width),
+        reason: 'el jugador uno consumió más, así que su tramo es más ancho',
+      );
+    });
+
+    // La gráfica no puede dibujar lo que nadie ha guardado: si el reloj no
+    // apuntara cada turno al pasarlo, esto saldría vacío.
+    testWidgets('dibuja la gráfica de lo que duró cada turno', (tester) async {
+      await tester.pumpWidget(_app(store: MemorySettingsStore()));
+      await _settle(tester);
+      await _playWholeMatch(tester);
+
+      expect(find.text('TIME PER TURN'), findsOneWidget);
+
+      final clock = _clockOnScreen(tester);
+      expect(clock.turnsOf(Player.one), hasLength(_passesPerMatch ~/ 2));
+      expect(clock.turnsOf(Player.two), hasLength(_passesPerMatch ~/ 2));
+    });
+
+    // El acta es un documento y no una pantalla de juego: de ella se hace una
+    // captura que va al responsable de la liga, y media acta girada sería
+    // media captura del revés.
+    testWidgets('se lee entera en vertical, sin nada girado', (tester) async {
+      await tester.pumpWidget(_app(store: MemorySettingsStore()));
+      await _settle(tester);
+      await _playWholeMatch(tester);
+
+      // Una sola vez, no una por jugador: el acta se lee de arriba abajo.
+      expect(find.text('FULL TIME'), findsOneWidget);
+      expect(
+        find.byType(RotatedBox),
+        findsNothing,
+        reason: 'nada del acta se lee del revés',
+      );
+    });
+
+    // El orden es el de la lectura: primero lo de cada uno, que es lo
+    // comparable, y debajo lo que es de los dos.
+    testWidgets('pone a los jugadores por encima de las cifras comunes', (
+      tester,
+    ) async {
+      await tester.pumpWidget(_app(store: MemorySettingsStore()));
+      await _settle(tester);
+      await _playWholeMatch(tester);
+
+      double topOf(Finder finder) => tester.getTopLeft(finder).dy;
+
+      // De arriba abajo: qué pasó, cuánto se jugó, cómo se repartió, y turno
+      // a turno de dónde salió ese reparto.
+      expect(
+        topOf(find.text('FULL TIME')),
+        lessThan(topOf(find.text('Play time'))),
+      );
+      expect(
+        topOf(find.text('Play time')),
+        lessThan(topOf(find.text('Me'))),
+      );
+      expect(
+        topOf(find.text('Me')),
+        lessThan(topOf(find.text('TIME PER TURN'))),
+      );
+      expect(
+        topOf(find.text('TIME PER TURN')),
+        lessThan(topOf(_endMatchButton)),
+      );
+
+      // Los dos jugadores van a la misma altura, uno a cada lado de la barra,
+      // y no uno debajo del otro: es una comparación, no una lista.
+      expect(topOf(find.text('Me')), topOf(find.text('My opponent')));
+    });
+
+    // Compartir hace una foto del acta y se la da al sistema. Lo que se
+    // comprueba aquí es que la foto se hace y llega: abrir el menú de
+    // compartir es de la plataforma y no pasa por el banco de pruebas.
+    //
+    // Va dentro de `runAsync` porque pintar un trozo del árbol en una imagen
+    // cruza al motor de verdad, y el reloj falso de los tests no resuelve esa
+    // espera.
+    testWidgets('compartir entrega una imagen del acta', (tester) async {
+      final sharer = _RecordingSharer();
+      await tester.pumpWidget(
+        _app(store: MemorySettingsStore(), sharer: sharer),
+      );
+      await _settle(tester);
+      await _playWholeMatch(tester);
+
+      await tester.runAsync(() async {
+        await tester.tap(find.text('Share'));
+        await tester.pump();
+        // La foto se hace en dos esperas, la imagen y su codificación: se les
+        // deja terminar antes de mirar.
+        await Future<void>.delayed(const Duration(milliseconds: 100));
+      });
+
+      expect(sharer.calls, hasLength(1));
+      final call = sharer.calls.single;
+      expect(call.name, MatchReport.fileName);
+      expect(
+        call.png,
+        isNotEmpty,
+        reason: 'lo que se comparte es la imagen, no un hueco',
+      );
+      // La firma de un PNG, para no dar por buena cualquier ristra de bytes.
+      expect(call.png.take(4), [0x89, 0x50, 0x4E, 0x47]);
+
+      // El texto nombra a los dos: en una bandeja de entrada es lo único que
+      // distingue un acta de la siguiente sin abrir la imagen.
+      expect(call.text, contains('Me'));
+      expect(call.text, contains('My opponent'));
+    });
+
+    // Lo que se comparte es el acta y no la pantalla, así que los dos botones
+    // van por debajo de todo lo que el acta enseña. Que caigan fuera del
+    // marco de la foto lo garantiza el árbol, que los deja fuera del
+    // `RepaintBoundary`; esto comprueba lo que sí se puede medir, que es que
+    // están debajo y en el orden que toca.
+    testWidgets('los botones van debajo del acta y en orden', (tester) async {
+      await tester.pumpWidget(_app(store: MemorySettingsStore()));
+      await _settle(tester);
+      await _playWholeMatch(tester);
+
+      double topOf(Finder finder) => tester.getTopLeft(finder).dy;
+
+      final documentBottom = tester
+          .getRect(find.text('TIME PER TURN'))
+          .bottom;
+      expect(topOf(find.text('Share')), greaterThan(documentBottom));
+      expect(
+        topOf(_endMatchButton),
+        greaterThan(topOf(find.text('Share'))),
+        reason: 'compartir va primero: es lo que se hace nada más acabar',
+      );
+    });
+
+    // No hay abandono a mitad de partido: eso ya lo cubre reiniciar, que
+    // además avisa de lo que se pierde. Aquí no hay nada que avisar, porque el
+    // partido ya se ha acabado.
+    testWidgets('terminar devuelve a antes de empezar sin preguntar', (
+      tester,
+    ) async {
+      await tester.pumpWidget(_app(store: MemorySettingsStore()));
+      await _settle(tester);
+      await _playWholeMatch(tester);
+
+      await tester.tap(_endMatchButton);
+      await _settle(tester);
+
+      expect(_clockOnScreen(tester).state, MatchState.notStarted);
+      expect(_endMatchButton, findsNothing);
+      expect(_resetControl, findsNothing);
+    });
+  });
+
   group('la mitad en una pantalla corta', () {
     // 320x568 es el móvil pequeño de referencia. Con las medidas fijas la
     // columna se desbordaba por abajo y los dos relojes de tiempo extra se
@@ -633,10 +875,15 @@ Future<void> _withSurface(
   await body();
 }
 
-Widget _app({required SettingsStore store, Key? key}) => TurnoverApp(
+Widget _app({
+  required SettingsStore store,
+  ReportSharer? sharer,
+  Key? key,
+}) => TurnoverApp(
   key: key,
   alerts: const AlertPlayer(_SilentDevice()),
   screen: const _IgnoredScreen(),
+  sharer: sharer ?? const _MuteSharer(),
   store: store,
 );
 
@@ -675,6 +922,23 @@ Future<void> _pressBack(WidgetTester tester) async {
 }
 
 final _resetControl = find.bySemanticsLabel('Reset timer');
+final _passTurnControl = find.bySemanticsLabel('End my turn');
+final _endMatchButton = find.text('End match');
+
+/// Los pases que dura un partido sin Time-Outs: dos partes de ocho turnos por
+/// jugador, y en cada parte el segundo jugador cierra con el suyo.
+const _passesPerMatch = 32;
+
+/// Juega el partido entero desde el toque inicial, que es la única forma de
+/// llegar al acta: no hay botón de terminar.
+Future<void> _playWholeMatch(WidgetTester tester) async {
+  await tester.tap(_halfShowing('Me'));
+  await _settle(tester);
+  for (var pass = 0; pass < _passesPerMatch; pass++) {
+    await tester.tap(_passTurnControl);
+    await _settle(tester);
+  }
+}
 
 /// El objetivo táctil mínimo de Material, que es también el de Apple en sus
 /// propias unidades. Por debajo de esto el control se falla al golpear la
@@ -789,6 +1053,32 @@ class _SilentDevice implements AlertDevice {
 
   @override
   Future<void> vibrate(VibrationLevel level) async {}
+}
+
+/// El que no comparte nada, para los tests a los que compartir les da igual.
+class _MuteSharer implements ReportSharer {
+  const _MuteSharer();
+
+  @override
+  Future<void> share(
+    Uint8List png, {
+    required String name,
+    String? text,
+  }) async {}
+}
+
+/// El que apunta lo que le piden, para el test que mira que se comparta.
+class _RecordingSharer implements ReportSharer {
+  final calls = <({Uint8List png, String name, String? text})>[];
+
+  @override
+  Future<void> share(
+    Uint8List png, {
+    required String name,
+    String? text,
+  }) async {
+    calls.add((png: png, name: name, text: text));
+  }
 }
 
 class _IgnoredScreen implements Screen {

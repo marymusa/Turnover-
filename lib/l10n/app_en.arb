@@ -68,6 +68,58 @@
       "total": { "type": "int" }
     }
   },
+  "matchReportHeading": "Full time",
+  "@matchReportHeading": {
+    "description": "Encabeza el acta y dice que el partido ha terminado"
+  },
+  "matchReportPlayed": "{name} played {time}",
+  "@matchReportPlayed": {
+    "description": "Lo que un lector de pantalla dice del tiempo jugado por un jugador en el acta",
+    "placeholders": {
+      "name": { "type": "String" },
+      "time": { "type": "String" }
+    }
+  },
+  "matchReportPlayTime": "Play time",
+  "@matchReportPlayTime": {
+    "description": "Rotula la cifra que encabeza el acta: lo que han jugado los dos sumado, sin las pausas"
+  },
+  "matchReportTotalTime": "Total {time}",
+  "@matchReportTotalTime": {
+    "description": "Debajo de la cifra grande del acta: lo que ha durado el partido con las pausas dentro. Lo parado es la diferencia entre este y el tiempo de juego",
+    "placeholders": {
+      "time": { "type": "String" }
+    }
+  },
+  "matchReportPerTurn": "Time per turn",
+  "@matchReportPerTurn": {
+    "description": "Encabeza la gráfica del acta, que dibuja lo que duró cada turno de cada jugador"
+  },
+  "matchReportPeak": "{name}: longest turn {time}, turn {number}",
+  "@matchReportPeak": {
+    "description": "Lo que un lector de pantalla dice de la línea de un jugador en la gráfica del acta. Es el único punto que la gráfica señala, porque señalarlos todos sería un número en cada dato",
+    "placeholders": {
+      "name": { "type": "String" },
+      "time": { "type": "String" },
+      "number": { "type": "int" }
+    }
+  },
+  "matchReportShare": "Share",
+  "@matchReportShare": {
+    "description": "Botón del acta que hace una foto de ella y la saca por el menú de compartir del sistema"
+  },
+  "matchReportShareText": "Turnover! match report: {one} vs {two}",
+  "@matchReportShareText": {
+    "description": "Lo que acompaña a la imagen del acta al compartirla, donde el destino admita texto. Nombra a los dos jugadores, que es lo que distingue un acta de la siguiente en una bandeja de entrada: la imagen no se lee hasta que se abre, y el texto sí",
+    "placeholders": {
+      "one": { "type": "String" },
+      "two": { "type": "String" }
+    }
+  },
+  "matchReportEnd": "End match",
+  "@matchReportEnd": {
+    "description": "El único botón del acta, que devuelve la aplicación a antes de empezar"
+  },
   "settings": "Settings",
   "@settings": {
     "description": "Etiqueta de accesibilidad del acceso a los ajustes y título de su pantalla"

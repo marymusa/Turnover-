@@ -26,6 +26,8 @@ class ClockColors {
     required this.onSurface,
     required this.reserve,
     required this.inactiveReserve,
+    required this.reportAccent,
+    required this.reportAccentOpponent,
     required this.paused,
     required this.dialogSurface,
     required this.veilText,
@@ -87,6 +89,27 @@ class ClockColors {
   /// avisa de nada. En la oscura las dos siguen siendo el mismo amarillo.
   final Color inactiveReserve;
 
+  /// El color con el que cada jugador sale en el acta: su pastilla, su tramo
+  /// de la barra y su línea de la gráfica. Es la misma identidad que lleva su
+  /// mitad durante el partido, y es lo que permite a quien lee la captura
+  /// saber quién jugaba de qué lado.
+  ///
+  /// Los dos son además la paleta de una serie de datos, y como tal están
+  /// medidos y no elegidos a ojo: caben en la banda de luminosidad de su modo,
+  /// pasan el mínimo de croma, se separan de sobra bajo daltonismo (ΔE 30 en
+  /// oscuro, 26 en claro, contra un objetivo de 8) y pasan el 3:1 contra el
+  /// fondo. Quien los retoque tiene que volver a medirlos.
+  ///
+  /// Va aparte de [active] y [activeOpponent] por lo mismo que [reserve] va
+  /// aparte de [inactiveReserve]: cambia el fondo. Aquellos se pintan como
+  /// tarjeta entera y llevan la letra encima; estos son una marca pequeña
+  /// sobre el fondo de la pantalla, y ahí el azul y el naranja de la paleta
+  /// oscura se quedan en 2,9:1 y 2,6:1, por debajo del 3:1 que se le pide a
+  /// un elemento gráfico. En la clara el fondo es casi blanco y los colores
+  /// del partido pasan de sobra, así que allí son los mismos.
+  final Color reportAccent;
+  final Color reportAccentOpponent;
+
   /// Solo lo lleva el control de pausa mientras está pausado, que es el único
   /// sitio donde hace falta decir "esto está detenido a propósito".
   final Color paused;
@@ -141,6 +164,16 @@ class ClockColors {
     onSurface: Color(0xFFF8FAFC),
     reserve: Color(0xFFFDE047),
     inactiveReserve: Color(0xFFFDE047),
+    // El mismo azul y el mismo naranja, levantados del fondo casi negro: los
+    // del partido se quedaban en 2,9:1 y 2,6:1 sobre él.
+    //
+    // El naranja no es el primero que se probó. Un 0xFFF97316 pasaba el
+    // contraste pero se salía por arriba de la banda de luminosidad en que
+    // tienen que caber los colores de una serie en modo oscuro, y una serie
+    // fuera de banda destaca de más contra la otra. Este cae dentro y da 5,4:1
+    // sobre el fondo.
+    reportAccent: Color(0xFF3B82F6),
+    reportAccentOpponent: Color(0xFFEA580C),
     paused: Color(0xFF16A34A),
     dialogSurface: Color(0xFF161B26),
     veilText: Color(0xFFF8FAFC),
@@ -172,6 +205,10 @@ class ClockColors {
     onSurface: Color(0xFF0F172A),
     reserve: Color(0xFFFDE047),
     inactiveReserve: Color(0xFF92400E),
+    // Sobre el fondo claro los colores del partido pasan de sobra, así que la
+    // pastilla del acta es exactamente el color con el que se jugó.
+    reportAccent: Color(0xFF234FC7),
+    reportAccentOpponent: Color(0xFF973E20),
     paused: Color(0xFF15803D),
     dialogSurface: Color(0xFFFFFFFF),
     veilText: Color(0xFF0F172A),
@@ -187,6 +224,11 @@ class ClockColors {
   /// desde dos sitios.
   Color activeOf(Player player) =>
       player == Player.one ? active : activeOpponent;
+
+  /// La pastilla que le toca a cada jugador en el acta, por lo mismo que
+  /// [activeOf]: el reparto lo sabe la paleta, no quien pinta.
+  Color reportAccentOf(Player player) =>
+      player == Player.one ? reportAccent : reportAccentOpponent;
 
   /// La paleta que toca según lo que diga el aparato. Se lee del tema, que es
   /// quien ya sabe en qué modo está: así nadie tiene que consultar el sistema

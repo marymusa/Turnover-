@@ -28,6 +28,7 @@ import 'package:turnover/domain/match_alerts.dart';
 import 'package:turnover/domain/match_clock.dart';
 import 'package:turnover/domain/match_settings.dart';
 import 'package:turnover/domain/player_names.dart';
+import 'package:turnover/domain/report_sharer.dart';
 import 'package:turnover/domain/turn_count.dart';
 import 'package:turnover/l10n/app_localizations.dart';
 import 'package:turnover/ui/clock_colors.dart';
@@ -91,6 +92,33 @@ void Function(TurnCount) _countAt({
     count.passTurn();
   }
 };
+
+/// Lo que dura cada turno del acta de ejemplo, alternando jugador uno y dos:
+/// los pares son del uno y los impares del dos.
+///
+/// Están puestos a mano y no generados porque tienen que contar algo: el uno
+/// se piensa las jugadas y remata la primera parte con un turno de casi cinco
+/// minutos, y el dos va deprisa salvo cuando le toca responder. Una serie
+/// aleatoria dibuja ruido, y lo que hay que mirar en la captura es si la
+/// gráfica deja leer una partida.
+const _actaTurns = [
+  Duration(minutes: 2, seconds: 10), Duration(minutes: 1, seconds: 5),
+  Duration(minutes: 2, seconds: 40), Duration(minutes: 1, seconds: 20),
+  Duration(minutes: 3, seconds: 5), Duration(minutes: 1, seconds: 2),
+  Duration(minutes: 2, seconds: 25), Duration(seconds: 55),
+  Duration(minutes: 3, seconds: 30), Duration(minutes: 1, seconds: 40),
+  Duration(minutes: 2, seconds: 15), Duration(minutes: 1, seconds: 10),
+  Duration(minutes: 4, seconds: 50), Duration(minutes: 2, seconds: 5),
+  Duration(minutes: 2, seconds: 35), Duration(minutes: 1, seconds: 15),
+  Duration(minutes: 2, seconds: 20), Duration(minutes: 1, seconds: 30),
+  Duration(minutes: 3, seconds: 10), Duration(minutes: 2, seconds: 45),
+  Duration(minutes: 2, seconds: 5), Duration(minutes: 1, seconds: 25),
+  Duration(minutes: 1, seconds: 50), Duration(minutes: 3, seconds: 20),
+  Duration(minutes: 2, seconds: 30), Duration(minutes: 1, seconds: 35),
+  Duration(minutes: 3, seconds: 45), Duration(minutes: 2, seconds: 10),
+  Duration(minutes: 1, seconds: 55), Duration(minutes: 1, seconds: 45),
+  Duration(minutes: 2, seconds: 5), Duration(minutes: 1, seconds: 20),
+];
 
 final _shots = <_Shot>[
   _Shot(name: '01-antes-de-empezar', seed: (_) {}),
@@ -181,6 +209,38 @@ final _shots = <_Shot>[
       clock.pause();
     },
     seedCount: _countAt(receiver: Player.two, passes: 9),
+  ),
+  // El acta. Se siembra con los dos tiempos desiguales a propósito, que es lo
+  // que hay que mirar: que la comparación se lee de un vistazo y que los
+  // cuatro tiempos cuadran en pantalla. Y es la captura que de verdad importa,
+  // porque el acta existe para ser capturada: vale también como la prueba de
+  // que sale entera, derecha y de una pieza.
+  //
+  // El tiempo parado no se puede sembrar corriendo, porque no es de nadie: se
+  // pausa, se le da el rato por `advanceStopped` y se reanuda, que es el
+  // camino por el que lo mete el ticker durante el partido.
+  _Shot(
+    name: '12-acta',
+    seed: (clock) {
+      clock.start(Player.one);
+      // Se juegan los treinta y dos turnos de verdad, uno a uno, en vez de
+      // gastar los totales de una vez: la gráfica dibuja lo que duró cada
+      // turno, y sembrando el total sale una línea plana que no enseña si la
+      // gráfica funciona.
+      for (var turn = 0; turn < _actaTurns.length; turn++) {
+        clock.advance(_actaTurns[turn]);
+        // Una pausa por parte, para que el tiempo parado no salga a cero y se
+        // vea que el total es mayor que el tiempo de juego.
+        if (turn == 11 || turn == 23) {
+          clock.pause();
+          clock.advanceStopped(const Duration(minutes: 2, seconds: 6));
+          clock.resume();
+        }
+        clock.passTurn();
+      }
+      clock.finish();
+    },
+    seedCount: _countAt(receiver: Player.one, passes: 32),
   ),
 ];
 
@@ -280,6 +340,7 @@ class _CaptureAppState extends State<_CaptureApp> {
               names: _names,
               alerts: const AlertPlayer(_SilentDevice()),
               screen: const _IgnoredScreen(),
+              sharer: const _MuteSharer(),
               onOpenSettings: () {},
             ),
     );
@@ -326,4 +387,17 @@ class _IgnoredScreen implements Screen {
 
   @override
   Future<void> keepOn(bool on) async {}
+}
+
+/// Las capturas no comparten nada: el menú del sistema taparía justo lo que
+/// se está fotografiando.
+class _MuteSharer implements ReportSharer {
+  const _MuteSharer();
+
+  @override
+  Future<void> share(
+    Uint8List png, {
+    required String name,
+    String? text,
+  }) async {}
 }

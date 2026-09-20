@@ -36,10 +36,26 @@ class TurnCount {
   /// un Time-Out puede moverlo antes de que nadie pase (ADR-0010).
   bool _hasSecondEntered = false;
 
+  /// Si el partido ya ha terminado, que es cuando el segundo jugador de la
+  /// segunda parte ha pasado su turno 8 de tablero.
+  bool _isOver = false;
+
   /// Nulo antes de empezar, igual que en [MatchClock].
   Player? get activePlayer => _active;
 
   int get half => _half;
+
+  /// Si el partido ha terminado. Lo sabe la cuenta y no el reloj, porque el
+  /// final es un número de turno y no un tiempo: se termina al pasar el turno
+  /// 16 del segundo jugador, y no hay botón de terminar.
+  ///
+  /// Es un apunte y no una lectura de los números porque pasar ese turno no
+  /// los mueve: la cuenta se queda en el 16, así que leerla no distingue el
+  /// instante anterior al pase del posterior.
+  ///
+  /// Un Time-Out puede mover ese final, y es correcto: la parte se alarga o
+  /// se acorta, y el partido termina cuando lo dice la cuenta (ADR-0010).
+  bool get isOver => _isOver;
 
   /// El número de cara al jugador, que es el que se muestra.
   int of(Player player) => _shown[player]!;
@@ -79,8 +95,13 @@ class TurnCount {
 
     if (_endsHalf(active)) {
       // Con la segunda parte no hay siguiente: el partido termina ahí y la
-      // cuenta se queda en el 16. El acta que lo cierra es de otro ticket.
-      if (_half < halves) _startNextHalf();
+      // cuenta se queda en el 16, que es el último turno jugado y lo que el
+      // acta deja detrás.
+      if (_half < halves) {
+        _startNextHalf();
+      } else {
+        _isOver = true;
+      }
       return;
     }
 
@@ -159,6 +180,7 @@ class TurnCount {
     _half = 1;
     _firstOfHalf = null;
     _hasSecondEntered = false;
+    _isOver = false;
     _active = null;
   }
 

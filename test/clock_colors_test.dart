@@ -91,6 +91,35 @@ void main() {
         expect(_contrast(palette.activeText, palette.paused), greaterThan(3));
       });
 
+      // Las pastillas del acta van sobre el fondo de la pantalla y no sobre
+      // una tarjeta. Son una marca y no texto, así que se les pide el 3:1 de
+      // los elementos gráficos.
+      //
+      // Es lo que las separa de [active] y [activeOpponent], que sobre el
+      // fondo casi negro de la paleta oscura se quedan en 2,9:1 y 2,6:1: el
+      // color del partido no vale en cualquier tamaño ni sobre cualquier
+      // cosa, que es el mismo motivo por el que hay [inactiveReserve].
+      test('las pastillas del acta se ven sobre el fondo', () {
+        expect(
+          _contrast(palette.reportAccent, palette.background),
+          greaterThanOrEqualTo(3),
+        );
+        expect(
+          _contrast(palette.reportAccentOpponent, palette.background),
+          greaterThanOrEqualTo(3),
+        );
+      });
+
+      // Que se distingan una de otra no se mide aquí, y no por descuido: lo
+      // que las separa es el tono y no la luminancia, y la razón de contraste
+      // de WCAG solo mide la segunda. El azul y el naranja del acta se quedan
+      // en 1,0:1 en la paleta clara y siguen siendo inconfundibles, igual que
+      // las dos mitades durante el partido, que tampoco se miden entre sí.
+      //
+      // Tampoco cargan solas con decir de quién es la fila: el nombre va al
+      // lado, así que el color repite una información que ya está escrita y
+      // nadie se queda sin ella por no distinguir los dos tonos.
+
       // El velo deja ver los relojes por debajo, pero su aviso se lee sobre lo
       // que el velo deja: fondo con la opacidad del velo encima de una mitad.
       test('el aviso de pausa se lee a través del velo', () {

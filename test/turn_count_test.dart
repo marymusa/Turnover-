@@ -332,7 +332,90 @@ void main() {
       expect(count.half, 1);
       expect(count.activePlayer, isNull);
     });
+
+    test('devuelve un partido terminado a no terminado', () {
+      final count = TurnCount()..start(Player.one);
+      _playMatch(count);
+
+      count.reset();
+
+      expect(count.isOver, isFalse);
+    });
   });
+
+  // El final del partido lo sabe la cuenta y no el reloj: es un número de
+  // turno y no un tiempo. No hay botón de terminar.
+  group('el final del partido', () {
+    test('no ha terminado antes de empezar', () {
+      expect(TurnCount().isOver, isFalse);
+    });
+
+    test('cerrar la primera parte no termina el partido', () {
+      final count = TurnCount()..start(Player.one);
+      _playHalf(count);
+
+      expect(count.half, 2);
+      expect(count.isOver, isFalse);
+    });
+
+    test('termina al pasar el turno 16 del segundo jugador, y no antes', () {
+      final count = TurnCount()..start(Player.one);
+
+      for (var pass = 1; pass < _passesPerMatch; pass++) {
+        count.passTurn();
+        expect(
+          count.isOver,
+          isFalse,
+          reason: 'el partido no puede terminar en el pase $pass',
+        );
+      }
+
+      count.passTurn();
+
+      expect(count.isOver, isTrue);
+      // Los dos se quedan en el 16: el último pase no mueve a nadie, porque
+      // no entra nadie detrás.
+      expect(count.of(Player.one), 16);
+      expect(count.of(Player.two), 16);
+    });
+
+    // Time-Out puede mover el final, y es correcto: la parte se alarga y el
+    // partido termina cuando lo dice la cuenta, que es lo que también hace la
+    // mesa (ADR-0010).
+    test('un Time-Out que alarga la segunda parte mueve también el final', () {
+      final count = TurnCount()..start(Player.one);
+      for (var pass = 0; pass < _passesPerMatch - 1; pass++) {
+        count.passTurn();
+      }
+
+      // Con el pateador en el turno de tablero 8, el Time-Out hace retroceder
+      // y la segunda parte se alarga.
+      expect(count.timeOutRetreats, isTrue);
+      count.timeOut();
+
+      count.passTurn();
+      expect(count.isOver, isFalse);
+
+      // Dos pases más, que es lo que el Time-Out ha añadido.
+      count.passTurn();
+      count.passTurn();
+      expect(count.isOver, isTrue);
+    });
+  });
+}
+
+/// Los pases que dura un partido sin Time-Outs: dos partes de ocho turnos por
+/// jugador, y en cada parte el segundo jugador cierra con el suyo.
+const _passesPerMatch = 32;
+
+/// Juega el partido entero, sea cual sea su longitud, desde el toque inicial.
+void _playMatch(TurnCount count) {
+  var passes = 0;
+  while (!count.isOver && passes < _maxPassesPerHalf * TurnCount.halves) {
+    count.passTurn();
+    passes += 1;
+  }
+  expect(count.isOver, isTrue, reason: 'el partido no llegó a terminar');
 }
 
 /// Un caso de la tabla de Time-Out del ADR-0010.

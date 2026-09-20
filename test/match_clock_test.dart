@@ -724,6 +724,283 @@ void main() {
       expect(clock.turnOf(Player.two), const Duration(minutes: 4));
     });
   });
+
+  // Los tiempos que el acta cierra. Ninguno de los dos relojes los sabe: el de
+  // turno vuelve a su valor en cada pase y el de tiempo extra solo mide lo que
+  // se pasó del turno, así que lo jugado por cada uno hay que acumularlo.
+  group('los tiempos del acta', () {
+    test('empiezan a cero', () {
+      final clock = newClock();
+
+      expect(clock.playedOf(Player.one), Duration.zero);
+      expect(clock.playedOf(Player.two), Duration.zero);
+      expect(clock.totalTime, Duration.zero);
+      expect(clock.stoppedTime, Duration.zero);
+    });
+
+    test('lo jugado es de quien tiene el reloj corriendo', () {
+      final clock = newClock();
+      clock.start(Player.one);
+      clock.advance(const Duration(minutes: 3));
+      clock.passTurn();
+      clock.advance(const Duration(minutes: 1));
+
+      expect(clock.playedOf(Player.one), const Duration(minutes: 3));
+      expect(clock.playedOf(Player.two), const Duration(minutes: 1));
+    });
+
+    // Es lo que no se puede leer de ningún reloj: el turno se ha reiniciado
+    // ocho veces y la reserva solo cuenta lo que se pasó de él.
+    test('lo jugado atraviesa los pases y no se reinicia con el turno', () {
+      final clock = newClock();
+      clock.start(Player.one);
+
+      for (var turn = 0; turn < 4; turn++) {
+        clock.advance(const Duration(minutes: 2));
+        clock.passTurn();
+      }
+
+      expect(clock.turnOf(Player.one), const Duration(minutes: 4));
+      expect(clock.playedOf(Player.one), const Duration(minutes: 4));
+      expect(clock.playedOf(Player.two), const Duration(minutes: 4));
+    });
+
+    test('lo jugado incluye el tiempo extra, no solo el turno', () {
+      final clock = newClock();
+      clock.start(Player.one);
+      // Cinco minutos con el turno en cuatro: el quinto sale del tiempo extra,
+      // y los cinco son suyos.
+      clock.advance(const Duration(minutes: 5));
+
+      expect(clock.reserveOf(Player.one), const Duration(minutes: 14));
+      expect(clock.playedOf(Player.one), const Duration(minutes: 5));
+    });
+
+    // Que el tiempo extra se le haya acabado no le quita tiempo jugado a
+    // nadie: el reloj sigue corriendo y sigue siendo suyo.
+    test('lo jugado sigue contando en overtime', () {
+      final clock = newClock();
+      clock.start(Player.one);
+      clock.advance(const Duration(minutes: 20));
+
+      expect(clock.reserveOf(Player.one), const Duration(minutes: -1));
+      expect(clock.playedOf(Player.one), const Duration(minutes: 20));
+    });
+
+    test('el tiempo de pausa no es de ningún jugador', () {
+      final clock = newClock();
+      clock.start(Player.one);
+      clock.advance(const Duration(minutes: 2));
+      clock.pause();
+      clock.advanceStopped(const Duration(minutes: 1));
+
+      expect(clock.playedOf(Player.one), const Duration(minutes: 2));
+      expect(clock.playedOf(Player.two), Duration.zero);
+      expect(clock.stoppedTime, const Duration(minutes: 1));
+    });
+
+    test('corriendo no se acumula tiempo parado', () {
+      final clock = newClock();
+      clock.start(Player.one);
+      clock.advanceStopped(const Duration(minutes: 1));
+
+      expect(clock.stoppedTime, Duration.zero);
+      expect(clock.totalTime, Duration.zero);
+    });
+
+    test('sin empezar y terminado tampoco hay nada que parar', () {
+      final clock = newClock();
+      clock.advanceStopped(const Duration(minutes: 1));
+      expect(clock.totalTime, Duration.zero);
+
+      clock.start(Player.one);
+      clock.finish();
+      clock.advanceStopped(const Duration(minutes: 1));
+      expect(clock.totalTime, Duration.zero);
+    });
+
+    // La cuenta que el acta enseña: si no cuadra, los jugadores restan y no
+    // les sale.
+    test('el total es lo jugado por los dos más lo parado', () {
+      final clock = newClock();
+      clock.start(Player.one);
+      clock.advance(const Duration(minutes: 3));
+      clock.pause();
+      clock.advanceStopped(const Duration(seconds: 40));
+      clock.resume();
+      clock.passTurn();
+      clock.advance(const Duration(minutes: 2));
+
+      expect(clock.totalTime, const Duration(minutes: 5, seconds: 40));
+      expect(clock.stoppedTime, const Duration(seconds: 40));
+      expect(
+        clock.totalTime,
+        clock.playedOf(Player.one) +
+            clock.playedOf(Player.two) +
+            clock.stoppedTime,
+      );
+    });
+
+    // Lo que dibuja la gráfica del acta. No se puede sacar de ningún reloj
+    // después: el turno se reinicia al pasarlo, así que lo que duró hay que
+    // apuntarlo en ese momento o se pierde.
+    test('cada turno queda apuntado con lo que duró', () {
+      final clock = newClock();
+      clock.start(Player.one);
+      clock.advance(const Duration(minutes: 2));
+      clock.passTurn();
+      clock.advance(const Duration(seconds: 40));
+      clock.passTurn();
+      clock.advance(const Duration(minutes: 3));
+      clock.passTurn();
+
+      expect(clock.turnsOf(Player.one), [
+        const Duration(minutes: 2),
+        const Duration(minutes: 3),
+      ]);
+      expect(clock.turnsOf(Player.two), [const Duration(seconds: 40)]);
+    });
+
+    test('el turno en curso todavía no está: entra al pasarlo', () {
+      final clock = newClock();
+      clock.start(Player.one);
+      clock.advance(const Duration(minutes: 2));
+
+      expect(clock.turnsOf(Player.one), isEmpty);
+
+      clock.passTurn();
+
+      expect(clock.turnsOf(Player.one), [const Duration(minutes: 2)]);
+    });
+
+    test('lo apuntado incluye el tiempo extra del turno', () {
+      final clock = newClock();
+      clock.start(Player.one);
+      // El turno son cuatro minutos: el quinto sale del tiempo extra, y el
+      // turno duró cinco.
+      clock.advance(const Duration(minutes: 5));
+      clock.passTurn();
+
+      expect(clock.turnsOf(Player.one), [const Duration(minutes: 5)]);
+    });
+
+    test('el rato pausado no engorda el turno en el que se pausó', () {
+      final clock = newClock();
+      clock.start(Player.one);
+      clock.advance(const Duration(minutes: 1));
+      clock.pause();
+      clock.advanceStopped(const Duration(minutes: 5));
+      clock.resume();
+      clock.advance(const Duration(minutes: 1));
+      clock.passTurn();
+
+      expect(clock.turnsOf(Player.one), [const Duration(minutes: 2)]);
+    });
+
+    // La suma de los turnos de un jugador es lo que jugó: la gráfica y la
+    // barra del acta salen de los mismos segundos y no pueden contradecirse.
+    test('los turnos de un jugador suman lo que jugó', () {
+      final clock = newClock();
+      clock.start(Player.one);
+      for (var turn = 0; turn < 6; turn++) {
+        clock.advance(const Duration(minutes: 1, seconds: 30));
+        clock.passTurn();
+      }
+
+      for (final player in Player.values) {
+        expect(
+          clock.turnsOf(player).fold(Duration.zero, (a, b) => a + b),
+          clock.playedOf(player),
+          reason: 'los turnos de $player',
+        );
+      }
+    });
+
+    test('la lista no se puede tocar desde fuera', () {
+      final clock = newClock();
+      clock.start(Player.one);
+      clock.passTurn();
+
+      expect(
+        () => clock.turnsOf(Player.one).add(Duration.zero),
+        throwsUnsupportedError,
+      );
+    });
+
+    test('reiniciar los pone a cero', () {
+      final clock = newClock();
+      clock.start(Player.one);
+      clock.advance(const Duration(minutes: 3));
+      clock.pause();
+      clock.advanceStopped(const Duration(minutes: 1));
+
+      clock.reset();
+
+      expect(clock.playedOf(Player.one), Duration.zero);
+      expect(clock.playedOf(Player.two), Duration.zero);
+      expect(clock.totalTime, Duration.zero);
+      expect(clock.stoppedTime, Duration.zero);
+      expect(clock.turnsOf(Player.one), isEmpty);
+      expect(clock.turnsOf(Player.two), isEmpty);
+    });
+  });
+
+  group('terminar', () {
+    test('deja el partido terminado y sin ningún reloj corriendo', () {
+      final clock = newClock();
+      clock.start(Player.one);
+      clock.finish();
+
+      expect(clock.state, MatchState.finished);
+      expect(clock.runningClock, isNull);
+    });
+
+    test('terminado no se le cobra tiempo a nadie', () {
+      final clock = newClock();
+      clock.start(Player.one);
+      clock.advance(const Duration(minutes: 2));
+      clock.finish();
+
+      clock.advance(const Duration(minutes: 5));
+
+      expect(clock.playedOf(Player.one), const Duration(minutes: 2));
+      expect(clock.turnOf(Player.one), const Duration(minutes: 2));
+    });
+
+    // Lo que distingue terminar de pausar: de aquí no se vuelve.
+    test('terminado no se pausa, ni se reanuda, ni se pasa turno', () {
+      final clock = newClock();
+      clock.start(Player.one);
+      clock.finish();
+
+      clock.pause();
+      expect(clock.state, MatchState.finished);
+
+      clock.resume();
+      expect(clock.state, MatchState.finished);
+
+      clock.passTurn();
+      expect(clock.state, MatchState.finished);
+      expect(clock.activePlayer, Player.one);
+    });
+
+    test('sin empezar no hay nada que terminar', () {
+      final clock = newClock();
+      clock.finish();
+
+      expect(clock.state, MatchState.notStarted);
+    });
+
+    test('reiniciar es la única salida del acta', () {
+      final clock = newClock();
+      clock.start(Player.one);
+      clock.finish();
+
+      clock.reset();
+
+      expect(clock.state, MatchState.notStarted);
+    });
+  });
 }
 
 MatchClock newClock({Duration earlyWarning = Duration.zero}) => MatchClock(

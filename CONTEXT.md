@@ -79,8 +79,32 @@ ficha del equipo pateador, que es el jugador inactivo en ese momento.
 apunta quien anota al pulsar, porque después hay que desplegar otra vez.
 
 **acta**: la pantalla que cierra el partido, al pasar el turno 16 del segundo jugador.
-Muestra el tiempo de juego total, el que ha jugado cada uno y el que ha estado parado,
-que es el de las pausas. No se guarda (ADR-0003).
+No se guarda (ADR-0003).
+
+Cuenta la misma historia tres veces, cada una con más detalle: el **tiempo de juego**,
+que es lo que han consumido los dos relojes, con el **total** debajo, que lo incluye
+todo y del que se resta el tiempo parado; una **barra enfrentada** que reparte ese
+tiempo de juego entre los dos, con el de cada uno encima de su tramo; y una **gráfica
+por turnos** con una línea por jugador, que dice lo que duró cada turno y dónde se
+atascó la partida.
+
+El color de cada jugador, el de su mitad durante el partido, lo atraviesa todo: su
+pastilla, su tramo de la barra y su línea. Los dos están medidos como paleta de datos
+y no elegidos a ojo, y en modo oscuro no son los mismos valores que en la mesa, porque
+sobre el fondo casi negro los del partido no llegan al contraste que pide una marca.
+
+El acta **se comparte**: un botón hace una foto de ella y la saca por el menú del
+sistema. La foto es solo el acta, sin los botones, porque en la imagen que llega al
+responsable de la liga no hay nada que pulsar. Sigue sin guardarse nada (ADR-0003): lo
+que la aplicación hace es entregar unos bytes, y el temporal que haga falta para
+compartirlos es del sistema y se lo lleva él. La captura de pantalla a mano sigue
+valiendo, y ahora hay además un camino que no depende de acertar con los botones del
+teléfono.
+
+Es la única pantalla que no se parte en dos mitades enfrentadas. Se lee entera de
+arriba abajo, en vertical: el partido ya ha terminado, los dos jugadores miran la
+misma pantalla, y de ella se hace una captura que va al responsable de la liga, que
+la abre como cualquier otra imagen. Media acta girada sería media captura del revés.
 
 No muestra resultado: la anotación queda fuera de esta versión, así que no hay
 marcador que enseñar.

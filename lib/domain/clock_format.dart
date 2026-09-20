@@ -20,3 +20,31 @@ String formatClock(Duration left) {
   );
   return '${seconds < 0 ? '-' : ''}$minutes:$rest';
 }
+
+/// Lo que ha durado algo, para el acta: `h:mm:ss` a partir de la hora y
+/// `m:ss` por debajo.
+///
+/// No vale [formatClock] y por eso son dos. Aquel cuenta lo que queda, y por
+/// eso redondea hacia arriba, para que el cero caiga justo al agotarse el
+/// reloj; aquí no queda nada ni se agota nada, se cuenta lo ya transcurrido,
+/// que se trunca porque el segundo en curso todavía no ha pasado.
+///
+/// La hora aparece sola y no está siempre. Un partido de Blood Bowl la pasa,
+/// pero lo jugado por cada uno rara vez, y escribir `0:38:04` donde caben
+/// `38:04` obliga a leer tres números para encontrar los dos que importan.
+String formatElapsed(Duration elapsed) {
+  final seconds = elapsed.inSeconds;
+  final minutes = seconds ~/ Duration.secondsPerMinute;
+  final restSeconds = (seconds % Duration.secondsPerMinute).toString().padLeft(
+    2,
+    '0',
+  );
+  if (minutes < Duration.minutesPerHour) return '$minutes:$restSeconds';
+
+  final hours = minutes ~/ Duration.minutesPerHour;
+  final restMinutes = (minutes % Duration.minutesPerHour).toString().padLeft(
+    2,
+    '0',
+  );
+  return '$hours:$restMinutes:$restSeconds';
+}

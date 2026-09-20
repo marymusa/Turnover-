@@ -8,8 +8,10 @@ import 'domain/awake_guard.dart';
 import 'domain/match_clock.dart';
 import 'domain/match_settings.dart';
 import 'domain/player_names.dart';
+import 'domain/report_sharer.dart';
 import 'l10n/app_localizations.dart';
 import 'platform/platform_alert_device.dart';
+import 'platform/platform_report_sharer.dart';
 import 'platform/platform_screen.dart';
 import 'platform/platform_settings_store.dart';
 import 'ui/clock_colors.dart';
@@ -27,6 +29,7 @@ Future<void> main() async {
     TurnoverApp(
       alerts: AlertPlayer(device),
       screen: const PlatformScreen(),
+      sharer: const PlatformReportSharer(),
       store: PlatformSettingsStore(),
     ),
   );
@@ -40,6 +43,7 @@ class TurnoverApp extends StatefulWidget {
   const TurnoverApp({
     required this.alerts,
     required this.screen,
+    required this.sharer,
     required this.store,
     super.key,
   });
@@ -49,6 +53,9 @@ class TurnoverApp extends StatefulWidget {
   /// La pantalla del aparato, que entra desde fuera para que los tests puedan
   /// sustituirla por una que no cruce a la plataforma.
   final Screen screen;
+
+  /// Por donde sale la foto del acta, desde fuera y por lo mismo.
+  final ReportSharer sharer;
 
   /// Dónde se guardan los ajustes, también desde fuera y por lo mismo.
   final SettingsStore store;
@@ -110,6 +117,7 @@ class _TurnoverAppState extends State<TurnoverApp> {
         builder: (context) => ClockScreen(
           alerts: widget.alerts,
           screen: widget.screen,
+          sharer: widget.sharer,
           clock: _clock,
           names: _names,
           onOpenSettings: () => _openSettings(context),

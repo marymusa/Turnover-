@@ -15,6 +15,11 @@ dependencies:
   audioplayers: ^6.8.1
   wakelock_plus: ^1.8.0
   shared_preferences: ^2.5.5
+  # El acta se comparte como imagen por el menú del sistema. Va por el
+  # complemento y no por un canal propio: abrir el menú de compartir es
+  # código nativo en cada plataforma, y este es el de la misma familia que
+  # wakelock_plus y shared_preferences, que ya están aquí.
+  share_plus: ^13.3.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
