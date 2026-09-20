@@ -648,24 +648,7 @@ void main() {
       await tester.pumpWidget(_app(store: MemorySettingsStore()));
       await _settle(tester);
 
-      // El jugador uno consume bastante más, para que el reparto no salga a
-      // medias y se note de qué lado cae.
-      await tester.tap(_halfShowing('Me'));
-      await _settle(tester);
-      for (var pass = 0; pass < _passesPerMatch; pass++) {
-        // A quién le toca se le pregunta al reloj y no se deduce del número
-        // de pase: al cambiar de parte el orden se invierte y uno juega dos
-        // turnos seguidos, así que alternando por pares los dos acaban con
-        // el mismo tiempo y la comparación no compara nada.
-        final active = _clockOnScreen(tester).activePlayer;
-        await tester.pump(
-          active == Player.one
-              ? const Duration(seconds: 30)
-              : const Duration(seconds: 5),
-        );
-        await tester.tap(_passTurnControl);
-        await _settle(tester);
-      }
+      await _playLopsidedMatch(tester);
 
       final one = tester.getSize(find.byKey(MatchReport.barKeyOne));
       final two = tester.getSize(find.byKey(MatchReport.barKeyTwo));
@@ -743,6 +726,49 @@ void main() {
       // Los dos jugadores van a la misma altura, uno a cada lado de la barra,
       // y no uno debajo del otro: es una comparación, no una lista.
       expect(topOf(find.text('Me')), topOf(find.text('My opponent')));
+    });
+
+    // El acta se monta sola al salir. Lo que se comprueba es que arranca de
+    // un estado neutro y acaba en el dato: que la barra parte del reparto a
+    // medias y se abre, y que la cifra grande no esta puesta hasta el final.
+    // Como se ve el recorrido entre medias es cosa de mirarlo, no de medirlo.
+    testWidgets('el acta se monta sola: la barra parte de medias', (
+      tester,
+    ) async {
+      await tester.pumpWidget(_app(store: MemorySettingsStore()));
+      await _settle(tester);
+      // Desigual a proposito: con los dos empatados la barra acaba donde
+      // empieza y no habria desviacion que comprobar.
+      await _playLopsidedMatch(tester, settle: false);
+
+      final startOne = tester.getSize(find.byKey(MatchReport.barKeyOne)).width;
+      final startTwo = tester.getSize(find.byKey(MatchReport.barKeyTwo)).width;
+      expect(
+        (startOne - startTwo).abs(),
+        lessThan(1),
+        reason: 'recien salida, la barra esta a medias',
+      );
+
+      final clock = _clockOnScreen(tester);
+      final playTime = formatElapsed(
+        clock.playedOf(Player.one) + clock.playedOf(Player.two),
+      );
+      expect(
+        find.text(playTime),
+        findsNothing,
+        reason: 'la cifra todavia esta subiendo',
+      );
+
+      await _settleReport(tester);
+
+      final endOne = tester.getSize(find.byKey(MatchReport.barKeyOne)).width;
+      final endTwo = tester.getSize(find.byKey(MatchReport.barKeyTwo)).width;
+      expect(
+        (endOne - endTwo).abs(),
+        greaterThan((startOne - startTwo).abs()),
+        reason: 'se abre hasta donde cayo el reparto',
+      );
+      expect(find.text(playTime), findsOneWidget);
     });
 
     // Compartir hace una foto del acta y se la da al sistema. Lo que se
@@ -931,13 +957,52 @@ const _passesPerMatch = 32;
 
 /// Juega el partido entero desde el toque inicial, que es la única forma de
 /// llegar al acta: no hay botón de terminar.
-Future<void> _playWholeMatch(WidgetTester tester) async {
+Future<void> _playWholeMatch(WidgetTester tester, {bool settle = true}) async {
   await tester.tap(_halfShowing('Me'));
   await _settle(tester);
   for (var pass = 0; pass < _passesPerMatch; pass++) {
     await tester.tap(_passTurnControl);
     await _settle(tester);
   }
+  if (settle) await _settleReport(tester);
+}
+
+/// Deja que el acta termine de montarse.
+///
+/// Se monta sola al salir: las cifras suben desde cero, la barra se abre
+/// desde el medio y las lineas recorren sus turnos. Los tests miran el acta
+/// hecha y no a medio hacer, porque si no lo que midan depende de cuando
+/// miren, que es la receta de un test que falla un dia de cada diez.
+Future<void> _settleReport(WidgetTester tester) async {
+  await tester.pump(ClockTheme.reportRevealDuration);
+  await tester.pump();
+}
+
+/// Juega el partido entero dejando que el jugador uno consuma bastante mas.
+///
+/// Con `_playWholeMatch` los dos acaban con el mismo tiempo, porque cada pase
+/// cuesta lo mismo: el reparto sale a medias y no hay nada que comparar ni
+/// ninguna desviacion que animar. Aqui se le da seis veces mas reloj al uno.
+Future<void> _playLopsidedMatch(
+  WidgetTester tester, {
+  bool settle = true,
+}) async {
+  await tester.tap(_halfShowing('Me'));
+  await _settle(tester);
+  for (var pass = 0; pass < _passesPerMatch; pass++) {
+    // A quien le toca se le pregunta al reloj y no se deduce del numero de
+    // pase: al cambiar de parte el orden se invierte y uno juega dos turnos
+    // seguidos, asi que alternando por pares los dos acaban igual otra vez.
+    final active = _clockOnScreen(tester).activePlayer;
+    await tester.pump(
+      active == Player.one
+          ? const Duration(seconds: 30)
+          : const Duration(seconds: 5),
+    );
+    await tester.tap(_passTurnControl);
+    await _settle(tester);
+  }
+  if (settle) await _settleReport(tester);
 }
 
 /// El objetivo táctil mínimo de Material, que es también el de Apple en sus

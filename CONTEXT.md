@@ -88,8 +88,20 @@ tiempo de juego entre los dos, con el de cada uno encima de su tramo; y una **gr
 por turnos** con una línea por jugador, que dice lo que duró cada turno y dónde se
 atascó la partida.
 
+La gráfica lleva además, por cada jugador y a trazos, **lo que le dura un turno de
+media**: es lo que convierte las dos líneas en una comparación, porque cada pico se
+lee como lo que se salió de su propia media. A trazos justamente porque es una línea
+de referencia y no un dato medido turno a turno.
+
+El acta **se monta sola** al salir, una vez y en unos cuatro segundos: las cifras suben
+desde cero, la barra parte del reparto a medias y se abre hasta donde cayó, y las dos
+líneas recorren sus turnos; las medias entran al final, cuando ya hay dibujo del que
+sacarlas. No es un adorno permanente, es la presentación de un resultado. Quien lleve
+las animaciones apagadas en el sistema ve el acta hecha desde el primer fotograma, y
+compartir a media animación la salta al final: la foto es del acta acabada.
+
 El color de cada jugador, el de su mitad durante el partido, lo atraviesa todo: su
-pastilla, su tramo de la barra y su línea. Los dos están medidos como paleta de datos
+pastilla, su tramo de la barra, su línea y su media. Los dos están medidos como paleta de datos
 y no elegidos a ojo, y en modo oscuro no son los mismos valores que en la mesa, porque
 sobre el fondo casi negro los del partido no llegan al contraste que pide una marca.
 

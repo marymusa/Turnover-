@@ -59,9 +59,10 @@ Tres cosas que costaron un rato y conviene no volver a descubrir:
   corrompe. Y desde Git Bash la ruta `/sdcard/` se convierte en una ruta de
   Windows: por eso el script va en PowerShell.
 
-El script espera cinco segundos antes de cada captura, que es lo que tarda la
-presentación del escudo en terminar: se repite en cada arranque y en cada
-captura, y sin esa espera el escudo sale a medio dibujar.
+El script espera siete segundos antes de cada captura, que es lo que marca la
+animación más larga de las que se fotografían: el acta montándose, que dura
+cuatro y pico. La presentación del escudo, que se repite en cada arranque y en
+cada captura, tarda dos y pico. Sin esa espera algo sale a medio dibujar.
 
 **El orden de la ficha ya no es el del recorrido.** `capture_main.dart` tiene
 doce estados y a la ficha van ocho: sobran los tres que solo sirven para mirar

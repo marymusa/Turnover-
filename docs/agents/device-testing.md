@@ -46,6 +46,34 @@ Se pasa de una a la siguiente tocando la banda del borde izquierdo
 (`adb shell input tap 15 1170`). Si el estado que hace falta no está en la
 lista, se añade allí: es lo que hace que la siguiente vez tampoco cueste.
 
+## Mirar el acta montándose
+
+El acta se presenta sola al salir y dura cuatro segundos y pico, así que con la
+aplicación de verdad hay que jugar un partido entero por cada vez que se
+quiera ver. `scripts/report_main.dart` la enseña al momento y con varios
+juegos de datos, que es lo que hace falta para juzgarla: la animación que
+queda bien con un reparto de 60/40 puede no decir nada con uno de 51/49.
+
+```bash
+flutter build apk --debug -t scripts/report_main.dart
+adb -s <serie> install -r build/app/outputs/flutter-apk/app-debug.apk
+```
+
+La banda del borde izquierdo pasa al siguiente juego de datos y de paso
+vuelve a montar el acta, así que también sirve de repetición.
+
+**Si el acta sale hecha de golpe, mirar primero el teléfono y no el código.**
+El acta respeta las animaciones apagadas del sistema a propósito, y MIUI las
+apaga sola con el ahorro de batería:
+
+```bash
+adb -s <serie> shell settings get global animator_duration_scale
+adb -s <serie> shell settings put global animator_duration_scale 1.0
+```
+
+El prototipo lo avisa en pantalla cuando las detecta apagadas, para que eso no
+se confunda nunca con una animación rota.
+
 Al terminar, el teléfono se queda con la compilación de capturas, que no es la
 aplicación de verdad. Conviene decirlo.
 

@@ -52,11 +52,17 @@ for ($i = 1; $i -lt $shots.Count; $i++) {
     }
 }
 
-# La presentacion del escudo dura dos segundos y pico y se repite en cada
-# arranque, asi que hay que dejarla terminar o la captura sale a medio dibujar.
+# Lo que se espera antes de disparar, para que no salga nada a medio dibujar.
+#
+# Lo marca la animacion mas larga de las que se fotografian, que ya no es la
+# presentacion del escudo (dos segundos y pico, en cada arranque) sino el acta
+# montandose, que dura cuatro y pico. Con los cinco de antes la captura del
+# acta caia justo encima del final de su animacion.
+#
 # El margen es generoso a proposito: una captura mala no se nota hasta que se
-# mira, y repetir la tanda cuesta mas que esperar.
-$revealWait = 5
+# mira, y repetir la tanda cuesta mas que esperar. Si se vuelve a tocar
+# `ClockTheme.reportRevealDuration`, hay que volver a mirar esto.
+$revealWait = 7
 
 $adb = if ($Serial) { @('-s', $Serial) } else { @() }
 $package = 'com.ares.bloodbowl.turnover'

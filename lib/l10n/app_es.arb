@@ -22,6 +22,7 @@
   "matchReportTotalTime": "Tiempo total {time}",
   "matchReportPerTurn": "Tiempo por turno",
   "matchReportPeak": "{name}: turno más largo {time}, turno {number}",
+  "matchReportAverage": "{name}: turno medio {time}",
   "matchReportShare": "Compartir",
   "matchReportShareText": "Acta de Turnover!: {one} contra {two}",
   "matchReportEnd": "Terminar partido",

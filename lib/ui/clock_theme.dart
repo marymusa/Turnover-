@@ -230,6 +230,50 @@ abstract final class ClockTheme {
   static const reportGridOpacity = 0.16;
   static const reportChartGap = 10.0;
 
+  /// La media de duración de turno de cada jugador, en su color y de trazo
+  /// discontinuo.
+  ///
+  /// Discontinua a propósito, que es justo lo contrario de lo que se le pide
+  /// a la retícula: rayar la retícula está mal porque la hace parecer un
+  /// umbral que no es, y esto sí es un umbral. Es la convención de una línea
+  /// de referencia, y por eso se distingue de la serie sin necesitar otro
+  /// color.
+  ///
+  /// Más fina y más apagada que la línea del jugador: acompaña a su serie, y
+  /// al mismo peso competirían dos líneas del mismo color por la misma
+  /// lectura.
+  static const reportAverageWidth = 1.0;
+  static const reportAverageOpacity = 0.7;
+  static const reportAverageDash = 4.0;
+  static const reportAverageDashGap = 3.0;
+
+  /// Lo que tarda el acta en montarse sola al salir: las cifras suben desde
+  /// cero, la barra se abre desde el medio y las dos líneas recorren sus
+  /// turnos. El partido ha durado una hora y pico y esto son cuatro segundos
+  /// y pico.
+  ///
+  /// Se mira una vez y no se repite: no es un adorno que esté ahí siempre,
+  /// es la presentación de un resultado, y una presentación que se entiende
+  /// es mejor que una rápida. A la mitad de esto no daba tiempo a leer las
+  /// cifras mientras subían ni a seguir las dos líneas dibujándose, que es
+  /// justo lo que hay que ver.
+  ///
+  /// Es lo único que hay que tocar para cambiar el ritmo entero: los tramos
+  /// de cada fila son fracciones de esto, así que se estiran con ella.
+  ///
+  /// Quien tenga las animaciones apagadas en el sistema ve el acta hecha
+  /// desde el primer fotograma, dure lo que dure.
+  static const reportRevealDuration = Duration(milliseconds: 4400);
+
+  /// Lo que cada fila sube mientras aparece. Poco: lo que tiene que llamar la
+  /// atención son las cifras subiendo y las líneas dibujándose, no las filas
+  /// desplazándose.
+  ///
+  /// Sube con `Transform`, que no toca la disposición: las filas ocupan su
+  /// sitio desde el principio aunque todavía no se vean, de modo que el acta
+  /// no cambia de alto mientras se monta y no se reescala a mitad de camino.
+  static const reportRevealRise = 10.0;
+
   /// Lo que los botones se apartan del acta: son lo único que se pulsa en una
   /// pantalla que por lo demás solo se lee, y además quedan fuera de la foto.
   static const reportButtonGap = 30.0;

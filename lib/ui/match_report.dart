@@ -95,11 +95,47 @@ class MatchReport extends StatefulWidget {
   State<MatchReport> createState() => _MatchReportState();
 }
 
-class _MatchReportState extends State<MatchReport> {
+class _MatchReportState extends State<MatchReport>
+    with SingleTickerProviderStateMixin {
   /// Lo que entra en la foto. Marca el trozo del árbol que se sabe pintar a
   /// sí mismo aparte, que es lo que permite sacarle una imagen sin capturar
   /// la pantalla entera.
   final _documentKey = GlobalKey();
+
+  /// El acta montándose: de aquí salen las cifras subiendo desde cero, la
+  /// barra abriéndose desde el medio y las líneas recorriendo sus turnos.
+  ///
+  /// Uno solo para las tres cosas, y cada fila se queda con su tramo. Con un
+  /// controlador por fila habría que sincronizarlos entre sí, que es el
+  /// trabajo que este se ahorra.
+  late final AnimationController _reveal;
+
+  @override
+  void initState() {
+    super.initState();
+    // Se construye y se arranca aquí y no en la declaración del campo: `late`
+    // es perezoso y un controlador que nadie lea no llega a existir, que es
+    // la misma trampa que documenta el Ticker de `clock_screen.dart`.
+    _reveal = AnimationController(
+      vsync: this,
+      duration: ClockTheme.reportRevealDuration,
+    )..forward();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Quien lleva las animaciones apagadas en el sistema no las lleva
+    // apagadas por gusto: el acta sale hecha desde el primer fotograma. Va
+    // aquí porque es donde el `MediaQuery` ya se puede leer.
+    if (MediaQuery.of(context).disableAnimations) _reveal.value = 1;
+  }
+
+  @override
+  void dispose() {
+    _reveal.dispose();
+    super.dispose();
+  }
 
   /// Hace la foto del acta y se la da a quien la comparte.
   ///
@@ -119,6 +155,15 @@ class _MatchReportState extends State<MatchReport> {
       widget.nameOfTwo,
     );
     try {
+      // La foto es del acta acabada y no de la animación a medias. Quien
+      // pulsa compartir antes de que termine de montarse quiere el acta, no
+      // el fotograma en el que iba: se salta al final y se deja pintar uno
+      // antes de retratarla.
+      if (!_reveal.isCompleted) {
+        _reveal.value = 1;
+        await WidgetsBinding.instance.endOfFrame;
+        if (!mounted) return;
+      }
       final png = await _capture();
       if (png == null) return;
       await widget.sharer.share(
@@ -195,15 +240,19 @@ class _MatchReportState extends State<MatchReport> {
                         padding: const EdgeInsets.all(
                           ClockTheme.reportCaptureInset,
                         ),
-                        child: _Document(
-                          nameOfOne: widget.nameOfOne,
-                          nameOfTwo: widget.nameOfTwo,
-                          oneSeconds: oneSeconds,
-                          twoSeconds: twoSeconds,
-                          playSeconds: playSeconds,
-                          total: widget.total,
-                          turnsOfOne: widget.turnsOfOne,
-                          turnsOfTwo: widget.turnsOfTwo,
+                        child: AnimatedBuilder(
+                          animation: _reveal,
+                          builder: (context, _) => _Document(
+                            nameOfOne: widget.nameOfOne,
+                            nameOfTwo: widget.nameOfTwo,
+                            oneSeconds: oneSeconds,
+                            twoSeconds: twoSeconds,
+                            playSeconds: playSeconds,
+                            total: widget.total,
+                            turnsOfOne: widget.turnsOfOne,
+                            turnsOfTwo: widget.turnsOfTwo,
+                            reveal: _reveal.value,
+                          ),
                         ),
                       ),
                     ),
@@ -248,6 +297,7 @@ class _Document extends StatelessWidget {
     required this.total,
     required this.turnsOfOne,
     required this.turnsOfTwo,
+    required this.reveal,
   });
 
   final String nameOfOne;
@@ -259,6 +309,37 @@ class _Document extends StatelessWidget {
   final List<Duration> turnsOfOne;
   final List<Duration> turnsOfTwo;
 
+  /// Lo que lleva montado el acta, de cero a uno.
+  final double reveal;
+
+  /// El reparto del tiempo entre las filas. Cada tramo empieza antes de que
+  /// el anterior acabe, y por eso se solapan: el acta se monta de arriba
+  /// abajo de un tirón, no a saltos con pausas entre fila y fila.
+  ///
+  /// El orden es el de lectura, y el último tramo es el más largo porque es
+  /// el que tiene algo que contar: las dos líneas recorriendo sus dieciséis
+  /// turnos son lo único que tarda porque el recorrido en sí es el dato.
+  static const _headingStage = (0.0, 0.12);
+  static const _playTimeStage = (0.08, 0.50);
+  static const _labelsStage = (0.30, 0.62);
+  static const _barStage = (0.34, 0.70);
+  static const _chartHeadingStage = (0.52, 0.64);
+  static const _linesStage = (0.56, 0.90);
+
+  /// Las medias entran cuando las dos líneas han terminado su recorrido, no a
+  /// la vez: son la lectura que se saca de lo dibujado, así que aparecen
+  /// sobre un dibujo que ya está entero.
+  static const _averagesStage = (0.90, 1.0);
+
+  /// Lo que lleva recorrido un tramo, de cero a uno, con su curva puesta.
+  ///
+  /// Frena al llegar en vez de pararse en seco: una cifra que sube y se
+  /// detiene de golpe parece que se ha cortado, y frenando parece que
+  /// aterriza en su valor.
+  double _stageOf((double, double) stage) => Curves.easeOutCubic.transform(
+    ((reveal - stage.$1) / (stage.$2 - stage.$1)).clamp(0.0, 1.0),
+  );
+
   @override
   Widget build(BuildContext context) {
     final strings = AppLocalizations.of(context)!;
@@ -267,12 +348,19 @@ class _Document extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _Heading(text: strings.matchReportHeading),
+        _Reveal(
+          t: _stageOf(_headingStage),
+          child: _Heading(text: strings.matchReportHeading),
+        ),
         const SizedBox(height: ClockTheme.reportHeadingGap),
-        _PlayTime(
-          label: strings.matchReportPlayTime,
-          playSeconds: playSeconds,
-          total: total,
+        _Reveal(
+          t: _stageOf(_playTimeStage),
+          child: _PlayTime(
+            label: strings.matchReportPlayTime,
+            playSeconds: playSeconds,
+            total: total,
+            t: _stageOf(_playTimeStage),
+          ),
         ),
         const SizedBox(height: ClockTheme.reportHeadingGap),
         // El reparto entre los dos, que es lo que de verdad se compara. Las
@@ -282,33 +370,93 @@ class _Document extends StatelessWidget {
         // Son además la leyenda de la gráfica de abajo, que usa estos mismos
         // dos colores: el nombre va pegado a su color, así que quién es quién
         // no depende de distinguirlos.
-        _SplitLabels(
-          nameOfOne: nameOfOne,
-          nameOfTwo: nameOfTwo,
-          oneSeconds: oneSeconds,
-          twoSeconds: twoSeconds,
+        _Reveal(
+          t: _stageOf(_labelsStage),
+          child: _SplitLabels(
+            nameOfOne: nameOfOne,
+            nameOfTwo: nameOfTwo,
+            oneSeconds: oneSeconds,
+            twoSeconds: twoSeconds,
+            t: _stageOf(_labelsStage),
+          ),
         ),
         const SizedBox(height: ClockTheme.reportBarLabelGap),
-        _SplitBar(oneSeconds: oneSeconds, twoSeconds: twoSeconds),
+        // La barra no aparece: se abre. Parte del medio, que es el reparto
+        // que tendrían dos jugadores que hubiesen consumido lo mismo, y se
+        // desvía hasta donde de verdad cayó. Lo que se mira es la desviación,
+        // así que la desviación es lo que se mueve.
+        _SplitBar(
+          oneSeconds: oneSeconds,
+          twoSeconds: twoSeconds,
+          t: _stageOf(_barStage),
+        ),
         // Sin ningún turno cerrado no hay gráfica, y tampoco su rótulo: un
         // encabezado encima de un hueco se lee como que algo ha fallado. Pasa
         // en un partido que se termina sin pasar un solo turno, que no es un
         // partido pero es un estado al que se llega.
         if (turnsOfOne.isNotEmpty || turnsOfTwo.isNotEmpty) ...[
           const SizedBox(height: ClockTheme.reportHeadingGap),
-          _Heading(text: strings.matchReportPerTurn),
+          _Reveal(
+            t: _stageOf(_chartHeadingStage),
+            child: _Heading(text: strings.matchReportPerTurn),
+          ),
           const SizedBox(height: ClockTheme.reportChartGap),
+          // La gráfica no se desvanece hacia dentro: las dos líneas se
+          // dibujan turno a turno, que es el recorrido que hizo la partida.
+          // Los ejes y la retícula están desde el principio, porque son el
+          // papel sobre el que se dibuja y no parte del dato.
           _TurnChart(
             nameOfOne: nameOfOne,
             nameOfTwo: nameOfTwo,
             turnsOfOne: turnsOfOne,
             turnsOfTwo: turnsOfTwo,
+            t: _stageOf(_linesStage),
+            averages: _stageOf(_averagesStage),
           ),
         ],
       ],
     );
   }
 }
+
+/// Una fila del acta mientras aparece: se funde desde transparente y sube un
+/// poco hasta su sitio.
+///
+/// Sube con `Transform` y se funde con `Opacity`, que no tocan la
+/// disposición: la fila ocupa su hueco desde el primer fotograma aunque no
+/// se vea. Si apareciera de verdad, el acta crecería mientras se monta y el
+/// `FittedBox` la reescalaría a mitad de camino.
+class _Reveal extends StatelessWidget {
+  const _Reveal({required this.t, required this.child});
+
+  /// Lo que lleva aparecida, de cero a uno.
+  final double t;
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    // Ya puesta no se envuelve en nada: es el estado en el que el acta pasa
+    // el resto de su vida, y también el que sale en la foto.
+    if (t >= 1) return child;
+
+    return Opacity(
+      opacity: t.clamp(0.0, 1.0),
+      child: Transform.translate(
+        offset: Offset(0, ClockTheme.reportRevealRise * (1 - t)),
+        child: child,
+      ),
+    );
+  }
+}
+
+/// Por dónde va una cifra que sube desde cero hasta [seconds].
+///
+/// Redondea en vez de truncar para que el último fotograma caiga justo en el
+/// valor: truncando, un `t` de 0,999 dejaría la cifra un segundo por debajo
+/// del dato y ahí se quedaría si la animación se para antes de tiempo.
+@visibleForTesting
+int countUp(int seconds, double t) => (seconds * t.clamp(0.0, 1.0)).round();
 
 /// Un rótulo de los que nombran lo que viene debajo. Hay dos en el acta, el
 /// que dice que el partido ha terminado y el que encabeza la gráfica, y son
@@ -347,16 +495,26 @@ class _PlayTime extends StatelessWidget {
     required this.label,
     required this.playSeconds,
     required this.total,
+    required this.t,
   });
 
   final String label;
   final int playSeconds;
   final Duration total;
 
+  /// Lo que llevan subidas las dos cifras, de cero a uno.
+  final double t;
+
   @override
   Widget build(BuildContext context) {
     final strings = AppLocalizations.of(context)!;
     final colors = ClockColors.of(context);
+
+    // Las dos suben a la vez y con el mismo factor, así que su relación se
+    // mantiene durante toda la cuenta: el total nunca va por debajo del
+    // tiempo de juego, que sería una resta negativa en pantalla.
+    final shownPlay = countUp(playSeconds, t);
+    final shownTotal = countUp(total.inSeconds, t);
 
     return Column(
       children: [
@@ -372,7 +530,10 @@ class _PlayTime extends StatelessWidget {
         ),
         const SizedBox(height: ClockTheme.reportHeroGap),
         Text(
-          formatElapsed(Duration(seconds: playSeconds)),
+          formatElapsed(Duration(seconds: shownPlay)),
+          // Lo que se anuncia es el tiempo de juego, no el número por el que
+          // va la cuenta: a quien la escucha la animación no le dice nada.
+          semanticsLabel: formatElapsed(Duration(seconds: playSeconds)),
           // Sin cifras tabulares: alinean columnas, y esta cifra no está en
           // ninguna. A este tamaño lo único que harían es separar los dígitos.
           style: TextStyle(
@@ -384,7 +545,10 @@ class _PlayTime extends StatelessWidget {
         ),
         const SizedBox(height: ClockTheme.reportHeroGap),
         Text(
-          strings.matchReportTotalTime(formatElapsed(total)),
+          strings.matchReportTotalTime(
+            formatElapsed(Duration(seconds: shownTotal)),
+          ),
+          semanticsLabel: strings.matchReportTotalTime(formatElapsed(total)),
           style: TextStyle(
             color: colors.onSurface.withValues(
               alpha: ClockTheme.dimmedContentOpacity,
@@ -406,12 +570,16 @@ class _SplitLabels extends StatelessWidget {
     required this.nameOfTwo,
     required this.oneSeconds,
     required this.twoSeconds,
+    required this.t,
   });
 
   final String nameOfOne;
   final String nameOfTwo;
   final int oneSeconds;
   final int twoSeconds;
+
+  /// Lo que llevan subidos los dos tiempos, de cero a uno.
+  final double t;
 
   @override
   Widget build(BuildContext context) {
@@ -425,6 +593,7 @@ class _SplitLabels extends StatelessWidget {
             seconds: oneSeconds,
             accent: colors.reportAccentOf(Player.one),
             alignEnd: false,
+            t: t,
           ),
         ),
         const SizedBox(width: ClockTheme.reportAccentGap),
@@ -434,6 +603,7 @@ class _SplitLabels extends StatelessWidget {
             seconds: twoSeconds,
             accent: colors.reportAccentOf(Player.two),
             alignEnd: true,
+            t: t,
           ),
         ),
       ],
@@ -449,6 +619,7 @@ class _SideLabel extends StatelessWidget {
     required this.seconds,
     required this.accent,
     required this.alignEnd,
+    required this.t,
   });
 
   final String name;
@@ -458,11 +629,15 @@ class _SideLabel extends StatelessWidget {
   /// Si va pegado al borde derecho, que es el lado del jugador dos.
   final bool alignEnd;
 
+  /// Lo que lleva subido el tiempo, de cero a uno.
+  final double t;
+
   @override
   Widget build(BuildContext context) {
     final strings = AppLocalizations.of(context)!;
     final colors = ClockColors.of(context);
     final time = formatElapsed(Duration(seconds: seconds));
+    final shown = formatElapsed(Duration(seconds: countUp(seconds, t)));
 
     final dot = Container(
       width: ClockTheme.reportAccentSize,
@@ -515,8 +690,10 @@ class _SideLabel extends StatelessWidget {
                   ],
           ),
           const SizedBox(height: 2),
+          // La fila entera ya se anuncia con [time], el definitivo: lo que
+          // se pinta es por dónde va la cuenta.
           Text(
-            time,
+            shown,
             style: TextStyle(
               color: colors.onSurface,
               fontSize: ClockTheme.reportPlayerTimeSize,
@@ -540,10 +717,17 @@ class _SideLabel extends StatelessWidget {
 /// porque los de dentro son el punto de encuentro y redondearlos lo
 /// desdibujaría.
 class _SplitBar extends StatelessWidget {
-  const _SplitBar({required this.oneSeconds, required this.twoSeconds});
+  const _SplitBar({
+    required this.oneSeconds,
+    required this.twoSeconds,
+    required this.t,
+  });
 
   final int oneSeconds;
   final int twoSeconds;
+
+  /// Lo que lleva abierta, de cero a uno. A cero es el reparto a medias.
+  final double t;
 
   @override
   Widget build(BuildContext context) {
@@ -556,9 +740,11 @@ class _SplitBar extends StatelessWidget {
         final usable = constraints.maxWidth - ClockTheme.reportBarGap;
         // Un partido sin tiempo no se reparte: se enseña a medias, que es lo
         // único honesto cuando no hay nada que comparar.
-        final oneWidth = total == 0
-            ? usable / 2
-            : usable * oneSeconds / total;
+        final share = total == 0 ? 0.5 : oneSeconds / total;
+        // Se abre desde el medio hasta donde cayó el reparto de verdad. Lo
+        // que hay que leer en esta barra es cuánto se desvía de ir igualados,
+        // así que lo que se mueve en pantalla es exactamente esa desviación.
+        final oneWidth = usable * (0.5 + (share - 0.5) * t.clamp(0.0, 1.0));
 
         return SizedBox(
           height: ClockTheme.reportBarHeight,
@@ -612,12 +798,20 @@ class _TurnChart extends StatelessWidget {
     required this.nameOfTwo,
     required this.turnsOfOne,
     required this.turnsOfTwo,
+    required this.t,
+    required this.averages,
   });
 
   final String nameOfOne;
   final String nameOfTwo;
   final List<Duration> turnsOfOne;
   final List<Duration> turnsOfTwo;
+
+  /// Lo que llevan recorrido las dos líneas, de cero a uno.
+  final double t;
+
+  /// Lo que llevan aparecidas las dos medias, de cero a uno.
+  final double averages;
 
   @override
   Widget build(BuildContext context) {
@@ -636,6 +830,9 @@ class _TurnChart extends StatelessWidget {
 
     // La gráfica es una imagen, así que lo que dice se cuenta aparte: para
     // quien no la ve, el dato que se señala es el mismo que se señala en ella.
+    final averageOne = _averageOf(one);
+    final averageTwo = _averageOf(two);
+
     final summary = [
       if (peakOne != null)
         strings.matchReportPeak(
@@ -643,11 +840,21 @@ class _TurnChart extends StatelessWidget {
           formatElapsed(Duration(seconds: one[peakOne])),
           peakOne + 1,
         ),
+      if (averageOne != null)
+        strings.matchReportAverage(
+          nameOfOne,
+          formatElapsed(Duration(seconds: averageOne)),
+        ),
       if (peakTwo != null)
         strings.matchReportPeak(
           nameOfTwo,
           formatElapsed(Duration(seconds: two[peakTwo])),
           peakTwo + 1,
+        ),
+      if (averageTwo != null)
+        strings.matchReportAverage(
+          nameOfTwo,
+          formatElapsed(Duration(seconds: averageTwo)),
         ),
     ].join('. ');
 
@@ -666,11 +873,20 @@ class _TurnChart extends StatelessWidget {
             colorTwo: colors.reportAccentOf(Player.two),
             ink: colors.onSurface,
             surface: colors.background,
+            progress: t,
+            averages: averages,
             textDirection: Directionality.of(context),
           ),
         ),
       ),
     );
+  }
+
+  /// Lo que le dura de media un turno a un jugador. Nula si no ha cerrado
+  /// ninguno, que es cuando no hay media que sacar.
+  static int? _averageOf(List<int> values) {
+    if (values.isEmpty) return null;
+    return (values.reduce((a, b) => a + b) / values.length).round();
   }
 
   /// Dónde está el turno más largo de un jugador, que es el único punto que
@@ -693,6 +909,8 @@ class _TurnChartPainter extends CustomPainter {
     required this.colorTwo,
     required this.ink,
     required this.surface,
+    required this.progress,
+    required this.averages,
     required this.textDirection,
   });
 
@@ -705,6 +923,17 @@ class _TurnChartPainter extends CustomPainter {
   /// El color del fondo, que es con el que se abre el anillo alrededor de la
   /// marca cuando las dos líneas se cruzan justo ahí.
   final Color surface;
+
+  /// Lo que llevan recorrido las dos líneas, de cero a uno. Mide turnos y no
+  /// longitud de trazo: a la mitad, cada línea ha llegado a su turno de en
+  /// medio, y las dos van por el mismo turno aunque una suba y baje más que
+  /// la otra. Es lo que las deja comparables mientras se dibujan.
+  final double progress;
+
+  /// Lo que llevan aparecidas las dos medias, de cero a uno. No recorren
+  /// nada: son una lectura del dibujo entero, así que se funden enteras.
+  final double averages;
+
   final TextDirection textDirection;
 
   @override
@@ -736,6 +965,10 @@ class _TurnChartPainter extends CustomPainter {
     if (plot.width <= 0 || plot.height <= 0) return;
 
     _paintGrid(canvas, plot, turns);
+    // Las medias van por debajo de las series: son la referencia contra la
+    // que se leen los picos, no algo que se lea por encima de ellos.
+    _paintAverage(canvas, plot, one, colorOne, maxSeconds);
+    _paintAverage(canvas, plot, two, colorTwo, maxSeconds);
     _paintSeries(canvas, plot, one, colorOne, maxSeconds, turns);
     _paintSeries(canvas, plot, two, colorTwo, maxSeconds, turns);
     _paintAxisLabels(canvas, plot, size, maxSeconds, turns);
@@ -760,6 +993,39 @@ class _TurnChartPainter extends CustomPainter {
     if (turns > TurnCount.turnsPerHalf) {
       final x = _xFor(plot, TurnCount.turnsPerHalf - 0.5, turns);
       canvas.drawLine(Offset(x, plot.top), Offset(x, plot.bottom), paint);
+    }
+  }
+
+  /// Lo que le dura de media un turno a este jugador, de lado a lado del
+  /// dibujo y a trazos.
+  ///
+  /// Es lo que convierte la gráfica en una comparación y no en dos garabatos:
+  /// con las dos medias puestas se ve de un vistazo quién iba más deprisa en
+  /// general, y cada pico se lee como lo que se salió de su propia media.
+  void _paintAverage(
+    Canvas canvas,
+    Rect plot,
+    List<int> values,
+    Color color,
+    int maxSeconds,
+  ) {
+    if (values.isEmpty || averages <= 0) return;
+
+    final mean = values.reduce((a, b) => a + b) / values.length;
+    final y = _yFor(plot, mean.round(), maxSeconds);
+    final paint = Paint()
+      ..color = color.withValues(
+        alpha: ClockTheme.reportAverageOpacity * averages.clamp(0.0, 1.0),
+      )
+      ..strokeWidth = ClockTheme.reportAverageWidth
+      ..style = PaintingStyle.stroke;
+
+    // A trazos a mano: el lienzo no sabe dibujar una línea discontinua, y
+    // traerse una dependencia para cuatro rayas no compensa.
+    const step = ClockTheme.reportAverageDash + ClockTheme.reportAverageDashGap;
+    for (var x = plot.left; x < plot.right; x += step) {
+      final end = math.min(x + ClockTheme.reportAverageDash, plot.right);
+      canvas.drawLine(Offset(x, y), Offset(end, y), paint);
     }
   }
 
@@ -788,22 +1054,46 @@ class _TurnChartPainter extends CustomPainter {
       ..strokeJoin = StrokeJoin.round
       ..strokeCap = StrokeCap.round;
 
+    // Hasta dónde ha llegado el recorrido, medido en turnos. La parte entera
+    // son los turnos ya alcanzados y el resto es lo que lleva andado del
+    // tramo siguiente, que se dibuja a medias: así la punta avanza sola en
+    // vez de ir saltando de turno en turno.
+    final reached = (points.length - 1) * progress.clamp(0.0, 1.0);
+    final whole = reached.floor();
+
     if (points.length == 1) {
-      canvas.drawCircle(points.first, ClockTheme.reportChartLineWidth, line);
-    } else {
+      if (progress > 0) {
+        canvas.drawCircle(points.first, ClockTheme.reportChartLineWidth, line);
+      }
+    } else if (reached > 0) {
       final path = Path()..moveTo(points.first.dx, points.first.dy);
-      for (final point in points.skip(1)) {
-        path.lineTo(point.dx, point.dy);
+      for (var i = 1; i <= whole; i++) {
+        path.lineTo(points[i].dx, points[i].dy);
+      }
+      if (whole < points.length - 1) {
+        final from = points[whole];
+        final to = points[whole + 1];
+        final step = reached - whole;
+        path.lineTo(
+          from.dx + (to.dx - from.dx) * step,
+          from.dy + (to.dy - from.dy) * step,
+        );
       }
       canvas.drawPath(path, line);
     }
 
-    // El turno más largo, y solo ese. El anillo del color del fondo lo
-    // despega de la otra línea cuando las dos pasan por el mismo sitio.
+    // El turno más largo, y solo ese. Sale cuando la línea llega a él, no al
+    // final: la marca es el remate del recorrido por ese turno, y puesta
+    // antes de tiempo estaría señalando algo que todavía no se ha dibujado.
+    //
+    // El anillo del color del fondo la despega de la otra línea cuando las
+    // dos pasan por el mismo sitio.
     var peak = 0;
     for (var i = 1; i < values.length; i++) {
       if (values[i] > values[peak]) peak = i;
     }
+    if (reached < peak) return;
+
     final centre = points[peak];
     canvas.drawCircle(
       centre,
@@ -888,6 +1178,10 @@ class _TurnChartPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_TurnChartPainter old) =>
+      // El primero es el que manda mientras las líneas se dibujan: sin él la
+      // gráfica se quedaría en el primer fotograma del recorrido.
+      old.progress != progress ||
+      old.averages != averages ||
       !listEquals(old.one, one) ||
       !listEquals(old.two, two) ||
       old.colorOne != colorOne ||

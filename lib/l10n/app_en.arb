@@ -104,6 +104,14 @@
       "number": { "type": "int" }
     }
   },
+  "matchReportAverage": "{name}: average turn {time}",
+  "@matchReportAverage": {
+    "description": "Lo que un lector de pantalla dice de la línea discontinua de un jugador en la gráfica del acta, que marca lo que le dura un turno de media",
+    "placeholders": {
+      "name": { "type": "String" },
+      "time": { "type": "String" }
+    }
+  },
   "matchReportShare": "Share",
   "@matchReportShare": {
     "description": "Botón del acta que hace una foto de ella y la saca por el menú de compartir del sistema"
