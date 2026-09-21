@@ -8,11 +8,12 @@
 <meta name="robots" content="index, follow">
 <style>
   :root {
-    --fondo: #0b0f19;
-    --superficie: #161b26;
-    --texto: #f8fafc;
-    --apagado: #94a3b8;
+    --fondo: #ffffff;
+    --superficie: #f4f5f7;
+    --texto: #14161c;
+    --apagado: #5b6270;
     --acento: #1d4ed8;
+    --borde: rgba(20, 22, 28, 0.12);
   }
   * { box-sizing: border-box; }
   body {
@@ -28,11 +29,12 @@
   h1 { font-size: 1.75rem; line-height: 1.25; margin: 0 0 0.35rem; }
   h2 {
     font-size: 1.1rem;
+    font-weight: 700;
     margin: 2.25rem 0 0.6rem;
     padding-top: 1.25rem;
-    border-top: 1px solid rgba(248, 250, 252, 0.1);
+    border-top: 1px solid var(--borde);
   }
-  p, li { color: #dbe3ee; }
+  p, li { color: var(--texto); }
   .fecha { color: var(--apagado); font-size: 0.9rem; margin: 0 0 2rem; }
   .destacado {
     background: var(--superficie);
@@ -44,11 +46,11 @@
   .destacado p { margin: 0; }
   ul { padding-left: 1.25rem; }
   li { margin-bottom: 0.4rem; }
-  a { color: #93b4ff; }
+  a { color: var(--acento); }
   footer {
     margin-top: 3rem;
     padding-top: 1.25rem;
-    border-top: 1px solid rgba(248, 250, 252, 0.1);
+    border-top: 1px solid var(--borde);
     color: var(--apagado);
     font-size: 0.85rem;
   }
@@ -66,7 +68,7 @@
   </div>
 
   <h2>Qué datos se recogen</h2>
-  <p>Ninguno. Turnover! no recoge, almacena ni transmite ningún dato personal.</p>
+  <p>Ningún dato. Turnover! no recoge, almacena ni transmite ningún dato personal.</p>
   <p>La aplicación no se conecta a internet, no pide ningún permiso del sistema,
   no usa publicidad ni análisis de uso, y no incluye ningún componente de
   terceros que recoja información.</p>
@@ -76,7 +78,7 @@
   preguntarlas en la partida siguiente:</p>
   <ul>
     <li>Los tiempos configurables: el turno, el tiempo extra y los dos avisos previos.</li>
-    <li>El nombre que haya puesto el dueño del móvil a su mitad de la pantalla.</li>
+    <li>El nombre que haya puesto la persona usuaria a su mitad de la pantalla.</li>
   </ul>
   <p>Esta información no sale del dispositivo, no se envía a ningún servidor y
   nadie más que la propia aplicación la lee. Se borra entera al desinstalar.</p>
@@ -88,27 +90,40 @@
   los dos jugadores y ofrece compartirla. Al pulsar ese botón, la aplicación
   genera una imagen del acta y se la entrega al menú de compartir del
   sistema.</p>
-  <p>A partir de ahí manda quien pulsa: la aplicación no elige el destino, no
-  envía nada a ningún servidor y no guarda copia de la imagen. El fichero
-  temporal con el que viaja lo gestiona el sistema operativo.</p>
+  <p>De ahí en adelante decide la persona que pulsa: la aplicación no elige el
+  destino, no envía nada a ningún servidor y no guarda copia de la imagen. El
+  fichero temporal con el que viaja lo gestiona el sistema operativo.</p>
 
   <h2>Copias de seguridad del sistema</h2>
   <p>En dispositivos Apple, los ajustes guardados pueden acabar en la copia de
   seguridad de iCloud de la cuenta, porque el sistema la hace por su cuenta
-  sobre el almacenamiento de las aplicaciones. Esa copia la gestiona Apple según
-  su propia política de privacidad, y su contenido no es accesible para el autor
-  de esta aplicación.</p>
+  sobre el almacenamiento de las aplicaciones. En dispositivos Android, puede
+  ocurrir lo mismo con la copia de seguridad de Google. Esas copias las
+  gestionan Apple y Google según su propia política de privacidad, y su
+  contenido no es accesible para el responsable de esta aplicación.</p>
 
   <h2>Menores</h2>
   <p>La aplicación no recoge datos de nadie, tampoco de menores.</p>
+
+  <h2>Derechos de las personas usuarias</h2>
+  <p>Como Turnover! no recoge, almacena ni transmite ningún dato personal, no
+  hay datos sobre los que ejercer derechos de acceso, rectificación,
+  supresión ni portabilidad: no existe ningún fichero ni base de datos en el
+  que figuren.</p>
+
+  <h2>Legislación aplicable</h2>
+  <p>Esta política se rige por la legislación española y, en lo que
+  corresponda, por el Reglamento General de Protección de Datos (RGPD) de la
+  Unión Europea.</p>
 
   <h2>Cambios</h2>
   <p>Si esta política cambiara, la versión nueva se publicará en esta misma
   dirección con su fecha de actualización.</p>
 
-  <h2>Contacto</h2>
-  <p>Para cualquier duda sobre esta política:
-  <a href="mailto:lukegothic@gmail.com">lukegothic@gmail.com</a></p>
+  <h2>Responsable y contacto</h2>
+  <p>El responsable de esta aplicación es Ivan Perez. Para cualquier duda
+  sobre esta política:
+  <a href="mailto:ivanperez.consulting@gmail.com">ivanperez.consulting@gmail.com</a></p>
 
   <footer>
     <p>Blood Bowl es una marca registrada de Games Workshop Limited. Turnover! no
