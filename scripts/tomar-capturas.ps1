@@ -1,4 +1,5 @@
-# Toma las ocho capturas de la ficha de Play y las deja en store/es-ES/screenshots/.
+# Toma las ocho capturas de la ficha de Play y las deja en
+# store/play-store/es-ES/screenshots/.
 #
 # Necesita el APK de capturas ya instalado:
 #
@@ -11,7 +12,7 @@
 
 param(
     [string]$Serial = '',
-    [string]$OutDir = 'store/es-ES/screenshots'
+    [string]$OutDir = 'store/play-store/es-ES/screenshots'
 )
 
 # adb escribe por stderr cosas que no son errores (el resumen de `pull`). Con

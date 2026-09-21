@@ -32,6 +32,23 @@ La pantalla de inicio estrena el centro del campo, con el escudo de la liga.
 Los textos de los ajustes se leen mejor y los relojes ya no se mueven de sitio al empezar el partido.
 ```
 
+## 1.2.1 (versión 9)
+
+Ocupa 450 caracteres. Cuatro párrafos, uno por cosa que se nota al abrir la
+aplicación. Cuenta lo acumulado desde la 1.0.1, que es la última que se publicó:
+las versiones de en medio no llegaron a la tienda, así que quien actualiza ve
+todo esto de golpe.
+
+```
+Cada jugador lleva ahora su cuenta de turnos, del 1 al 16, y el cronómetro se para solo al cambiar de parte.
+
+El velo de pausa estrena el botón de Tiempo muerto: el resultado de patada inicial que mueve las cuentas de los dos.
+
+El partido termina con un acta, con el tiempo de cada jugador, el reparto y una gráfica turno a turno. Se comparte como imagen.
+
+Los avisos previos pasan a ser dos, y la aplicación sigue el modo claro u oscuro del aparato.
+```
+
 ## Para las versiones siguientes
 
 Cuando haya cambios de verdad, las notas los cuentan en lugar de describir la
