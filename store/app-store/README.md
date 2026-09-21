@@ -7,7 +7,8 @@ separados porque las dos tiendas no piden lo mismo: las capturas de Play son de
 | Fichero | Para qué |
 |---|---|
 | `es-ES/ficha.md` | nombre, subtítulo, texto promocional, descripción, palabras clave y las notas para el equipo de revisión |
-| `es-ES/screenshots/` | las ocho capturas, 1320x2868 |
+| `es-ES/screenshots/` | las ocho capturas de la ranura de 6,9", 1320x2868 |
+| `es-ES/screenshots-6.7/` | las mismas ocho para la ranura de 6,7", 1284x2778 |
 | `previsualizaciones.md` | por qué no hay vídeo de previsualización y qué haría falta |
 
 La descripción es la misma que la de Play, que vive en `../es-ES/ficha.md` y no
@@ -24,6 +25,19 @@ Las toma en el simulador del iPhone 17 Pro Max, que es el que da los 1320x2868
 que App Store pide para las de 6,9 pulgadas. El script comprueba el tamaño antes
 de dar la tanda por buena: una captura del simulador equivocado entra igual y no
 se ve hasta que la tienda la rechaza.
+
+La ranura de 6,7 pulgadas sale del iPhone 14 Plus, que da 1284x2778:
+
+```sh
+./scripts/tomar-capturas-ios.sh --aparato "iPhone 14 Plus"
+```
+
+No hace falta subirla: App Store Connect reduce sola la de 6,9 para las
+pantallas menores. Está porque se pidió, y porque una captura pensada para la
+pantalla en la que se ve gana algo frente a una reducida.
+
+La ranura de 6,5 pulgadas (1242x2688) se queda sin hacer: pide un iPhone 11 Pro
+Max o un XS Max, y en este Mac no hay ninguno instalado.
 
 Para la tanda en inglés:
 

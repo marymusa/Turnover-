@@ -1,6 +1,8 @@
 # Previsualizaciones de App Store
 
-Todavía no hay ninguna, y esto explica por qué y qué haría falta.
+Todavía no hay ninguna, y esto explica por qué y qué haría falta. Para la
+primera versión se publica sin ellas: son opcionales y las capturas sostienen la
+ficha.
 
 ## Son vídeo, no imagen
 
