@@ -201,6 +201,17 @@ Cuestionario de utilidad sin contenido sensible: sin violencia, sin lenguaje
 soez, sin contenido sexual, sin juego con dinero real, sin compras y sin
 interacción entre usuarios. Resultado esperado: 4+.
 
+## Cumplimiento de exportación
+
+`ITSAppUsesNonExemptEncryption` está a `false` en el `Info.plist`. La aplicación
+no cifra nada por su cuenta, y sin esa clave App Store Connect pregunta por el
+cifrado en cada compilación y retiene la versión hasta que alguien contesta.
+
+Esto se explica aquí y no en el propio `Info.plist` porque Xcode reescribe ese
+fichero cuando le toca, ordenando las claves alfabéticamente y **borrando los
+comentarios**. Ya pasó dos veces. El valor sobrevive; lo que se pierde es el
+porqué, así que el porqué vive fuera.
+
 ## Privacidad de la aplicación
 
 No se recoge ningún dato. En el cuestionario de App Store Connect, **No, no
