@@ -133,6 +133,15 @@ vibre flojo. En el código, `AlertSound` y `VibrationLevel`. Nunca un número de
 pulsaciones: lo que sube con la gravedad son la fuerza y la duración de una sola
 vibración, no cuántas son (ADR-0005).
 
+**tacto**: la respuesta al dedo, lo que confirma que un toque ha entrado. No es la
+vibración de las bocinas y no comparte nada con ella: aquella avisa a quien no está
+mirando la pantalla y sale por el canal de avisos, y el tacto contesta a un dedo que
+está encima del cristal y sale por el canal de las hápticas de la vista, el que el
+jugador apaga con la casilla de vibrar al tocar. Que esa casilla lo silencie es lo
+que el jugador ha pedido, no un fallo. Solo lo llevan los cambios de estado: abrir un
+diálogo no cambia nada y cancelar deja las cosas como estaban, así que ninguno de los
+dos responde (ADR-0014).
+
 ## Reglas del dominio
 
 - Los dos jugadores son simétricos en tiempo: mismo turno, mismo tiempo extra.

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../l10n/app_localizations.dart';
 import 'clock_colors.dart';
+import 'touch_feedback.dart';
 
 /// Pide el nombre nuevo de un jugador. Devuelve lo escrito, o nulo si se
 /// cancela: borrar el campo entero devuelve la cadena vacía, que para quien
@@ -36,7 +37,12 @@ class _RenameDialogState extends State<_RenameDialog> {
     super.dispose();
   }
 
-  void _submit() => Navigator.of(context).pop(_field.text);
+  /// Guardar, tanto por el botón como por la tecla de hecho del teclado. El
+  /// tacto va aquí y no en el botón para que los dos caminos respondan igual.
+  void _submit() {
+    TouchFeedback.accepted();
+    Navigator.of(context).pop(_field.text);
+  }
 
   @override
   Widget build(BuildContext context) {

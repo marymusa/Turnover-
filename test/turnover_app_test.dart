@@ -4,7 +4,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter/services.dart' show SystemChannels, rootBundle;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:turnover/domain/alert_player.dart';
 import 'package:turnover/domain/awake_guard.dart';
@@ -420,6 +420,143 @@ void main() {
           reason: 'la costura se come el reloj ${clock.data}',
         );
       }
+    });
+  });
+
+  // El tacto: lo que contesta al dedo. Lo que se fija aquí no es qué
+  // intensidad lleva cada sitio, que es documentación y vive en el ADR-0014,
+  // sino lo estructural, que es lo que un refactor rompe sin hacer ruido: que
+  // un gesto responda una vez y no dos, que lo que no cambia nada no responda,
+  // y que un deslizador responda por paso y no por movimiento.
+  group('el tacto', () {
+    testWidgets('pasar turno tocando la mitad responde una sola vez', (
+      tester,
+    ) async {
+      await tester.pumpWidget(_app(store: MemorySettingsStore()));
+      await _settle(tester);
+      await _startAndSpend(tester);
+
+      final haptics = _recordHaptics(tester);
+      await tester.tap(find.byType(PlayerHalf).first);
+      await _settle(tester);
+
+      expect(haptics, ['HapticFeedbackType.mediumImpact']);
+    });
+
+    // El botón de la costura y la mitad son la misma acción, así que se notan
+    // igual: notarlas distinto diría que no lo son.
+    testWidgets('pasar turno desde la costura se nota igual que la mitad', (
+      tester,
+    ) async {
+      await tester.pumpWidget(_app(store: MemorySettingsStore()));
+      await _settle(tester);
+      await _startAndSpend(tester);
+
+      final haptics = _recordHaptics(tester);
+      await tester.tap(find.bySemanticsLabel('End my turn'));
+      await _settle(tester);
+
+      expect(haptics, ['HapticFeedbackType.mediumImpact']);
+    });
+
+    // Pausado, pasar turno está deshabilitado y el toque se lo queda el velo,
+    // que reanuda. Lo que no puede pasar es que se note como un pase de turno:
+    // el tacto diría que ha pasado algo que no ha pasado.
+    testWidgets('pasar turno bloqueado no se nota como un pase', (
+      tester,
+    ) async {
+      await tester.pumpWidget(_app(store: MemorySettingsStore()));
+      await _settle(tester);
+      await _startAndSpend(tester);
+      await tester.tap(find.bySemanticsLabel('Pause'));
+      await _settle(tester);
+
+      final haptics = _recordHaptics(tester);
+      await tester.tap(find.bySemanticsLabel('End my turn'));
+      await _settle(tester);
+
+      expect(haptics, isNot(contains('HapticFeedbackType.mediumImpact')));
+    });
+
+    // Abrir el diálogo no cambia nada y cancelarlo deja las cosas como
+    // estaban: ninguno de los dos responde. El peso lo lleva confirmar.
+    testWidgets('abrir y cancelar el reinicio no responde', (tester) async {
+      await tester.pumpWidget(_app(store: MemorySettingsStore()));
+      await _settle(tester);
+      await _startAndSpend(tester);
+
+      final haptics = _recordHaptics(tester);
+      await tester.tap(_resetControl);
+      await _settle(tester);
+      await tester.tap(find.text('Cancel'));
+      await _settle(tester);
+
+      expect(haptics, isEmpty);
+    });
+
+    // Pide el más pesado que hay, aunque en Android la plataforma lo sirva
+    // flojo: lo que se fija es a qué se llama, que es lo que esta pantalla
+    // decide, y no cómo se acaba notando, que decide el fabricante (ADR-0014).
+    testWidgets('confirmar el reinicio pide el tacto más pesado', (
+      tester,
+    ) async {
+      await tester.pumpWidget(_app(store: MemorySettingsStore()));
+      await _settle(tester);
+      await _startAndSpend(tester);
+
+      final haptics = _recordHaptics(tester);
+      await _confirmReset(tester);
+
+      expect(haptics, ['HapticFeedbackType.heavyImpact']);
+    });
+
+    // Un arrastre son muchos avisos de cambio y pocos pasos. Lo que se nota es
+    // cruzar de un paso al siguiente, así que tres pasos son tres tactos, por
+    // muchos fotogramas que haya costado recorrerlos.
+    testWidgets('el deslizador responde por paso y no por movimiento', (
+      tester,
+    ) async {
+      await tester.pumpWidget(_app(store: MemorySettingsStore()));
+      await _settle(tester);
+      await tester.tap(find.bySemanticsLabel('Settings'));
+      await _settle(tester);
+
+      final slider = find.byType(Slider).first;
+      final stepWidth = tester.getSize(slider).width /
+          (_maxTurnMinutes - _minTurnMinutes);
+
+      final haptics = _recordHaptics(tester);
+      final gesture = await tester.startGesture(tester.getCenter(slider));
+
+      // Se va apuntando en qué paso queda el deslizador después de cada
+      // movimiento. Contar los cambios de esa lista es lo que dice cuántas
+      // veces tenía que haberse notado, sin depender de dónde caiga el dedo al
+      // empezar ni de cuánto mide un paso en pantalla.
+      var step = tester.widget<Slider>(slider).value.round();
+      var changes = 0;
+      const moves = 12;
+      for (var i = 0; i < moves; i++) {
+        // A cuartos de paso, que es como llega un dedo de verdad: muchos
+        // avisos de cambio para recorrer unos pocos pasos.
+        await gesture.moveBy(Offset(stepWidth / 4, 0));
+        await tester.pump();
+        final now = tester.widget<Slider>(slider).value.round();
+        if (now != step) {
+          step = now;
+          changes++;
+        }
+      }
+      await gesture.up();
+      await _settle(tester);
+
+      // Un tacto por cada vez que el deslizador cambió de paso. Ni uno por
+      // movimiento, que es la queja que esta prueba existe para impedir, ni
+      // uno por cada paso de la escala: un salto que cruza tres de golpe es un
+      // solo movimiento y se nota una vez.
+      expect(changes, greaterThan(1), reason: 'el arrastre no movió nada');
+      expect(haptics, hasLength(changes));
+      expect(haptics.length, lessThan(moves));
+      expect(haptics.toSet(), {'HapticFeedbackType.selectionClick'});
     });
   });
 
@@ -1175,6 +1312,35 @@ bool _looksLikeClock(String? text) =>
 
 /// La mitad que pinta ese nombre. La pulsacion larga va sobre la mitad entera,
 /// asi que hay que apuntar a ella y no al texto.
+/// Apunta lo que sale por la háptica de la vista, que es por donde va el tacto.
+///
+/// Se pincha el canal de plataforma entero, que es el único sitio por el que
+/// `HapticFeedback` habla, y se devuelve solo el tipo de cada golpe: el resto
+/// de lo que pasa por ahí, como la orientación de la pantalla, no es de esta
+/// prueba. Se deja puesto hasta el final del test.
+List<String> _recordHaptics(WidgetTester tester) {
+  final types = <String>[];
+  final messenger = tester.binding.defaultBinaryMessenger;
+  messenger.setMockMethodCallHandler(SystemChannels.platform, (call) async {
+    if (call.method == 'HapticFeedback.vibrate') {
+      types.add(call.arguments as String? ?? 'HapticFeedback.vibrate');
+    }
+    return null;
+  });
+  addTearDown(
+    () => messenger.setMockMethodCallHandler(SystemChannels.platform, null),
+  );
+  return types;
+}
+
+/// Los extremos del deslizador del turno y el valor con el que arranca, que es
+/// el del turno por defecto. Se repiten aquí porque los de
+/// `settings_screen.dart` y `match_settings.dart` son privados. Con los
+/// extremos se calcula cuánto mide un paso en pantalla. El paso de partida no
+/// se repite: es el turno por defecto, que el dominio ya publica.
+const _minTurnMinutes = 1.0;
+const _maxTurnMinutes = 10.0;
+
 Finder _halfShowing(String name) =>
     find.ancestor(of: find.text(name), matching: find.byType(PlayerHalf));
 

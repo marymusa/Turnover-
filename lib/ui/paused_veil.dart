@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import 'clock_colors.dart';
 import 'clock_theme.dart';
+import 'touch_feedback.dart';
 
 /// El velo que cubre la pantalla con el partido pausado. Dice por qué está
 /// puesto y cómo se quita, tocarlo en cualquier sitio reanuda, y lleva además
@@ -39,6 +40,15 @@ class PausedVeil extends StatelessWidget {
     final strings = AppLocalizations.of(context)!;
     final colors = ClockColors.of(context);
     final statusText = status ?? strings.paused;
+    // Uno solo para los dos sitios que reanudan. El nodo de semántica y el
+    // gesto declaran la misma acción por caminos distintos, y un toque entra
+    // por uno o por otro, nunca por los dos: compartir la función es lo que
+    // garantiza que el tacto salga una vez y no dos.
+    void resumeWithFeedback() {
+      TouchFeedback.clockToggled();
+      onResume();
+    }
+
     // Las dos filas se escriben igual: son la misma frase partida en dos, y lo
     // que las separa es el hueco, no el tamaño.
     final textStyle = TextStyle(
@@ -63,9 +73,9 @@ class PausedVeil extends StatelessWidget {
       // `GestureDetector` se hacía uno suyo, se llevaba el toque fuera del
       // botón anunciado y de paso se quedaba con el encabezado del Time-Out
       // de etiqueta.
-      onTap: onResume,
+      onTap: resumeWithFeedback,
       child: GestureDetector(
-        onTap: onResume,
+        onTap: resumeWithFeedback,
         excludeFromSemantics: true,
         // Opaco al toque también donde el velo es transparente: lo que cubre
         // lo cubre entero.
@@ -135,6 +145,8 @@ class PausedVeil extends StatelessWidget {
                   const SizedBox(height: ClockTheme.veilLabelGap),
                   _TimeOutButton(
                     label: strings.timeOut,
+                    // Sin tacto: abre un diálogo y no aplica la regla. Quien
+                    // responde es el botón de confirmar.
                     onPressed: onTimeOut,
                   ),
                 ],

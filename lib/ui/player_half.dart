@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import '../domain/clock_format.dart';
 import '../l10n/app_localizations.dart';
 import 'clock_colors.dart';
 import 'clock_theme.dart';
+import 'touch_feedback.dart';
 
 /// La mitad de un jugador: su nombre, el turno grande, la reserva debajo y la
 /// barra del reloj que corre. La de arriba se gira 180 grados para que cada
@@ -64,8 +64,16 @@ class PlayerHalf extends StatelessWidget {
   /// que la pulsación ha entrado sin esperar a la animación. Sale por el canal
   /// normal del sistema, así que respeta su configuración (ADR-0005).
   void _renameWithFeedback() {
-    HapticFeedback.selectionClick();
+    TouchFeedback.gestureRecognised();
     onRename!();
+  }
+
+  /// El toque que pasa turno, y el que arranca el partido. La pantalla decide
+  /// qué hace; aquí solo se contesta al dedo, y se contesta antes de llamar,
+  /// para que el tacto no espere a lo que venga detrás.
+  void _passTurnWithFeedback() {
+    TouchFeedback.turnPassed();
+    onTap();
   }
 
   @override
@@ -183,7 +191,7 @@ class PlayerHalf extends StatelessWidget {
     );
 
     return GestureDetector(
-      onTap: onTap,
+      onTap: _passTurnWithFeedback,
       onLongPress: onRename == null ? null : _renameWithFeedback,
       behavior: HitTestBehavior.opaque,
       child: isUpsideDown ? RotatedBox(quarterTurns: 2, child: half) : half,

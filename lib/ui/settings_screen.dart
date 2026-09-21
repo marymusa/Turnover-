@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../domain/match_settings.dart';
 import '../l10n/app_localizations.dart';
 import 'clock_colors.dart';
+import 'touch_feedback.dart';
 
 /// Los tiempos configurables, con un deslizador cada uno: el del turno, el del
 /// tiempo extra y el de los dos avisos previos, que lleva dos agarres y por eso
@@ -93,14 +94,40 @@ const _warningDivisions = 11;
 /// la derecha, el del número mayor, es el que suena antes. Es lo que obliga a
 /// cruzar el orden: `RangeSlider` exige `start <= end`, y el aviso temprano es
 /// el de más segundos.
-class _WarningSetting extends StatelessWidget {
+class _WarningSetting extends StatefulWidget {
   const _WarningSetting({required this.settings, required this.strings});
 
   final MatchSettings settings;
   final AppLocalizations strings;
 
   @override
+  State<_WarningSetting> createState() => _WarningSettingState();
+}
+
+/// Con estado por lo mismo que [_TimeSetting], y con un paso por agarre: mover
+/// el de la izquierda no puede hacer sonar al de la derecha, que no se ha
+/// movido. Dos agarres, dos pasos anteriores.
+class _WarningSettingState extends State<_WarningSetting> {
+  int? _lastStart;
+  int? _lastEnd;
+
+  /// Un tacto por movimiento aunque se muevan los dos agarres a la vez: lo que
+  /// se nota es que el control ha pasado de paso, no cuántos agarres lo han
+  /// hecho.
+  void _detentIfStepChanged(RangeValues values) {
+    final start = values.start.round();
+    final end = values.end.round();
+    if (start != _lastStart || end != _lastEnd) {
+      _lastStart = start;
+      _lastEnd = end;
+      TouchFeedback.detent();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final settings = widget.settings;
+    final strings = widget.strings;
     final earlySeconds = settings.earlyWarning.inSeconds.toDouble().clamp(
       _minWarningSeconds,
       _maxWarningSeconds,
@@ -131,10 +158,17 @@ class _WarningSetting extends StatelessWidget {
           strings.seconds(lateSeconds.round()),
           strings.seconds(earlySeconds.round()),
         ),
-        onChanged: (values) => settings.save(
-          warning: Duration(seconds: values.start.round()),
-          earlyWarning: Duration(seconds: values.end.round()),
-        ),
+        onChangeStart: (values) {
+          _lastStart = values.start.round();
+          _lastEnd = values.end.round();
+        },
+        onChanged: (values) {
+          _detentIfStepChanged(values);
+          settings.save(
+            warning: Duration(seconds: values.start.round()),
+            earlyWarning: Duration(seconds: values.end.round()),
+          );
+        },
       ),
     );
   }
@@ -144,6 +178,7 @@ class _WarningSetting extends StatelessWidget {
   /// separados se enseñan los dos. Con el tardío en cero y el temprano arriba
   /// queda un aviso, el temprano, que es el que se enseña.
   String _valueText(double early, double late) {
+    final strings = widget.strings;
     if (early <= 0 && late <= 0) return strings.settingsWarningOff;
     if (late <= 0) return strings.seconds(early.round());
     if (early <= late) return strings.seconds(late.round());
@@ -151,7 +186,7 @@ class _WarningSetting extends StatelessWidget {
   }
 }
 
-class _TimeSetting extends StatelessWidget {
+class _TimeSetting extends StatefulWidget {
   const _TimeSetting({
     required this.name,
     required this.hint,
@@ -171,21 +206,45 @@ class _TimeSetting extends StatelessWidget {
   final ValueChanged<double> onChanged;
 
   @override
+  State<_TimeSetting> createState() => _TimeSettingState();
+}
+
+/// Con estado solo por el tacto: lo que guarda es en qué paso estaba el dedo la
+/// última vez, para responder al cruzar de uno a otro y no en cada movimiento.
+///
+/// El paso anterior no se puede leer de `amount`, que es lo que ya está
+/// guardado. `MatchSettings.save` escribe en disco antes de avisar, así que
+/// durante un arrastre rápido llegan varios avisos de cambio antes de que
+/// `amount` se entere: comparando contra él saldrían varios tactos en el mismo
+/// paso y ninguno en el siguiente. Por eso el paso de partida lo fija
+/// `onChangeStart`, que es exacto y no depende de ninguna escritura.
+class _TimeSettingState extends State<_TimeSetting> {
+  int? _lastStep;
+
+  @override
   Widget build(BuildContext context) {
     final colors = ClockColors.of(context);
     return _Setting(
-      name: name,
-      hint: hint,
-      value: value,
+      name: widget.name,
+      hint: widget.hint,
+      value: widget.value,
       child: Slider(
-        value: amount.clamp(min, max),
-        min: min,
-        max: max,
-        divisions: (max - min).round(),
+        value: widget.amount.clamp(widget.min, widget.max),
+        min: widget.min,
+        max: widget.max,
+        divisions: (widget.max - widget.min).round(),
         activeColor: colors.active,
         inactiveColor: colors.onSurface.withValues(alpha: 0.14),
-        label: value,
-        onChanged: onChanged,
+        label: widget.value,
+        onChangeStart: (value) => _lastStep = value.round(),
+        onChanged: (value) {
+          final step = value.round();
+          if (step != _lastStep) {
+            _lastStep = step;
+            TouchFeedback.detent();
+          }
+          widget.onChanged(value);
+        },
       ),
     );
   }
