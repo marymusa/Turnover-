@@ -4,6 +4,10 @@ Lo que hay que pegar en Play Console, ya escrito y medido. Un idioma por
 carpeta: hoy solo `es-ES/`, porque la ficha se publica en castellano y el inglés
 se añade después sin tocar el binario.
 
+Lo de App Store va aparte, en `app-store/`, porque las dos tiendas no piden el
+mismo tamaño de captura. Lo escrito (nombre, descripción, cuestionarios) sirve
+para las dos y no se duplica: vive aquí.
+
 | Fichero | Para qué |
 |---|---|
 | `es-ES/ficha.md` | nombre, descripción breve, descripción completa y las respuestas de los cuestionarios |
@@ -14,6 +18,7 @@ se añade después sin tocar el binario.
 | `es-ES/icono-512.png` | el icono de la ficha |
 | `es-ES/grafico-destacado-1024x500.png` | el gráfico destacado |
 | `web/` | la política ya publicada y el zip con el que se subió |
+| `app-store/` | lo que solo vale para App Store: las capturas de 1320x2868 |
 
 ## La política de privacidad, publicada
 

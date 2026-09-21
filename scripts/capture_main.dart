@@ -17,8 +17,27 @@
 /// del `Stack` de la pantalla quedaba por debajo de las mitades, que se comen
 /// el toque con `HitTestBehavior.opaque`.
 ///
-/// `scripts/tomar-capturas.ps1` hace el recorrido entero.
+/// `scripts/tomar-capturas.ps1` hace el recorrido entero en Android.
+///
+/// En iOS no vale el recorrido a toques: `simctl` sabe arrancar, fotografiar y
+/// matar, pero no sabe tocar la pantalla. Así que allí la aplicación se arranca
+/// una vez por captura y se le dice cuál le toca dejándole una nota:
+///
+///     <contenedor de datos>/tmp/turnover-captura.txt
+///
+/// con el índice en la primera línea y el idioma (`es` o `en`) en la segunda.
+/// El script saca esa ruta con `simctl get_app_container`, y aquí se llega a
+/// ella por `Directory.systemTemp`, que en iOS es el `tmp` del contenedor.
+///
+/// La nota y no el entorno porque en iOS `Platform.environment` le llega vacía
+/// a Dart: `SIMCTL_CHILD_...` no la cruza, y se comprobó midiéndolo. Sin nota
+/// se arranca por la primera captura, que es lo que hace Android.
+///
+/// Se lee una sola vez, al nacer: cambiar la nota con la aplicación abierta no
+/// hace nada.
 library;
+
+import 'dart:io' show Directory, File;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -244,6 +263,38 @@ final _shots = <_Shot>[
   ),
 ];
 
+/// Lo que la tanda de capturas pide: por qué captura empezar y en qué idioma.
+///
+/// Se lee una sola vez, al arrancar. Cualquier cosa rara en la nota (que no
+/// esté, que no se pueda leer, que traiga un índice que no existe) se resuelve
+/// con la primera captura en castellano: el script comprueba después que la
+/// tanda no traiga dos capturas iguales, que es donde se ve si esto ha pasado.
+class _Nota {
+  const _Nota(this.indice, this.idioma);
+
+  final int indice;
+  final String idioma;
+
+  static const _fichero = 'turnover-captura.txt';
+
+  static _Nota leer() {
+    try {
+      final nota = File('${Directory.systemTemp.path}/$_fichero');
+      if (!nota.existsSync()) return const _Nota(0, 'es');
+      final lineas = nota.readAsLinesSync();
+      final indice = int.tryParse(lineas.isEmpty ? '' : lineas.first.trim());
+      return _Nota(
+        indice == null || indice < 0 || indice >= _shots.length ? 0 : indice,
+        lineas.length > 1 ? lineas[1].trim() : 'es',
+      );
+    } catch (_) {
+      return const _Nota(0, 'es');
+    }
+  }
+}
+
+final _nota = _Nota.leer();
+
 class _CaptureApp extends StatefulWidget {
   const _CaptureApp();
 
@@ -252,7 +303,21 @@ class _CaptureApp extends StatefulWidget {
 }
 
 class _CaptureAppState extends State<_CaptureApp> {
-  int _index = 0;
+  /// Por qué captura se empieza. En Android siempre es la primera y al resto se
+  /// llega a toques; en iOS se arranca una vez por captura y esto dice cuál.
+  ///
+  /// Un valor que no sea un índice de la lista se ignora y arranca por la
+  /// primera: una tanda que empieza donde no debe se nota mirando las capturas,
+  /// y para entonces ya se ha perdido el rato.
+  int _index = _nota.indice;
+
+  /// El idioma de la ficha que se está fotografiando. La aplicación de verdad
+  /// lo saca del sistema (ADR-0004), pero aquí se fija: una tanda entera tiene
+  /// que salir en el mismo idioma, y no en el que tenga puesto el simulador.
+  static Locale get _idioma => AppLocalizations.supportedLocales.firstWhere(
+    (locale) => locale.languageCode == _nota.idioma,
+    orElse: () => const Locale('es'),
+  );
 
   final _store = _MemoryStore();
 
@@ -302,7 +367,7 @@ class _CaptureAppState extends State<_CaptureApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      locale: const Locale('es'),
+      locale: _idioma,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       // Los dos temas y que mande el aparato, igual que la aplicacion de
