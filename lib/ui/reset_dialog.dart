@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../l10n/app_localizations.dart';
 import 'clock_colors.dart';
+import 'touch_feedback.dart';
 
 /// Pide confirmación antes de reiniciar. Devuelve `true` solo si se confirma:
 /// cerrar el diálogo por cualquier otro camino es no reiniciar.
@@ -39,7 +40,12 @@ class _ResetDialog extends StatelessWidget {
           child: Text(strings.cancel),
         ),
         TextButton(
-          onPressed: () => Navigator.of(context).pop(true),
+          // El único tacto fuerte de la aplicación. El peso es el aviso: lo
+          // que se acaba de tocar pierde el partido y no se deshace.
+          onPressed: () {
+            TouchFeedback.destroyed();
+            Navigator.of(context).pop(true);
+          },
           child: Text(strings.resetConfirm),
         ),
       ],

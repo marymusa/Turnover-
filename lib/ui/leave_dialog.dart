@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../l10n/app_localizations.dart';
 import 'clock_colors.dart';
+import 'touch_feedback.dart';
 
 /// Pide confirmación antes de salir del partido. Devuelve `true` solo si se
 /// confirma: cerrar el diálogo por cualquier otro camino es quedarse.
@@ -39,7 +40,10 @@ class _LeaveDialog extends StatelessWidget {
           child: Text(strings.cancel),
         ),
         TextButton(
-          onPressed: () => Navigator.of(context).pop(true),
+          onPressed: () {
+            TouchFeedback.accepted();
+            Navigator.of(context).pop(true);
+          },
           child: Text(strings.leaveConfirm),
         ),
       ],

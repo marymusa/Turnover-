@@ -4,6 +4,7 @@ import '../l10n/app_localizations.dart';
 import 'advanced_control.dart';
 import 'clock_colors.dart';
 import 'clock_theme.dart';
+import 'touch_feedback.dart';
 
 /// La costura entre las dos mitades: pasar turno en el centro y, discretos a
 /// los lados, pausar y reiniciar, que son operaciones avanzadas.
@@ -33,19 +34,32 @@ class SeamControls extends StatelessWidget {
         AdvancedControl(
           icon: isPaused ? Icons.play_arrow : Icons.pause,
           label: isPaused ? strings.resume : strings.pause,
-          onPressed: onTogglePause,
+          onPressed: () {
+            TouchFeedback.clockToggled();
+            onTogglePause();
+          },
           isHighlighted: isPaused,
         ),
         const SizedBox(width: ClockTheme.seamGap),
         _PassTurnControl(
           label: strings.passTurn,
-          // Pausar bloquea pasar turno, también desde las mitades.
-          onPressed: isPaused ? null : onPassTurn,
+          // Pausar bloquea pasar turno, también desde las mitades. Bloqueado
+          // no responde al dedo: Flutter no expone la háptica de rechazo que
+          // sí tiene Android, y fingirla con un golpe normal diría justo lo
+          // contrario de lo que ha pasado (ADR-0014).
+          onPressed: isPaused
+              ? null
+              : () {
+                  TouchFeedback.turnPassed();
+                  onPassTurn();
+                },
         ),
         const SizedBox(width: ClockTheme.seamGap),
         AdvancedControl(
           icon: Icons.refresh,
           label: strings.reset,
+          // Sin tacto: esto abre un diálogo y no reinicia nada. El peso lo
+          // lleva el botón de confirmar, que es el que destruye el partido.
           onPressed: onReset,
         ),
       ],

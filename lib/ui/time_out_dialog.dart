@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../l10n/app_localizations.dart';
 import 'clock_colors.dart';
+import 'touch_feedback.dart';
 
 /// Pide confirmación antes de aplicar un Time-Out. Devuelve `true` solo si se
 /// confirma: cerrar el diálogo por cualquier otro camino es no aplicarlo.
@@ -52,7 +53,10 @@ class _TimeOutDialog extends StatelessWidget {
           child: Text(strings.cancel),
         ),
         TextButton(
-          onPressed: () => Navigator.of(context).pop(true),
+          onPressed: () {
+            TouchFeedback.confirmed();
+            Navigator.of(context).pop(true);
+          },
           child: Text(strings.timeOutConfirm),
         ),
       ],
