@@ -6,11 +6,13 @@ separados porque las dos tiendas no piden lo mismo: las capturas de Play son de
 
 | Fichero | Para qué |
 |---|---|
+| `es-ES/ficha.md` | nombre, subtítulo, texto promocional, descripción, palabras clave y las notas para el equipo de revisión |
 | `es-ES/screenshots/` | las ocho capturas, 1320x2868 |
+| `previsualizaciones.md` | por qué no hay vídeo de previsualización y qué haría falta |
 
-Los textos de la ficha todavía no están aquí: el nombre, el subtítulo y la
-descripción salen de `../es-ES/ficha.md` y del ADR-0004 mientras no haya motivo
-para que difieran de los de Play.
+La descripción es la misma que la de Play, que vive en `../es-ES/ficha.md` y no
+se duplica. Lo que sí es propio de App Store es el subtítulo, el texto
+promocional y las palabras clave, que son campos que Play no tiene.
 
 ## De dónde salen las capturas
 
