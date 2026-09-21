@@ -95,7 +95,7 @@ private enum VibrationLevel: String {
 
     let channel = FlutterMethodChannel(
       name: vibrationChannelName,
-      binaryMessenger: engineBridge.applicationBinaryMessenger
+      binaryMessenger: engineBridge.applicationRegistrar.messenger()
     )
     channel.setMethodCallHandler { [weak self] call, result in
       guard call.method == "vibrate" else {
