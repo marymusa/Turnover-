@@ -51,7 +51,7 @@ case "$idioma" in
   en) region='en-US' ;;
   *) echo "El idioma es 'es' o 'en', no '$idioma'" >&2; exit 1 ;;
 esac
-[[ -n "$carpeta" ]] || carpeta="store/app-store/$region/screenshots"
+# La carpeta se decide mas abajo, cuando se sepa que ranura pide el aparato.
 
 # Las ocho de la ficha. La primera columna manda el orden en que la tienda las
 # ensena, que es el del numero; la segunda es la posicion del estado en la lista
@@ -79,8 +79,27 @@ capturas=(
 espera=7
 
 paquete='com.ares.bloodbowl.turnover'
-ancho_pedido=1320
-alto_pedido=2868
+
+# Cada ranura de la ficha tiene su tamano y no admite otro. El que toca sale del
+# simulador, no de una constante: con --aparato se puede pedir otra ranura, y
+# una cifra fija aqui haria fallar cualquier aparato que no fuera el de 6,9".
+#
+# Comprobado en este Mac: el 17 Pro Max da 1320x2868 y el 14 Plus 1284x2778.
+case "$aparato" in
+  'iPhone 17 Pro Max') ancho_pedido=1320; alto_pedido=2868; ranura='' ;;
+  'iPhone 14 Plus')    ancho_pedido=1284; alto_pedido=2778; ranura='-6.7' ;;
+  *)
+    echo "No se que tamano pide '$aparato'." >&2
+    echo "Anadelo aqui con el suyo antes de usarlo: una captura del tamano" >&2
+    echo "equivocado entra igual y no se ve hasta que la tienda la rechaza." >&2
+    exit 1
+    ;;
+esac
+
+# La ranura de 6,9" es la principal y se queda en `screenshots/` a secas; las
+# demas llevan su medida en el nombre. Sin esto una tanda de 6,7" pisaria la de
+# 6,9" y las dos ranuras acabarian con las mismas imagenes.
+[[ -n "$carpeta" ]] || carpeta="store/app-store/$region/screenshots$ranura"
 
 udid="$(xcrun simctl list devices available -j \
   | python3 -c "
