@@ -3,9 +3,9 @@
 Todo lo de aquí se copia tal cual en App Store Connect. Cada campo lleva su
 límite contado.
 
-Lo escrito para Play está en `../../es-ES/ficha.md` y no se duplica: la
-descripción es la misma salvo lo que se dice abajo. Lo que cambia de verdad son
-los campos que App Store tiene y Play no, que son el subtítulo, el texto
+Lo escrito para Play está en `../../play-store/es-ES/ficha.md` y no se duplica:
+la descripción es la misma salvo lo que se dice abajo. Lo que cambia de verdad
+son los campos que App Store tiene y Play no, que son el subtítulo, el texto
 promocional y las palabras clave.
 
 ## Dónde no entra la marca
@@ -42,10 +42,10 @@ breve.
 
 ## Texto promocional
 
-Límite: 170 caracteres. Ocupa 161.
+Límite: 170 caracteres. Ocupa 160.
 
 ```
-Mide el turno y el tiempo extra de cada jugador con un solo móvil sobre la mesa. Sin cuentas, sin red y sin anuncios. Se abre y se juega: un toque pasa el turno.
+Mide el turno y el tiempo extra de cada jugador, lleva la cuenta de turnos y cierra el partido con un acta que se comparte. Sin cuentas, sin red y sin anuncios.
 ```
 
 Este campo se cambia sin publicar una versión nueva, al revés que la
@@ -54,7 +54,7 @@ anunciar, repite el argumento principal.
 
 ## Descripción
 
-Límite: 4000 caracteres. Ocupa 2434.
+Límite: 4000 caracteres. Ocupa 3731.
 
 ```
 Turnover! mide el tiempo de una partida a dos, con un solo móvil sobre la mesa.
@@ -79,54 +79,82 @@ El tiempo extra es el adicional de cada jugador para todo el partido. Solo
 baja, nunca se recarga, y empieza a consumirse en cuanto el turno llega a cero.
 Son quince minutos por defecto.
 
-Agotado el tiempo extra, el reloj sigue contando en negativo. No detiene nada: deja
-constancia de cuánto se ha pasado cada uno, y lo que se hace con eso lo deciden
-los jugadores.
+Agotado el tiempo extra, el reloj sigue contando en negativo: no detiene nada, deja
+constancia de cuánto se ha pasado cada uno.
+
+LA CUENTA DE TURNOS
+
+Cada jugador lleva su turno al lado de su reloj. La primera parte va del 1 al 8 y
+la segunda del 9 al 16, seguidos, así que la parte se lee en el propio número.
+
+El cambio de parte no es un pase de turno más: el pase que cierra la primera parte
+deja el partido en pausa, que es el rato en que se cambian los lados y se vuelve a
+desplegar. El velo lo anuncia, y lo quita el mismo toque que quita cualquier pausa.
+
+TIEMPO MUERTO
+
+Es el resultado de la patada inicial que mueve la cuenta, y lo declaran los
+jugadores: el velo de pausa lleva su botón. Al confirmarlo, ambos equipos avanzan
+un turno, o retroceden uno si la ficha del equipo que patea está en su turno 6, 7
+u 8. La aplicación no tira el dado: aplica la regla cuando se le dice, y con eso una
+parte puede durar siete turnos o nueve, como en la mesa.
 
 AVISOS
 
-Tres bocinas, de menor a mayor intensidad: cuando quedan treinta segundos de
-turno, cuando el turno se agota y cuando se agota el tiempo extra. Cada una lleva su
-vibración, con la misma fuerza. Salen por el canal normal del sistema, así que
-respetan el volumen y la configuración del iPhone.
+Tres bocinas, de menor a mayor intensidad: cuando queda un aviso previo, cuando el
+turno se agota y cuando se agota el tiempo extra. Cada una lleva su vibración, con
+la misma fuerza, y respetan el volumen y la configuración del iPhone.
 
 TIEMPOS A MEDIDA
 
-El turno, el tiempo extra y el aviso previo se ajustan antes de empezar, cada uno con
-su deslizador. Los tiempos se pactan con el partido parado. El aviso previo se
-puede dejar en cero, y entonces el turno se acaba sin avisar antes.
+El turno y el tiempo extra se ajustan antes de empezar, cada uno con su deslizador.
+Los avisos previos son dos, el temprano y el tardío, y se mueven con los dos agarres
+de un mismo deslizador: juntos son un aviso, separados son dos y los dos en cero es
+no avisar. Por defecto suenan a los 55 y a los 30 segundos. Los tiempos se pactan
+con el partido parado.
 
 Cada jugador puede ponerse su nombre con una pulsación larga sobre su mitad.
+
+EL ACTA
+
+El partido termina con un acta que cuenta lo que ha pasado en el reloj: el tiempo
+de juego de los dos, el total con las paradas dentro, una barra que reparte el
+juego entre uno y otro, y una gráfica turno a turno con lo que le dura un turno de
+media a cada jugador. Ahí se ve dónde se atascó la partida.
+
+El acta se comparte como imagen desde el menú del sistema, para mandarla a quien
+lleve la liga.
 
 ADEMÁS
 
 La pantalla se mantiene encendida mientras un reloj corre y se libera al pausar.
 
 Pausar cubre la pantalla con un velo que deja leer los dos relojes por debajo:
-se pausa para hablar de la jugada, y el tiempo se sigue viendo mientras se habla.
+se habla de la jugada y el tiempo se sigue viendo.
 
 Sin publicidad, sin compras dentro de la aplicación y sin permisos. La aplicación
 no recoge ningún dato ni se conecta a internet.
 
 QUÉ NO HACE
 
-No lleva la cuenta de turnos ni el marcador, y no guarda historial de partidos.
-Es un árbitro que mide el tiempo, no un juez que decida nada.
+No lleva el marcador ni apunta las anotaciones, y no guarda historial de partidos:
+ni siquiera el acta, que se comparte en el momento o se pierde. Es un árbitro que
+mide el tiempo, no un juez que decida nada.
 
 Blood Bowl es una marca registrada de Games Workshop Limited. Esta aplicación no
 es oficial y no está relacionada, patrocinada ni respaldada por Games Workshop.
 ```
 
-Es la de Play con dos cambios: `móvil` pasa a `iPhone` donde se habla del
-volumen del aparato, y nada más. El resto se deja igual a propósito, porque el
-texto ya está decidido y revisado.
+Es la de Play con un cambio: `móvil` pasa a `iPhone` donde se habla del volumen
+del aparato, y nada más. El resto se deja igual a propósito, porque el texto es
+el mismo producto contado una sola vez y en un solo sitio.
 
 ## Palabras clave
 
-Límite: 100 caracteres, separadas por comas. Ocupa 96.
+Límite: 100 caracteres, separadas por comas. Ocupa 94.
 
 ```
-temporizador,turnos,reloj,ajedrez,tablero,partida,wargame,rol,dados,árbitro,tiempo,dos jugadores
+temporizador,turnos,reloj,ajedrez,tablero,partida,wargame,rol,dados,árbitro,acta,dos jugadores
 ```
 
 Tres cosas que conviene no tocar sin saberlas:
@@ -138,6 +166,9 @@ Tres cosas que conviene no tocar sin saberlas:
   gastaría sitio sin ganar ninguna búsqueda.
 - **No va ninguna marca**, por el ADR-0007 y porque este es el campo donde más
   pesaría.
+
+`acta` entró al añadirse la pantalla de final de partido, y salió `tiempo`, que
+no ganaba ninguna búsqueda que no ganaran ya `temporizador` y `reloj`.
 
 ## Notas para el equipo de revisión
 
@@ -151,14 +182,20 @@ CÓMO PROBARLA
    arriba está girada 180 grados a propósito: los dos jugadores miran el mismo
    iPhone desde lados opuestos de la mesa.
 2. Un toque en cualquiera de las dos mitades arranca el partido.
-3. Cada toque siguiente pasa el turno al otro jugador.
+3. Cada toque siguiente pasa el turno al otro jugador. Cada jugador lleva su
+   cuenta de turnos al lado de su reloj, del 1 al 16.
 4. El botón central de pausa cubre la pantalla con un velo, y el de reinicio
    devuelve el partido al principio.
-5. El engranaje abre los ajustes, donde se cambian el turno, el tiempo extra y
-   el aviso previo.
+5. El velo de pausa lleva un botón de Tiempo muerto. Es un resultado de la
+   tirada de patada inicial del juego de mesa, que los jugadores declaran a
+   mano: mueve un turno las cuentas de los dos, y pregunta antes hacia dónde.
+6. El engranaje abre los ajustes, donde se cambian el turno, el tiempo extra y
+   los dos avisos previos.
 
 Para ver el final del partido sin esperar: en los ajustes, dejar el turno y el
-tiempo extra en su valor mínimo y jugar unos cuantos turnos.
+tiempo extra en su valor mínimo y jugar unos cuantos turnos. Al pasar el último
+turno aparece el acta, que resume el tiempo de los dos jugadores y se puede
+compartir como imagen por el menú del sistema.
 
 SOBRE LA MARCA QUE SE NOMBRA EN LA DESCRIPCIÓN
 
@@ -173,8 +210,11 @@ ellos.
 DATOS
 
 No se recoge ningún dato y no hay ninguna conexión a internet. Lo único que se
-guarda son los tres tiempos y el nombre de un jugador, en el almacenamiento
-local del propio aparato.
+guarda son los tiempos y el nombre de un jugador, en el almacenamiento local del
+propio aparato.
+
+Compartir el acta no cambia eso: la aplicación entrega una imagen a la hoja de
+compartir del sistema y no decide su destino ni la guarda en ninguna parte.
 
 Esos ajustes entran en la copia de seguridad de iCloud, como los de cualquier
 aplicación que use el almacenamiento estándar del sistema. No es una recogida de
@@ -216,6 +256,10 @@ porqué, así que el porqué vive fuera.
 
 No se recoge ningún dato. En el cuestionario de App Store Connect, **No, no
 recopilamos datos de esta app**, y no hay más que responder.
+
+Compartir el acta tampoco es recogida: la imagen sale por la hoja de compartir
+del sistema, a donde la mande quien pulsa, y no pasa por ningún servidor nuestro
+(ADR-0003).
 
 La salvedad de iCloud que anota la ficha de Play (ADR-0003) no cambia esta
 respuesta: Apple pregunta por los datos que recoge el desarrollador, y aquí el

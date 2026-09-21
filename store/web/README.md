@@ -100,7 +100,7 @@ a leer de verdad.
 
 ## Si cambia el texto
 
-La fuente es `../es-ES/privacidad.md`. Tocar los dos a la vez, actualizar la
+La fuente es `../privacidad.md`. Tocar los dos a la vez, actualizar la
 fecha de "Última actualización" en `privacidad.html`, y rehacer el zip:
 
 ```sh
@@ -114,3 +114,17 @@ with zipfile.ZipFile('turnover-privacidad.zip', 'w', zipfile.ZIP_DEFLATED) as z:
 
 Se ejecuta desde esta carpeta. Después se sube el zip nuevo al servicio y se
 vuelve a desplegar.
+
+## Pendiente de subir
+
+El texto cambió el 21 de septiembre de 2026, al añadirse el acta que se comparte
+y al pasar el aviso previo a ser dos. El `privacidad.html` y el zip de esta
+carpeta ya lo llevan; **lo que sirve Dokploy todavía no**. Hasta que se suba el
+zip y se vuelva a desplegar, la dirección publicada devuelve la versión del 17 de
+septiembre.
+
+Para comprobar cuál está en pie sin abrir el navegador:
+
+```sh
+curl -s https://turnover.arespadelmanager.com/privacidad/ | grep 'Última actualización'
+```

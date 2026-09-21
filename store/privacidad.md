@@ -1,17 +1,18 @@
 # Política de privacidad
 
-Play exige una dirección pública que sirva este texto antes de aceptar la ficha,
-aunque la aplicación no recoja nada. Hay que publicarlo en algún sitio con URL
-estable (una página de GitHub Pages del repositorio vale) y pegar esa dirección
-en Play Console.
+Las dos tiendas exigen una dirección pública que sirva este texto antes de
+aceptar la ficha, aunque la aplicación no recoja nada. Ya está publicada, y la
+dirección y cómo se sirve están en `README.md`.
 
-La fecha de abajo se actualiza el día que se publique.
+Este fichero es la fuente y `web/privacidad.html` la página: al tocar uno hay que
+tocar el otro, actualizar la fecha de los dos y volver a subir el zip. Si no, lo
+que lee un revisor y lo que dice el repositorio dejan de ser lo mismo.
 
 ---
 
 # Política de privacidad de Turnover!
 
-Última actualización: 17 de septiembre de 2026
+Última actualización: 21 de septiembre de 2026
 
 ## Qué datos se recogen
 
@@ -26,7 +27,7 @@ recoja información.
 Turnover! guarda en el propio móvil dos cosas, y solo para no volver a
 preguntarlas en la partida siguiente:
 
-- Los tres tiempos configurables: turno, tiempo extra y aviso previo.
+- Los tiempos configurables: el turno, el tiempo extra y los dos avisos previos.
 - El nombre que haya puesto el dueño del móvil a su mitad de la pantalla.
 
 Esta información no sale del dispositivo, no se envía a ningún servidor y nadie
@@ -34,6 +35,16 @@ más que la propia aplicación la lee. Se borra entera al desinstalar.
 
 La aplicación no guarda los relojes, ni el partido en curso, ni ningún historial
 de partidos.
+
+## Compartir el acta
+
+Al terminar un partido, la aplicación muestra un acta con los tiempos de los dos
+jugadores y ofrece compartirla. Al pulsar ese botón, la aplicación genera una
+imagen del acta y se la entrega al menú de compartir del sistema.
+
+A partir de ahí manda quien pulsa: la aplicación no elige el destino, no envía
+nada a ningún servidor y no guarda copia de la imagen. El fichero temporal con el
+que viaja lo gestiona el sistema operativo.
 
 ## Copias de seguridad del sistema
 
