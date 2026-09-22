@@ -30,7 +30,23 @@ nominativo y va con su aviso al final.
 
 ## Descripción completa
 
-Límite: 4000 caracteres.
+Límite: 4000 caracteres. El campo acepta un subconjunto de HTML, no Markdown
+(fuente: [appradar.com](https://appradar.com/blog/how-to-use-html-emoji-in-google-play-store-app-listing)).
+Es el único campo de la ficha que admite formato enriquecido, Unicode y emoji;
+el resto de campos (nombre, descripción breve, nombre de desarrollador) los
+rechaza o los ignora.
+
+| Función | Etiqueta HTML | Ejemplo |
+|---|---|---|
+| Enlace | `<a href="URL">TEXTO</a>` | `<a href="https://appradar.com">App Radar</a>` |
+| Texto en color | `<font color="COLOR">TEXTO</font>` | `<font color="red">App Radar</font>` |
+| Negrita | `<b>TEXTO</b>` | `<b>App Radar</b>` |
+| Cursiva | `<i>TEXTO</i>` | `<i>App Radar</i>` |
+| Subrayado | `<u>TEXTO</u>` | `<u>App Radar</u>` |
+| Encabezado 1 | `<h1>TEXTO</h1>` | `<h1><b>Encabezado</b></h1>` |
+| Encabezado 2 | `<h2>TEXTO</h2>` | `<h2><b>Encabezado</b></h2>` |
+| Salto de línea | `<br/>` | `Línea 1<br/>Línea 2` |
+| Unicode / emoji | inserción directa | `♦✅` |
 
 ```
 Turnover! es el cronómetro para partidos creado por jugadores de Blood Bowl para jugadores de Blood Bowl.
