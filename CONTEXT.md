@@ -242,4 +242,6 @@ es algo que no se puede desactivar sin rehacer el almacenamiento (ADR-0003).
 Sin publicidad (ADR-0012). No es solo que hoy no la haya: se estudiaron los tres
 momentos en los que ningún reloj corre y se descartó, porque el SDK trae red, permisos
 y consentimiento el primer día a cambio de unos euros al año. El coste recurrente es el
-de iOS y se cubre por el precio, no por los anuncios.
+de iOS y se cubre por el precio, no por los anuncios: en iPhone la aplicación es de
+pago, 2,99 €, y en Android es gratuita porque Play no admite pasar de gratuita a de
+pago una vez publicada (ADR-0015).
