@@ -30,95 +30,80 @@ nominativo y va con su aviso al final.
 
 ## Descripción completa
 
-Límite: 4000 caracteres. Ocupa 3730.
+Límite: 4000 caracteres.
 
 ```
-Turnover! mide el tiempo de una partida a dos, con un solo móvil sobre la mesa.
-Sin cuentas, sin red y sin registrarse: se abre y se juega.
+Turnover! es el cronómetro para partidos creado por jugadores de Blood Bowl para jugadores de Blood Bowl.
 
-Está pensado para partidos de Blood Bowl, donde cada jugador dispone de un turno
-reglamentario y de un tiempo extra para todo el encuentro, pero sirve para cualquier
-juego de mesa por turnos que se juegue con reloj.
+Coloca un teléfono sobre la mesa y a jugar.
 
-CÓMO FUNCIONA
+Turnover! está diseñado para partidos de Blood Bowl: controla el tiempo de cada turno, la reserva de tiempo extra, los avisos y el evento de Patada Inicial <b>Tiempo Muerto</b>.
 
-La pantalla se parte en dos, una mitad para cada jugador, y cada una se lee de
-frente desde su lado de la mesa. Quien toca su mitad recibe la patada inicial y
-arranca el partido. A partir de ahí, un toque pasa el turno.
+<b>TU TURNO. TU CRONOMETRO</b>
 
-LOS DOS RELOJES
+Dos entrenadores se alternan y solo hay un cronómetro activo cada vez.
 
-El turno es el tiempo reglamentario de cada jugada y se reinicia en cada cambio
-de jugador. Son cuatro minutos por defecto.
+• <b>Tiempo de turno</b>: el entrenador dispone del tiempo reglamentario para completar su turno. Se reinicia al pasar el turno al rival. Valor predeterminado: 4 minutos.
 
-El tiempo extra es el adicional de cada jugador para todo el partido. Solo
-baja, nunca se recarga, y empieza a consumirse en cuanto el turno llega a cero.
-Son quince minutos por defecto.
+• <b>Tiempo extra</b>: cada entrenador tiene su propia reserva para todo el partido. Solo disminuye, nunca se recupera, y empieza a consumirse al agotarse el tiempo de turno. Valor predeterminado: 15 minutos.
 
-Agotado el tiempo extra, el reloj sigue contando en negativo: no detiene nada, deja
-constancia de cuánto se ha pasado cada uno.
+• <b>Una pulsación</b> termina tu turno y lo pasa al rival.
 
-LA CUENTA DE TURNOS
+• Cuando se acaba el tiempo extra, Turnover! sigue contando en negativo. No detiene el partido ni decide qué ocurre: eso corresponde a los entrenadores.
 
-Cada jugador lleva su turno al lado de su reloj. La primera parte va del 1 al 8 y
-la segunda del 9 al 16, seguidos, así que la parte se lee en el propio número.
+<b>BLOOD BOWL, CON SUS REGLAS EN EL CRONO</b>
 
-El cambio de parte no es un pase de turno más: el pase que cierra la primera parte
-deja el partido en pausa, que es el rato en que se cambian los lados y se vuelve a
-desplegar. El velo lo anuncia, y lo quita el mismo toque que quita cualquier pausa.
+Turnover! no es un temporizador genérico con una apariencia de Blood Bowl. Su flujo está pensado alrededor de la estructura del juego.
 
-TIEMPO MUERTO
+Cada parte comprende ocho turnos por entrenador, numerados del 1 al 16.
 
-Es el resultado de la patada inicial que mueve la cuenta, y lo declaran los
-jugadores: el velo de pausa lleva su botón. Al confirmarlo, ambos equipos avanzan
-un turno, o retroceden uno si la ficha del equipo que patea está en su turno 6, 7
-u 8. La aplicación no tira el dado: aplica la regla cuando se le dice, y con eso una
-parte puede durar siete turnos o nueve, como en la mesa.
+Cuando el Evento de Patada Inicial es <b>Tiempo Muerto</b>, Turnover! aplica automáticamente la regla de Blood Bowl: ambos marcadores avanzan una casilla, salvo que el marcador del equipo que patea esté en el turno 6, 7 u 8 de esa parte; en ese caso, ambos retroceden una casilla.
 
-AVISOS
+Sin hacer cuentas. Sin mover fichas. Pausa el crono, marca "Tiempo muerto" y sigue jugando.
 
-Tres bocinas, de menor a mayor intensidad: cuando queda un aviso previo, cuando el
-turno se agota y cuando se agota el tiempo extra. Cada una lleva su vibración, con
-la misma fuerza, y respetan el volumen y la configuración del móvil.
+<b>LA MESA ES LA INTERFAZ</b>
 
-TIEMPOS A MEDIDA
+La patada inicial comienza cuando el entrenador del equipo receptor pulsa su lado. A partir de ahí, solo el entrenador cuyo turno está activo controla su cronómetro.
 
-El turno y el tiempo extra se ajustan antes de empezar, cada uno con su deslizador.
-Los avisos previos son dos, el temprano y el tardío, y se mueven con los dos agarres
-de un mismo deslizador: juntos son un aviso, separados son dos y los dos en cero es
-no avisar. Por defecto suenan a los 55 y a los 30 segundos. Los tiempos se pactan
-con el partido parado.
+Puedes pausar ambos cronómetros para desplegar, consultar una regla o hacer una pausa. Los cronómetros siguen visibles durante la pausa y tocar la pantalla reanuda la partida.
 
-Cada jugador puede ponerse su nombre con una pulsación larga sobre su mitad.
+<b>AVISOS QUE PUEDES OÍR</b>
 
-EL ACTA
+No deberías tener que mirar el teléfono mientras decides una jugada.
 
-El partido termina con un acta que cuenta lo que ha pasado en el reloj: el tiempo
-de juego de los dos, el total con las paradas dentro, una barra que reparte el
-juego entre uno y otro, y una gráfica turno a turno con lo que le dura un turno de
-media a cada jugador. Ahí se ve dónde se atascó la partida.
+Turnover! ofrece tres niveles de aviso sonoro, cada uno acompañado por una vibración equivalente, para los tiempos que se acercan a cero, el final del tiempo de turno y del tiempo extra. Los avisos previos son configurables; por defecto suenan cuando quedan 55 y 30 segundos.
 
-El acta se comparte como imagen desde el menú del sistema, para mandarla a quien
-lleve la liga.
+<b>CONFIGÚRALO ANTES DE LA PATADA INICIAL</b>
 
-ADEMÁS
+Antes de empezar puedes elegir el tiempo de turno, el tiempo extra, los avisos y el nombre de cada entrenador. Una vez iniciado el partido, estas opciones quedan bloqueadas.
 
-La pantalla se mantiene encendida mientras un reloj corre y se libera al pausar.
+La pantalla permanece encendida mientras el cronómetro funciona.
 
-Pausar cubre la pantalla con un velo que deja leer los dos relojes por debajo:
-se habla de la jugada y el tiempo se sigue viendo.
+<b>CUANDO TERMINE EL PARTIDO</b>
 
-Sin publicidad, sin compras dentro de la aplicación y sin permisos. La aplicación
-no recoge ningún dato ni se conecta a internet.
+Al finalizar el último turno de la segunda parte, Turnover! prepara un acta del partido con:
 
-QUÉ NO HACE
+• el tiempo de juego de cada entrenador y el tiempo total transcurrido, incluidas las pausas
+• una comparativa del tiempo utilizado por cada entrenador
+• un gráfico turno a turno con la duración de cada turno y la media de cada entrenador
 
-No lleva el marcador ni apunta las anotaciones, y no guarda historial de partidos:
-ni siquiera el acta, que se comparte en el momento o se pierde. Es un árbitro que
-mide el tiempo, no un juez que decida nada.
+Así puedes ver dónde se fueron esos cuatro minutos... y en qué turno empezó todo a complicarse.
 
-Blood Bowl es una marca registrada de Games Workshop Limited. Esta aplicación no
-es oficial y no está relacionada, patrocinada ni respaldada por Games Workshop.
+El acta se puede compartir como imagen mediante el sistema de compartir del teléfono, para enviarla al organizador de la liga.
+
+<b>SIN CUENTAS. SIN ANUNCIOS. SIN COMPLICACIONES</b>
+
+Turnover! no necesita cuenta ni conexión a Internet. No tiene anuncios ni compras integradas y no guarda un historial de partidos.
+
+El estado de un partido no se conserva al cerrar la aplicación, y el acta se comparte en ese momento o se pierde.
+
+Turnover! mide el tiempo. No arbitra el partido, no registra touchdowns y no decide qué sucede cuando el cronómetro llega a cero.
+
+Tú pones los equipos. Tú pones los dados. Tú tomas las decisiones cuestionables.
+
+<b>Turnover! pone el crono</b>
+
+Blood Bowl es una marca registrada de Games Workshop Limited. Esta aplicación no es oficial y no está afiliada, patrocinada ni respaldada por Games Workshop.
 ```
 
 ## Categoría y etiquetas

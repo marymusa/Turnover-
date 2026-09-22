@@ -30,96 +30,76 @@ campos que indexa la tienda (ADR-0007).
 
 ## Full description
 
-Límite: 4000 caracteres. Ocupa 3618.
+Límite: 4000 caracteres.
 
 ```
-Turnover! times a two-player game on a single phone laid on the table. No
-accounts, no network, no sign-up: open it and play.
+Turnover! is the match clock built by Blood Bowl players, for Blood Bowl players.
 
-It is built for Blood Bowl matches, where each coach gets a regulation turn and a
-pool of extra time for the whole game, but it works for any turn-based board game
-played against the clock.
+No generic stopwatch. No chess clock setup. Put one phone on the table, and get on with the match.
 
-HOW IT WORKS
+Turnover! handles the clock, the turn count and the Blood Bowl Time-Out rule, while leaving every game decision where it belongs: with the Coaches.
 
-The screen splits in two, one half per player, and each half reads the right way
-up from its own side of the table. Whoever taps their half receives the kick-off
-and starts the match. From there on, one tap ends your turn.
+<b>YOUR TURN. YOUR CLOCK</b>
 
-THE TWO CLOCKS
+Turnover! is designed around the way a Blood Bowl match is actually played: two Coaches taking turns, one active clock at a time.
 
-Turn time is the regulation time for a single turn, and it restarts every time the
-turn changes hands. Four minutes by default.
+• <b>Turn time</b> gives the active Coach their regulation time for the current turn. It resets when the turn changes hands. Default: 4 minutes.
 
-Extra time is each player's own pool for the whole match. It only goes down, it is
-never refilled, and it starts draining the moment the turn clock hits zero. Fifteen
-minutes by default.
+• <b>Extra time</b> is each Coach's personal reserve for the whole match. It only goes down, and starts the instant turn time reaches zero. Default: 15 minutes.
 
-Once extra time is gone the clock keeps counting into the negative. It stops
-nothing: it records how far over each player went.
+• <b>One tap</b> ends your turn and hands the game to your opponent.
 
-THE TURN COUNT
+• When extra time reaches zero, Turnover! keeps counting into negative time. It never stops the match or decides what happens next. That's between Coaches.
 
-Each player carries their turn number next to their clock. The first half runs
-from 1 to 8 and the second from 9 to 16, straight through, so the half is there to
-be read in the number itself.
+<b>BLOOD BOWL, UNDERSTOOD</b>
 
-Changing halves is not just another turn. The pass that closes the first half
-leaves the match paused, which is when sides are swapped and the teams set up
-again. The overlay says so, and the same tap that clears any pause clears it.
+Turnover! isn't a generic timer with a Blood Bowl skin. Its match flow is built around Blood Bowl's structure.
 
-TIME-OUT
+Each half gives both Coaches eight turns, with the turn number running continuously from 1 through 16, so you always know where you are.
 
-This is the kick-off result that moves the turn count, and the players declare it:
-the pause overlay carries its button. Confirm it and both teams move one turn
-forward, or one back if the kicking team's counter sits on turn 6, 7 or 8. The app
-rolls no dice: it applies the rule when told to, so a half can run seven turns or
-nine, exactly as it does on the table.
+The kick-off matters too. When the Kick-off Event is <b>Time-Out</b>, Turnover! applies the Blood Bowl rule for you: both turn counters move forward by one, unless the kicking team's marker is on turn 6, 7 or 8, in which case both move back by one. No manual arithmetic. Just pause, select Time-Out and carry on.
 
-WARNINGS
+<b>THE TABLE IS THE INTERFACE</b>
 
-Three horns, quiet to loud: a warning before the turn runs out, the turn running
-out, and extra time running out. Each one comes with its own vibration at matching
-strength, and they respect the phone's volume and settings.
+Two Coaches. One phone.
 
-TIMES TO TASTE
+The display is made for a phone lying flat on the tabletop, with each Coach able to read their side naturally. The opening kick-off starts when the receiving Coach taps their side. From then on, the active Coach controls only their turn.
 
-Turn time and extra time are set before the match starts, each on its own slider.
-The early warnings are two, and they move on the two handles of a single slider:
-together they are one warning, apart they are two, and both at zero is no warning
-at all. They sound at 55 and 30 seconds by default. Times are agreed with the
-clock stopped.
+Need a break? Pause both clocks together for deployment, a rules check, a tactical discussion or the inevitable trip to the bathroom. The match stays visible underneath the pause overlay, and tapping the screen resumes play without risking an accidental end-turn.
 
-Either player can set their own name with a long press on their half.
+<b>WARNINGS YOU CAN HEAR</b>
 
-THE MATCH REPORT
+You shouldn't have to stare at a phone while planning a cage, lining up a blitz or deciding whether that risky dodge is worth it.
 
-The match ends on a report of what the clock saw: play time for both players, the
-total with the stoppages inside it, a bar splitting that play time between the
-two, and a turn-by-turn chart carrying each player's average turn. That is where
-you see where the game bogged down.
+Turnover! provides audible warnings, each paired with matching vibration, for pre-alerts, turn time expiring and extra time expiring. Default pre-alerts are 55 and 30 seconds, and they can be changed before the match starts.
 
-The report shares as an image through the system share sheet, ready to send to
-whoever runs the league.
+<b>SET IT ONCE. PLAY</b>
 
-ALSO
+Before kick-off, choose your turn time, extra time, warning thresholds and Coach names. Once the match starts, those settings are locked.
 
-The screen stays awake while a clock runs and is released on pause.
+The screen also stays awake while the match is running, so your clock is always ready on the table.
 
-Pausing covers the screen with an overlay that still lets both clocks be read
-underneath: you talk the play over and the time stays in sight.
+<b>AFTER THE FINAL TURN</b>
 
-No ads, no in-app purchases and no permissions. The app collects no data and never
-connects to the internet.
+When the match is over, Turnover! gives you a match report showing:
 
-WHAT IT DOES NOT DO
+• total playing time and total elapsed time, including pauses
+• a head-to-head comparison of each Coach's clock usage
+• a turn-by-turn chart showing how long each turn took, with an average-turn reference for each Coach
 
-It keeps no score and records no touchdowns, and it stores no match history, not
-even the report: that one is shared there and then, or lost. It is a referee that
-measures time, not one that decides anything.
+The report can be shared as an image through the system share sheet — useful for league organizers, post-match stats, or seeing where those four minutes disappeared.
 
-Blood Bowl is a registered trademark of Games Workshop Limited. This app is
-unofficial and is not affiliated with, sponsored by or endorsed by Games Workshop.
+<b>NO ACCOUNTS. NO ADS. NO NONSENSE</b>
+
+Turnover! has no account, no network connection, no ads, no in-app purchases and no match history. Nothing is uploaded. Match data isn't kept after the match, and the report is yours to share there and then.
+
+Turnover! measures time. It does not referee your game, record your touchdowns or decide what happens when the clock runs out.
+
+You bring the teams. You bring the dice. You bring the questionable tactical decisions.
+
+<b>Turnover! brings the clock</b>
+
+Blood Bowl is a registered trademark of Games Workshop Limited. This app is unofficial and is not affiliated with, sponsored by or endorsed by Games Workshop.
 ```
 
 ## Category and tags
